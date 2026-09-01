@@ -99,7 +99,8 @@ const renderEmailTemplate = ({ title, preheader, bodyHtml, actionUrl, actionText
  */
 exports.sendVerificationEmail = async ({ email, name, token }) => {
   const frontendUrl = getFrontendUrl();
-  const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
+  const safeToken = encodeURIComponent(String(token).trim());
+  const verificationUrl = `${frontendUrl}/verify-email?token=${safeToken}`;
 
   const subject = 'Verify your DisasterChain account';
   const html = renderEmailTemplate({
@@ -147,7 +148,8 @@ exports.sendVerificationEmail = async ({ email, name, token }) => {
  */
 exports.sendPasswordResetEmail = async ({ email, name, token }) => {
   const frontendUrl = getFrontendUrl();
-  const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+  const safeToken = encodeURIComponent(String(token).trim());
+  const resetUrl = `${frontendUrl}/reset-password?token=${safeToken}`;
 
   const subject = 'Reset your DisasterChain password';
   const html = renderEmailTemplate({

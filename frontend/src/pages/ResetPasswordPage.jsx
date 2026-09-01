@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') || '';
+  const token = (searchParams.get('token') || '').trim();
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

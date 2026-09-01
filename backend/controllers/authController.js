@@ -174,14 +174,16 @@ exports.register = async (req, res) => {
 // @access  Public
 exports.verifyEmail = async (req, res) => {
   try {
-    const { token } = req.body;
+    const rawToken = req.body?.token || req.query?.token;
 
-    if (!token) {
+    if (!rawToken || typeof rawToken !== 'string' || !rawToken.trim()) {
       return res.status(400).json({
         success: false,
         message: 'Verification token is required.',
       });
     }
+
+    const token = rawToken.trim();
 
     // Hash incoming token with sha256 to compare with DB record
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
@@ -512,14 +514,17 @@ exports.forgotPassword = async (req, res) => {
 // @access  Public
 exports.resetPassword = async (req, res) => {
   try {
-    const { token, password, confirmPassword } = req.body;
+    const { password, confirmPassword } = req.body;
+    const rawToken = req.body?.token || req.query?.token;
 
-    if (!token) {
+    if (!rawToken || typeof rawToken !== 'string' || !rawToken.trim()) {
       return res.status(400).json({
         success: false,
         message: 'Reset token is required.',
       });
     }
+
+    const token = rawToken.trim();
 
     if (!password) {
       return res.status(400).json({

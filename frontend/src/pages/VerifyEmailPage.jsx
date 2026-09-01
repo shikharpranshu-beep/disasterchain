@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') || '';
+  const token = (searchParams.get('token') || '').trim();
 
   const [loading, setLoading] = useState(!!token);
   const [verified, setVerified] = useState(false);
