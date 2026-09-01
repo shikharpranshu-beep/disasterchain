@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAffectedAreas } from '../services/api';
+import DisasterMap from '../components/DisasterMap';
 
 const AffectedAreasPage = () => {
   const [areas, setAreas] = useState([]);
@@ -15,10 +16,30 @@ const AffectedAreasPage = () => {
   return (
     <div>
       <div style={{ marginBottom: '1.75rem' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>🗺️ Affected Areas & Disaster Zones</h1>
+        <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>🗺️ Affected Areas & Live Disaster Map</h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Geographic hazard monitoring, impact severity assessments & active distress counts
+          Geographic hazard monitoring, OpenStreetMap impact radii, emergency shelters & live casualty signals
         </p>
+      </div>
+
+      {/* Interactive Map */}
+      <div style={{ marginBottom: '2rem' }}>
+        <DisasterMap
+          height="540px"
+          variant="large"
+          initialFilter="ALL"
+          showToolbar={true}
+          showLegend={true}
+        />
+      </div>
+
+      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+          📋 Monitored Sector Profiles & Hazard Reports
+        </h2>
+        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+          {areas.length} Active Impact Zones
+        </span>
       </div>
 
       <div className="grid-cols-3">

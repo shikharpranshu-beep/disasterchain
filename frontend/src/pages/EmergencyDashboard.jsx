@@ -4,6 +4,7 @@ import StatCard from '../components/StatCard';
 import EmergencyAlertBanner from '../components/EmergencyAlertBanner';
 import ResourceJourneyModal from '../components/ResourceJourneyModal';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
+import DisasterMap from '../components/DisasterMap';
 import {
   fetchSosRequests,
   fetchShelters,
@@ -144,114 +145,87 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident }) => {
         />
       </div>
 
-      {/* Main Grid: Interactive Map & Live SOS Stream */}
+      {/* Real Interactive Disaster & Relief Map */}
+      <div style={{ marginBottom: '1.75rem' }}>
+        <DisasterMap
+          height="480px"
+          onOpenSos={onOpenSos}
+          showToolbar={true}
+          showLegend={true}
+        />
+      </div>
+
+      {/* Main Grid: Priority SOS Stream & Affected Zones Quick Summary */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1.4fr 1fr',
+          gridTemplateColumns: '1fr 1fr',
           gap: '1.5rem',
           marginBottom: '1.75rem',
         }}
       >
-        {/* Affected Area Visualizer Map */}
+        {/* Affected Area Severity Overview Cards */}
         <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <div>
               <h2 style={{ fontSize: '1.15rem', fontWeight: 800 }}>
-                🗺️ Affected Areas & Severity Zones
+                🗺️ Monitored Hazard Sectors
               </h2>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Visual geographic impact grid & casualty density
+                Active casualty counts and sector risk levels
               </div>
             </div>
             <Link to="/affected-areas" style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 600 }}>
-              Full Map View →
+              Full Map & Details →
             </Link>
           </div>
 
-          {/* Interactive Visual Map Representation */}
-          <div
-            style={{
-              background: '#090d16',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)',
-              padding: '1.25rem',
-              minHeight: '260px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-              {affectedAreas.slice(0, 6).map((area) => {
-                const isCritical = area.severity === 'Critical';
-                const isHigh = area.severity === 'High';
-                const isModerate = area.severity === 'Moderate';
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', overflowY: 'auto', maxHeight: '300px' }}>
+            {affectedAreas.slice(0, 4).map((area) => {
+              const isCritical = area.severity === 'Critical';
+              const isHigh = area.severity === 'High';
+              const isModerate = area.severity === 'Moderate';
 
-                const borderCol = isCritical
-                  ? '#ef4444'
-                  : isHigh
-                  ? '#f97316'
-                  : isModerate
-                  ? '#f59e0b'
-                  : '#10b981';
+              const borderCol = isCritical
+                ? '#ef4444'
+                : isHigh
+                ? '#f97316'
+                : isModerate
+                ? '#f59e0b'
+                : '#10b981';
 
-                const bgCol = isCritical
-                  ? 'rgba(239, 68, 68, 0.12)'
-                  : isHigh
-                  ? 'rgba(249, 115, 22, 0.12)'
-                  : 'rgba(245, 158, 11, 0.12)';
+              const bgCol = isCritical
+                ? 'rgba(239, 68, 68, 0.12)'
+                : isHigh
+                ? 'rgba(249, 115, 22, 0.12)'
+                : 'rgba(245, 158, 11, 0.12)';
 
-                return (
-                  <div
-                    key={area._id}
-                    style={{
-                      background: bgCol,
-                      border: `1px solid ${borderCol}`,
-                      borderRadius: 'var(--radius-md)',
-                      padding: '0.75rem',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                      <strong style={{ fontSize: '0.85rem' }}>{area.name}</strong>
-                      <span className={`badge badge-${area.severity?.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>
-                        {area.severity}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
-                      {area.disasterType}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                      <span>👥 {area.affectedPeople} affected</span>
-                      <span style={{ color: '#f87171', fontWeight: 600 }}>🚨 {area.activeSOS} SOS</span>
-                    </div>
+              return (
+                <div
+                  key={area._id}
+                  style={{
+                    background: bgCol,
+                    border: `1px solid ${borderCol}`,
+                    borderRadius: 'var(--radius-md)',
+                    padding: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <strong style={{ fontSize: '0.85rem' }}>{area.name}</strong>
+                    <span className={`badge badge-${area.severity?.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>
+                      {area.severity}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-
-            <div
-              style={{
-                marginTop: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '0.75rem',
-                color: 'var(--text-muted)',
-                borderTop: '1px solid var(--border-subtle)',
-                paddingTop: '0.75rem',
-              }}
-            >
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <span>🟢 Safe</span>
-                <span>🟡 Moderate</span>
-                <span>🟠 High Impact</span>
-                <span>🔴 Critical Zone</span>
-              </div>
-              <div><em>Prototype Geolocation Grid</em></div>
-            </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                    {area.disasterType}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    <span>👥 {area.affectedPeople?.toLocaleString()}</span>
+                    <span style={{ color: '#f87171', fontWeight: 600 }}>🚨 {area.activeSOS} SOS</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

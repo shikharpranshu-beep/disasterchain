@@ -164,6 +164,8 @@ export const fallbackData = {
       description: 'Water level exceeded danger mark by 1.8m. Low-lying hostels submerged.',
       affectedPeople: 2400,
       activeSOS: 14,
+      latitude: 28.6400,
+      longitude: 77.2200,
       status: 'Active',
     },
     {
@@ -174,6 +176,8 @@ export const fallbackData = {
       description: 'Tremors caused wall fractures; electrical power disconnected.',
       affectedPeople: 850,
       activeSOS: 6,
+      latitude: 28.6200,
+      longitude: 77.2100,
       status: 'Active',
     },
     {
@@ -184,6 +188,8 @@ export const fallbackData = {
       description: 'Localized warehouse fire emitting dense smoke. Air quality index hazardous.',
       affectedPeople: 1200,
       activeSOS: 3,
+      latitude: 28.5800,
+      longitude: 77.2400,
       status: 'Controlled',
     },
     {
@@ -194,6 +200,8 @@ export const fallbackData = {
       description: 'Heavy rain triggered soil erosion near university perimeter wall.',
       affectedPeople: 450,
       activeSOS: 2,
+      latitude: 28.6500,
+      longitude: 77.1900,
       status: 'Active',
     },
     {
@@ -204,6 +212,8 @@ export const fallbackData = {
       description: 'Storm drain overflow cleared; municipal pumps operational.',
       affectedPeople: 300,
       activeSOS: 0,
+      latitude: 28.6100,
+      longitude: 77.2300,
       status: 'Recovering',
     },
   ],
@@ -295,6 +305,8 @@ export const fallbackData = {
       address: 'Plot 12, Medical Square, Civil Lines',
       phone: '+91 11 2233 4455',
       description: '24/7 Emergency trauma care, burn ICU, blood bank, and 6 ambulance units.',
+      latitude: 28.6150,
+      longitude: 77.2100,
       status: 'Operational',
     },
     {
@@ -304,6 +316,8 @@ export const fallbackData = {
       address: 'Student Amenities Block, Gate 1',
       phone: '+91 11 2345 6701',
       description: 'Campus emergency doctors, triage beds, first aid supplies, and oxygen concentrators.',
+      latitude: 28.6220,
+      longitude: 77.2080,
       status: 'Operational',
     },
     {
@@ -313,6 +327,8 @@ export const fallbackData = {
       address: 'Ring Road By-pass, Near North Gate',
       phone: '+91 11 101',
       description: 'Equipped with 4 hydraulic fire tenders, rescue cutters, and HAZMAT teams.',
+      latitude: 28.6280,
+      longitude: 77.2150,
       status: 'Operational',
     },
     {
@@ -322,6 +338,8 @@ export const fallbackData = {
       address: 'Main Administrative Circle',
       phone: '+91 11 112',
       description: 'Disaster response coordination, law enforcement, crowd control, and patrol vans.',
+      latitude: 28.6080,
+      longitude: 77.2120,
       status: 'Operational',
     },
     {
@@ -331,6 +349,8 @@ export const fallbackData = {
       address: 'Collectorate Complex, Block B',
       phone: '+91 11 2392 3456',
       description: 'Government apex coordination unit for disaster alerts and NDRF deployment.',
+      latitude: 28.6300,
+      longitude: 77.2300,
       status: 'Operational',
     },
     {
@@ -340,6 +360,8 @@ export const fallbackData = {
       address: 'Sector 15 Logistics Hub',
       phone: '+91 11 2371 6441',
       description: 'Central stockpile of emergency ration kits, blankets, hygiene packs, and tarpaulins.',
+      latitude: 28.5900,
+      longitude: 77.2180,
       status: 'Operational',
     },
     {
@@ -349,6 +371,8 @@ export const fallbackData = {
       address: 'Community Hall, Sector 8',
       phone: '+91 11 2345 8899',
       description: 'Distributes 3,000 cooked meal packets daily and operates 4 potable water tankers.',
+      latitude: 28.6020,
+      longitude: 77.2050,
       status: 'Operational',
     },
     {
@@ -358,15 +382,19 @@ export const fallbackData = {
       address: 'Near Metro Station Gate 3',
       phone: '+91 11 2345 7766',
       description: 'Mobile paramedical vans with trained student volunteers and stretcher teams.',
+      latitude: 28.6180,
+      longitude: 77.2250,
       status: 'Operational',
     },
     {
       _id: 'res-9',
-      name: 'Central University Indoor Stadium Shelter',
+      name: 'Central University Indoor Stadium Shelter Desk',
       type: 'Emergency Shelter',
       address: 'Sports Complex, University Campus',
       phone: '+91 11 2345 6780',
       description: 'Large ventilated emergency shelter with beds, toilets, and food mess.',
+      latitude: 28.6139,
+      longitude: 77.2090,
       status: 'Operational',
     },
     {
@@ -376,6 +404,8 @@ export const fallbackData = {
       address: 'Boat Club, Riverfront East',
       phone: '+91 11 2345 9900',
       description: 'Equipped with motorized inflatable rescue boats and flood scuba divers.',
+      latitude: 28.6380,
+      longitude: 77.2240,
       status: 'Operational',
     },
   ],
