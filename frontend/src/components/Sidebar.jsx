@@ -14,6 +14,7 @@ const Sidebar = () => {
     { label: 'Disaster Guides', path: '/guides', icon: '📖', group: 'Preparedness' },
     { label: 'Report Incident / Hazard', path: '/incidents', icon: '⚠️', group: 'Preparedness' },
     { label: 'Emergency Resources', path: '/resources', icon: '🏥', group: 'Preparedness' },
+    { label: 'My Security Profile', path: '/profile', icon: '👤', group: 'Personal' },
     { label: 'My Submitted Reports', path: '/my-reports', icon: '📝', group: 'Personal' },
     { label: 'Donations Registry', path: '/donations', icon: '📦', group: 'Transparency' },
     { label: 'Resource Tracking', path: '/resource-tracking', icon: '🚚', group: 'Transparency' },

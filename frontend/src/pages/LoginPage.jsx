@@ -1,19 +1,28 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isUnverified, setIsUnverified] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState('');
+  const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { login, demoLogin } = useAuth();
+  const { login, demoLogin, resendVerification } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsUnverified(false);
+    setResendStatus('');
     setLoading(true);
 
     const result = await login(email, password);
@@ -23,15 +32,28 @@ const LoginPage = () => {
       if (result.user?.role === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/dashboard');
+        navigate(from);
       }
     } else {
+      if (result.isUnverified) {
+        setIsUnverified(true);
+        setUnverifiedEmail(result.email || email);
+      }
       setError(result.message || 'Login failed. Please check credentials.');
     }
   };
 
+  const handleResend = async () => {
+    setResending(true);
+    setResendStatus('');
+    const res = await resendVerification(unverifiedEmail || email);
+    setResending(false);
+    setResendStatus(res.message);
+  };
+
   const handleDemo = async (role) => {
     setError('');
+    setIsUnverified(false);
     setLoading(true);
     const result = await demoLogin(role);
     setLoading(false);
@@ -86,19 +108,59 @@ const LoginPage = () => {
           </p>
         </div>
 
+        {/* Error / Unverified Notice */}
         {error && (
           <div
             style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#f87171',
+              background: isUnverified ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+              border: `1px solid ${isUnverified ? 'rgba(245, 158, 11, 0.4)' : 'rgba(239, 68, 68, 0.3)'}`,
+              color: isUnverified ? '#fcd34d' : '#f87171',
+              padding: '0.85rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.85rem',
+              marginBottom: '1.25rem',
+              lineHeight: 1.5,
+            }}
+          >
+            <div>{isUnverified ? '⚠️ Email Not Verified' : `⚠️ ${error}`}</div>
+            {isUnverified && (
+              <div style={{ marginTop: '0.6rem' }}>
+                <p style={{ fontSize: '0.8rem', color: '#fef3c7', marginBottom: '0.5rem' }}>
+                  Your account requires email verification before accessing DisasterChain.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending}
+                  className="btn btn-secondary"
+                  style={{
+                    fontSize: '0.78rem',
+                    padding: '0.35rem 0.75rem',
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    borderColor: 'rgba(245, 158, 11, 0.5)',
+                    color: '#fef08a',
+                  }}
+                >
+                  {resending ? 'Sending...' : '📩 Resend Verification Email'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {resendStatus && (
+          <div
+            style={{
+              background: 'rgba(99, 102, 241, 0.15)',
+              border: '1px solid rgba(99, 102, 241, 0.4)',
+              color: '#a5b4fc',
               padding: '0.65rem 1rem',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.85rem',
               marginBottom: '1.25rem',
             }}
           >
-            ⚠️ {error}
+            ℹ️ {resendStatus}
           </div>
         )}
 
@@ -156,7 +218,15 @@ const LoginPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <label className="form-label" style={{ margin: 0 }}>Password</label>
+              <Link
+                to="/forgot-password"
+                style={{ fontSize: '0.78rem', color: 'var(--accent-indigo)', fontWeight: 600 }}
+              >
+                Forgot Password?
+              </Link>
+            </div>
             <input
               type="password"
               required
@@ -180,7 +250,7 @@ const LoginPage = () => {
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
           Don't have an account?{' '}
           <Link to="/register" style={{ color: 'var(--accent-indigo)', fontWeight: 600 }}>
-            Register as Student
+            Create Account
           </Link>
         </div>
       </div>

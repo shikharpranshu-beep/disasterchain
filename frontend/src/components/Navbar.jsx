@@ -74,7 +74,8 @@ const Navbar = ({ onOpenSos }) => {
 
         {isAuthenticated ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div
+            <Link
+              to="/profile"
               style={{
                 background: 'rgba(30, 41, 59, 0.8)',
                 border: '1px solid var(--border-subtle)',
@@ -83,7 +84,10 @@ const Navbar = ({ onOpenSos }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.6rem',
+                cursor: 'pointer',
+                transition: 'background 0.15s ease',
               }}
+              title="View Account Profile"
             >
               <div
                 style={{
@@ -96,17 +100,21 @@ const Navbar = ({ onOpenSos }) => {
                   justifyContent: 'center',
                   fontWeight: 700,
                   fontSize: '0.8rem',
+                  color: '#ffffff',
                 }}
               >
                 {user?.name?.charAt(0) || 'U'}
               </div>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user?.name}</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span>{user?.name}</span>
+                  {user?.isVerified && <span title="Verified Account" style={{ fontSize: '0.75rem' }}>✅</span>}
+                </div>
                 <div style={{ fontSize: '0.7rem', color: isAdmin ? 'var(--accent-amber)' : 'var(--accent-cyan)', textTransform: 'capitalize' }}>
-                  {isAdmin ? '🛡️ Administrator' : '🎓 Student'}
+                  {isAdmin ? '🛡️ Administrator' : '👤 Citizen'}
                 </div>
               </div>
-            </div>
+            </Link>
             <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}>
               Logout
             </button>

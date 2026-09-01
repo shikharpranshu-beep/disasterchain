@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const memoryStore = require('../config/memoryStore');
 
-// Protect routes - verifies JWT
+const isDbConnected = () => mongoose.connection.readyState === 1;
+
+// Protect routes - verifies JWT and user validity
 const protect = async (req, res, next) => {
   let token;
 
@@ -10,31 +14,45 @@ const protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
-      // Get token from header
       token = req.headers.authorization.split(' ')[1];
 
       // Verify token
       const decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET || 'disasterchain_secret_key_2026'
+        process.env.JWT_SECRET || 'disasterchain_secure_jwt_secret_2026'
       );
 
-      // Get user from token
-      req.user = await User.findById(decoded.id).select('-password');
-
-      if (!req.user) {
-        // Fallback for demo mode
-        req.user = {
+      if (isDbConnected()) {
+        const user = await User.findById(decoded.id).select('-password');
+        if (!user) {
+          return res.status(401).json({
+            success: false,
+            message: 'User belonging to this token no longer exists.',
+          });
+        }
+        req.user = user;
+      } else {
+        // Fallback for memory store
+        const memoryUser = memoryStore.users.find(
+          (u) => u._id === decoded.id || (decoded.email && u.email === decoded.email)
+        ) || {
           _id: decoded.id,
-          role: decoded.role || 'student',
+          role: decoded.role || 'user',
           name: decoded.name || 'Demo User',
-          email: decoded.email || 'demo@disasterchain.org',
+          email: decoded.email || 'student@disasterchain.org',
+          isVerified: true,
         };
+        req.user = memoryUser;
       }
 
-      next();
+      return next();
     } catch (error) {
-      console.error('Token verification error:', error.message);
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Your session has expired. Please sign in again.',
+        });
+      }
       return res.status(401).json({
         success: false,
         message: 'Not authorized to access this resource. Invalid token.',
@@ -42,24 +60,25 @@ const protect = async (req, res, next) => {
     }
   }
 
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Not authorized. No token provided.',
-    });
-  }
+  return res.status(401).json({
+    success: false,
+    message: 'Not authorized. Please provide a valid authentication token.',
+  });
 };
 
-// Grant access to specific roles (e.g. admin)
-const authorizeAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+// Grant access to specific roles (e.g. 'admin')
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: Access restricted to [${roles.join(', ')}] role(s).`,
+      });
+    }
     next();
-  } else {
-    return res.status(403).json({
-      success: false,
-      message: 'Forbidden: Admin access required for this action.',
-    });
-  }
+  };
 };
 
-module.exports = { protect, authorizeAdmin };
+const authorizeAdmin = authorize('admin');
+
+module.exports = { protect, authorize, authorizeAdmin };

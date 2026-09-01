@@ -875,4 +875,48 @@ export const fetchPreparednessGuides = async () => {
   }
 };
 
+// ================= AUTHENTICATION & USER PROFILE API =================
+export const registerUser = async ({ name, email, password, confirmPassword, role }) => {
+  return await api.post('/auth/register', { name, email, password, confirmPassword, role });
+};
+
+export const loginUser = async ({ email, password }) => {
+  return await api.post('/auth/login', { email, password });
+};
+
+export const verifyEmail = async (token) => {
+  return await api.post('/auth/verify-email', { token });
+};
+
+export const resendVerification = async (email) => {
+  return await api.post('/auth/resend-verification', { email });
+};
+
+export const forgotPassword = async (email) => {
+  return await api.post('/auth/forgot-password', { email });
+};
+
+export const resetPassword = async ({ token, password, confirmPassword }) => {
+  return await api.post('/auth/reset-password', { token, password, confirmPassword });
+};
+
+export const fetchUserProfile = async () => {
+  const res = await api.get('/auth/me');
+  return res.data.data;
+};
+
+export const updateUserProfile = async (name) => {
+  const res = await api.put('/auth/updatedetails', { name });
+  return res.data.data;
+};
+
+export const logoutUser = async () => {
+  try {
+    await api.post('/auth/logout');
+  } catch (err) {
+    // Ignore offline errors on logout
+  }
+};
+
 export default api;
+

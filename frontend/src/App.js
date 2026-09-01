@@ -7,11 +7,17 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import SosModal from './components/SosModal';
 import IncidentModal from './components/IncidentModal';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 
 // Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
+import ProfilePage from './pages/ProfilePage';
 import EmergencyDashboard from './pages/EmergencyDashboard';
 import SosPage from './pages/SosPage';
 import SheltersPage from './pages/SheltersPage';
@@ -33,8 +39,14 @@ const AppLayout = () => {
   const [isIncidentOpen, setIsIncidentOpen] = useState(false);
   const [sosRefreshCount, setSosRefreshCount] = useState(0);
 
-  // Show sidebar on all dashboard/tool pages except clean landing/login/register pages
-  const isPublicStandalone = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/register';
+  // Show clean layout without sidebar on standalone authentication/landing pages
+  const isPublicStandalone =
+    location.pathname === '/' ||
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-password' ||
+    location.pathname === '/verify-email';
 
   return (
     <div className="app-container">
@@ -50,6 +62,17 @@ const AppLayout = () => {
             <Route path="/" element={<LandingPage onOpenSos={() => setIsSosOpen(true)} />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/dashboard"
               element={
@@ -80,7 +103,14 @@ const AppLayout = () => {
             <Route path="/resource-tracking" element={<ResourceTrackingPage />} />
             <Route path="/transparency" element={<TransparencyLedgerPage />} />
             <Route path="/offline" element={<OfflineEmergencyPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
           </Routes>
         </main>
       </div>

@@ -4,13 +4,17 @@ const memoryStore = {
       _id: 'user-student-1',
       name: 'Shikhar (Student)',
       email: 'student@disasterchain.org',
+      password: 'student123',
       role: 'student',
+      isVerified: true,
     },
     {
       _id: 'user-admin-1',
       name: 'Chief Disaster Officer',
       email: 'admin@disasterchain.org',
+      password: 'admin123',
       role: 'admin',
+      isVerified: true,
     },
   ],
   sosRequests: [

@@ -26,12 +26,13 @@ exports.seedDatabase = async (req, res) => {
     await Preparedness.deleteMany({});
     await BlockchainRecord.deleteMany({});
 
-    // 2. Create Users
+    // 2. Create Users (Verified by default for instant evaluation)
     const studentUser = await User.create({
       name: 'Shikhar (Student)',
       email: 'student@disasterchain.org',
       password: 'student123',
       role: 'student',
+      isVerified: true,
     });
 
     const adminUser = await User.create({
@@ -39,6 +40,7 @@ exports.seedDatabase = async (req, res) => {
       email: 'admin@disasterchain.org',
       password: 'admin123',
       role: 'admin',
+      isVerified: true,
     });
 
     // 3. Create SOS Requests
