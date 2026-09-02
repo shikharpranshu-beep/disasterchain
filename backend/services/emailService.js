@@ -201,6 +201,18 @@ exports.sendVerificationEmail = async ({ email, name, token }) => {
     actionText: '✅ Verify Email Address',
   });
 
+  const isDevMode = process.env.NODE_ENV !== 'production';
+
+  // In DEVELOPMENT EMAIL MODE, output the zero-cost testing link directly to the console
+  if (isDevMode) {
+    console.log('\n================================================================================');
+    console.log('🛠️  [DEVELOPMENT EMAIL MODE] ACCOUNT VERIFICATION LINK');
+    console.log(`👤 Recipient: ${email}`);
+    console.log(`🔗 Verification URL: ${verificationUrl}`);
+    console.log('💡 Zero-cost testing: Copy/paste the URL into your browser to verify instantly.');
+    console.log('================================================================================\n');
+  }
+
   const resend = getResendClient();
 
   if (resend) {
@@ -214,24 +226,20 @@ exports.sendVerificationEmail = async ({ email, name, token }) => {
 
       if (error) {
         console.error('❌ Resend verification error:', error);
-        throw new Error(error.message || 'Failed to send verification email');
+        if (!isDevMode) {
+          throw new Error(error.message || 'Failed to send verification email via Resend');
+        }
+      } else {
+        console.log('✅ Verification email sent via Resend:', data?.id);
+        return { success: true, mode: 'resend', id: data?.id, verificationUrl };
       }
-
-      console.log('✅ Verification email sent via Resend:', data?.id);
-      return { success: true, mode: 'resend', id: data?.id };
     } catch (err) {
       console.error('❌ Resend verification email error:', err.message);
-      // Fall through to console fallback if key has issues in test
+      if (!isDevMode) {
+        throw err;
+      }
     }
   }
-
-  // Development / fallback console log
-  console.log('\n======================================================');
-  console.log('📧 [DEV EMAIL SERVICE] ACCOUNT VERIFICATION EMAIL');
-  console.log(`To: ${email}`);
-  console.log(`Subject: ${subject}`);
-  console.log(`Verification URL: ${verificationUrl}`);
-  console.log('======================================================\n');
 
   return { success: true, mode: 'console', verificationUrl };
 };
@@ -256,6 +264,18 @@ exports.sendPasswordResetEmail = async ({ email, name, token }) => {
     actionUrl: resetUrl,
     actionText: '🔑 Reset My Password',
   });
+
+  const isDevMode = process.env.NODE_ENV !== 'production';
+
+  // In DEVELOPMENT EMAIL MODE, output the zero-cost testing link directly to the console
+  if (isDevMode) {
+    console.log('\n================================================================================');
+    console.log('🛠️  [DEVELOPMENT EMAIL MODE] PASSWORD RESET LINK');
+    console.log(`👤 Recipient: ${email}`);
+    console.log(`🔗 Password Reset URL: ${resetUrl}`);
+    console.log('💡 Zero-cost testing: Copy/paste the URL into your browser to reset instantly.');
+    console.log('================================================================================\n');
+  }
 
   const resend = getResendClient();
   const fromEmail = getFromEmail();

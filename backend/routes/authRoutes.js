@@ -36,4 +36,33 @@ router.put('/updatedetails', protect, updateDetails);
 router.get('/users', protect, authorizeAdmin, getUsers);
 router.put('/users/:id/role', protect, authorizeAdmin, updateUserRole);
 
+// Development-only zero-cost verification endpoint (Strictly omitted in production)
+if (process.env.NODE_ENV !== 'production') {
+  const User = require('../models/User');
+  router.post('/dev-verify', async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ success: false, message: 'Email address required for dev verification.' });
+      }
+      const user = await User.findOneAndUpdate(
+        { email: email.toLowerCase().trim() },
+        { isVerified: true, verificationToken: undefined, verificationTokenExpires: undefined },
+        { new: true }
+      );
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found.' });
+      }
+      return res.json({
+        success: true,
+        mode: 'DEVELOPMENT EMAIL MODE',
+        message: `User [${user.email}] verified successfully for zero-cost development testing.`,
+        user: { email: user.email, role: user.role, isVerified: user.isVerified },
+      });
+    } catch (err) {
+      return res.status(500).json({ success: false, message: err.message });
+    }
+  });
+}
+
 module.exports = router;

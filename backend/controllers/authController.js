@@ -127,13 +127,24 @@ exports.register = async (req, res) => {
         token: rawVerificationToken,
       });
 
-      return res.status(201).json({
+      const responseData = {
         success: true,
         message:
           'Account created successfully! We have sent a verification link to your email. Please verify your account before logging in.',
         email: user.email,
-        verificationToken: rawVerificationToken,
-      });
+      };
+
+      if (process.env.NODE_ENV !== 'production') {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        responseData.devMode = {
+          enabled: true,
+          mode: 'DEVELOPMENT EMAIL MODE',
+          verificationUrl: `${frontendUrl}/verify-email?token=${encodeURIComponent(rawVerificationToken)}`,
+          notice: 'Zero-cost development mode active. Omitted in production.',
+        };
+      }
+
+      return res.status(201).json(responseData);
     }
 
     // In-memory fallback
@@ -157,13 +168,24 @@ exports.register = async (req, res) => {
       token: rawToken,
     });
 
-    return res.status(201).json({
+    const fallbackResponse = {
       success: true,
       message:
         'Account created successfully! Please verify your email before logging in.',
       email: normalizedEmail,
-      verificationToken: rawToken,
-    });
+    };
+
+    if (process.env.NODE_ENV !== 'production') {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      fallbackResponse.devMode = {
+        enabled: true,
+        mode: 'DEVELOPMENT EMAIL MODE',
+        verificationUrl: `${frontendUrl}/verify-email?token=${encodeURIComponent(rawToken)}`,
+        notice: 'Zero-cost development mode active. Omitted in production.',
+      };
+    }
+
+    return res.status(201).json(fallbackResponse);
   } catch (error) {
     console.error('Registration error:', error);
     return res.status(500).json({
@@ -493,7 +515,7 @@ exports.forgotPassword = async (req, res) => {
         token: rawResetToken,
       });
 
-      return res.json({
+      const resetResponse = {
         success: true,
         message:
           'If an account is associated with that email, a password reset link has been sent.',
@@ -505,7 +527,19 @@ exports.forgotPassword = async (req, res) => {
           status: emailResult.deliveryStatus || emailResult.lastEvent || (emailResult.mode === 'resend' ? 'accepted' : 'console'),
           accountNotice: 'Testing domain onboarding@resend.dev delivers exclusively to your verified Resend account address.',
         },
-      });
+      };
+
+      if (process.env.NODE_ENV !== 'production') {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        resetResponse.devMode = {
+          enabled: true,
+          mode: 'DEVELOPMENT EMAIL MODE',
+          resetUrl: `${frontendUrl}/reset-password?token=${encodeURIComponent(rawResetToken)}`,
+          notice: 'Zero-cost development mode active. Omitted in production.',
+        };
+      }
+
+      return res.json(resetResponse);
     }
 
     return res.json({
