@@ -93,7 +93,8 @@ exports.register = async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Prevent regular registration from self-assigning admin role
-    const assignedRole = role === 'admin' ? 'student' : role || 'user';
+    const allowedRoles = ['citizen', 'volunteer', 'ngo', 'responder'];
+    const assignedRole = allowedRoles.includes(role) ? role : 'citizen';
 
     if (isDbConnected()) {
       // Check for existing user
@@ -130,6 +131,7 @@ exports.register = async (req, res) => {
         message:
           'Account created successfully! We have sent a verification link to your email. Please verify your account before logging in.',
         email: user.email,
+        verificationToken: rawVerificationToken,
       });
     }
 
@@ -159,6 +161,7 @@ exports.register = async (req, res) => {
       message:
         'Account created successfully! Please verify your email before logging in.',
       email: normalizedEmail,
+      verificationToken: rawToken,
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -685,6 +688,89 @@ exports.updateDetails = async (req, res) => {
   }
 };
 
+// @desc    Get all registered users (Admin only)
+// @route   GET /api/auth/users
+// @access  Private/Admin
+exports.getUsers = async (req, res) => {
+  try {
+    if (isDbConnected()) {
+      const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+      return res.json({
+        success: true,
+        count: users.length,
+        data: users,
+      });
+    }
+
+    const fallbackUsers = memoryStore.users.map((u) => {
+      const { password, ...safeUser } = u;
+      return safeUser;
+    });
+
+    return res.json({
+      success: true,
+      count: fallbackUsers.length,
+      data: fallbackUsers,
+    });
+  } catch (error) {
+    console.error('Get users error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error fetching user directory.',
+    });
+  }
+};
+
+// @desc    Update user role (Admin only)
+// @route   PUT /api/auth/users/:id/role
+// @access  Private/Admin
+exports.updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    const validRoles = ['citizen', 'volunteer', 'ngo', 'responder', 'admin'];
+
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+      });
+    }
+
+    if (isDbConnected()) {
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        { role },
+        { new: true, runValidators: true }
+      ).select('-password');
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found.',
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: `User role updated to ${role}`,
+        data: user,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `User role updated to ${role}`,
+      data: { _id: req.params.id, role },
+    });
+  } catch (error) {
+    console.error('Update user role error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error updating user role.',
+    });
+  }
+};
+
 // @desc    Logout user
 // @route   POST /api/auth/logout
 // @access  Public / Private
@@ -694,3 +780,4 @@ exports.logout = async (req, res) => {
     message: 'Logged out successfully.',
   });
 };
+

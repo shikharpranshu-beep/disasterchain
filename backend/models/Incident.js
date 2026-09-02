@@ -41,6 +41,14 @@ const incidentSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide location of incident'],
   },
+  latitude: {
+    type: Number,
+    default: 28.6139,
+  },
+  longitude: {
+    type: Number,
+    default: 77.2090,
+  },
   imageUrl: {
     type: String,
     default: '',

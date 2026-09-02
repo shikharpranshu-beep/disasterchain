@@ -34,6 +34,14 @@ const sosRequestSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please specify location or coordinates'],
   },
+  latitude: {
+    type: Number,
+    default: 28.6139,
+  },
+  longitude: {
+    type: Number,
+    default: 77.2090,
+  },
   peopleAffected: {
     type: Number,
     default: 1,

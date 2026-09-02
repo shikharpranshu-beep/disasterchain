@@ -2,10 +2,10 @@ const memoryStore = {
   users: [
     {
       _id: 'user-student-1',
-      name: 'Shikhar (Student)',
+      name: 'Shikhar (Volunteer)',
       email: 'student@disasterchain.org',
       password: 'student123',
-      role: 'student',
+      role: 'volunteer',
       isVerified: true,
     },
     {

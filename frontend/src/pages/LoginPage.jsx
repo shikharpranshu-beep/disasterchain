@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icons';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -73,38 +74,38 @@ const LoginPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
+        padding: '2rem 1.5rem',
       }}
     >
       <div
         className="glass-card"
         style={{
-          maxWidth: '440px',
+          maxWidth: '460px',
           width: '100%',
-          padding: '2.5rem 2rem',
+          padding: '2.5rem 2.25rem',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ef4444, #6366f1)',
+              width: '52px',
+              height: '52px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #ff334b, #6366f1)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.5rem',
-              marginBottom: '0.75rem',
+              marginBottom: '0.85rem',
+              boxShadow: '0 0 20px rgba(255, 51, 75, 0.45)',
             }}
           >
-            ⛓️
+            <Icon name="shield-check" size={28} color="#ffffff" />
           </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
             Sign In to DisasterChain
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Access emergency response tools & transparent records
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
+            Access crisis response tools & transparent relief records
           </p>
         </div>
 
@@ -112,9 +113,9 @@ const LoginPage = () => {
         {error && (
           <div
             style={{
-              background: isUnverified ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-              border: `1px solid ${isUnverified ? 'rgba(245, 158, 11, 0.4)' : 'rgba(239, 68, 68, 0.3)'}`,
-              color: isUnverified ? '#fcd34d' : '#f87171',
+              background: isUnverified ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 51, 75, 0.15)',
+              border: `1px solid ${isUnverified ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255, 51, 75, 0.35)'}`,
+              color: isUnverified ? '#fcd34d' : '#ff6b7e',
               padding: '0.85rem 1rem',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.85rem',
@@ -122,9 +123,9 @@ const LoginPage = () => {
               lineHeight: 1.5,
             }}
           >
-            <div>{isUnverified ? '⚠️ Email Not Verified' : `⚠️ ${error}`}</div>
+            <div style={{ fontWeight: 700 }}>{isUnverified ? '⚠️ Email Not Verified' : `⚠️ ${error}`}</div>
             {isUnverified && (
-              <div style={{ marginTop: '0.6rem' }}>
+              <div style={{ marginTop: '0.65rem' }}>
                 <p style={{ fontSize: '0.8rem', color: '#fef3c7', marginBottom: '0.5rem' }}>
                   Your account requires email verification before accessing DisasterChain.
                 </p>
@@ -132,16 +133,16 @@ const LoginPage = () => {
                   type="button"
                   onClick={handleResend}
                   disabled={resending}
-                  className="btn btn-secondary"
+                  className="btn btn-secondary btn-sm"
                   style={{
                     fontSize: '0.78rem',
-                    padding: '0.35rem 0.75rem',
                     background: 'rgba(0, 0, 0, 0.4)',
                     borderColor: 'rgba(245, 158, 11, 0.5)',
                     color: '#fef08a',
                   }}
                 >
-                  {resending ? 'Sending...' : '📩 Resend Verification Email'}
+                  <Icon name="mail" size={13} />
+                  <span>{resending ? 'Sending...' : 'Resend Verification Email'}</span>
                 </button>
               </div>
             )}
@@ -154,7 +155,7 @@ const LoginPage = () => {
               background: 'rgba(99, 102, 241, 0.15)',
               border: '1px solid rgba(99, 102, 241, 0.4)',
               color: '#a5b4fc',
-              padding: '0.65rem 1rem',
+              padding: '0.75rem 1rem',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.85rem',
               marginBottom: '1.25rem',
@@ -164,12 +165,12 @@ const LoginPage = () => {
           </div>
         )}
 
-        {/* 1-Click Demo Logins */}
+        {/* 1-Click Evaluation Demo Logins */}
         <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.55rem', textAlign: 'center', fontWeight: 600 }}>
             ⚡ Instant Evaluation Demo Accounts:
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
             <button
               type="button"
               onClick={() => handleDemo('student')}
@@ -196,7 +197,9 @@ const LoginPage = () => {
             gap: '0.75rem',
             marginBottom: '1.5rem',
             color: 'var(--text-muted)',
-            fontSize: '0.75rem',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            letterSpacing: '0.05em',
           }}
         >
           <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
@@ -218,11 +221,11 @@ const LoginPage = () => {
           </div>
 
           <div className="form-group">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
               <label className="form-label" style={{ margin: 0 }}>Password</label>
               <Link
                 to="/forgot-password"
-                style={{ fontSize: '0.78rem', color: 'var(--accent-indigo)', fontWeight: 600 }}
+                style={{ fontSize: '0.78rem', color: 'var(--accent-indigo)', fontWeight: 700 }}
               >
                 Forgot Password?
               </Link>
@@ -243,13 +246,14 @@ const LoginPage = () => {
             className="btn btn-primary"
             style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            <Icon name="lock" size={16} />
+            <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
           Don't have an account?{' '}
-          <Link to="/register" style={{ color: 'var(--accent-indigo)', fontWeight: 600 }}>
+          <Link to="/register" style={{ color: 'var(--accent-indigo)', fontWeight: 700 }}>
             Create Account
           </Link>
         </div>

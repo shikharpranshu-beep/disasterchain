@@ -6,35 +6,99 @@ import {
   fetchShelters,
   fetchAffectedAreas,
   fetchResources,
+  fetchIncidents,
 } from '../services/api';
+import Icon from './Icons';
 
 // Realistic base center for campus/metropolitan region (Delhi NCR coordinate baseline)
 const DEFAULT_CENTER = [28.6139, 77.2090];
 const DEFAULT_ZOOM = 13;
 
+// Known landmark coordinates mapping for text-only address resolution
+const KNOWN_LANDMARKS = {
+  'north campus': [28.6850, 77.2100],
+  'south campus': [28.5850, 77.1650],
+  'sector 14': [28.6250, 77.2150],
+  'sector 9': [28.6250, 77.2180],
+  'river view': [28.6350, 77.2280],
+  'riverfront': [28.6400, 77.2300],
+  'science complex': [28.6180, 77.2050],
+  'academic block': [28.6190, 77.2060],
+  'central library': [28.6145, 77.2085],
+  'sports complex': [28.6139, 77.2090],
+  'green park': [28.5580, 77.2050],
+  'railway station': [28.6050, 77.2150],
+  'civil lines': [28.6750, 77.2250],
+  'connaught place': [28.6304, 77.2177],
+  'hauz khas': [28.5494, 77.2001],
+};
+
 /**
- * Deterministically generates realistic demo coordinates within ~5km of center
- * if latitude/longitude are missing on an entity.
+ * Extracts or parses coordinates from MongoDB document fields.
  */
-const getEntityCoordinates = (item, index = 0, typePrefix = 'sos') => {
-  const hasValidLat = typeof item.latitude === 'number' && !isNaN(item.latitude) && item.latitude !== 0;
-  const hasValidLng = typeof item.longitude === 'number' && !isNaN(item.longitude) && item.longitude !== 0;
+export const getEntityCoordinates = (item, index = 0, typePrefix = 'sos') => {
+  // 1. Direct numeric latitude & longitude
+  const hasValidLat = typeof item?.latitude === 'number' && !isNaN(item.latitude) && item.latitude !== 0;
+  const hasValidLng = typeof item?.longitude === 'number' && !isNaN(item.longitude) && item.longitude !== 0;
 
   if (hasValidLat && hasValidLng) {
     return {
       lat: item.latitude,
       lng: item.longitude,
-      isDemoCoords: !!item.isDemoCoords,
+      isDemoCoords: false,
     };
   }
 
-  // Generate deterministic offset around baseline
-  const seed = (item._id || item.requestId || item.name || `${typePrefix}-${index}`)
+  // 2. Parse coordinates embedded in location string: "Lat: 28.6139, Long: 77.2090" or "28.6139, 77.2090"
+  if (typeof item?.location === 'string') {
+    const latLngMatch = item.location.match(/(?:lat|latitude)?:?\s*(-?\d+\.\d+)\s*,\s*(?:long|longitude|lng)?:?\s*(-?\d+\.\d+)/i);
+    if (latLngMatch) {
+      const parsedLat = parseFloat(latLngMatch[1]);
+      const parsedLng = parseFloat(latLngMatch[2]);
+      if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
+        return {
+          lat: parsedLat,
+          lng: parsedLng,
+          isDemoCoords: false,
+        };
+      }
+    }
+
+    // 3. Match known location names in location string
+    const locLower = item.location.toLowerCase();
+    for (const [key, coords] of Object.entries(KNOWN_LANDMARKS)) {
+      if (locLower.includes(key)) {
+        return {
+          lat: coords[0],
+          lng: coords[1],
+          isDemoCoords: false,
+        };
+      }
+    }
+  }
+
+  // 4. Match known address in address field
+  if (typeof item?.address === 'string') {
+    const addrLower = item.address.toLowerCase();
+    for (const [key, coords] of Object.entries(KNOWN_LANDMARKS)) {
+      if (addrLower.includes(key)) {
+        return {
+          lat: coords[0],
+          lng: coords[1],
+          isDemoCoords: false,
+        };
+      }
+    }
+  }
+
+  // 5. Deterministic calculation around baseline for items with no explicit lat/long
+  const seedStr = (item?._id || item?.requestId || item?.incidentId || item?.name || `${typePrefix}-${index}`);
+  const seed = String(seedStr)
     .split('')
     .reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
   const angle = (seed % 360) * (Math.PI / 180);
-  const distance = 0.012 + ((seed % 25) / 1000); // approx 1.2km to 3.7km radius
+  const distance = 0.012 + ((seed % 25) / 1000); // 1.2km to 3.7km radius
 
   const generatedLat = parseFloat((DEFAULT_CENTER[0] + Math.sin(angle) * distance).toFixed(6));
   const generatedLng = parseFloat((DEFAULT_CENTER[1] + Math.cos(angle) * distance * 1.15).toFixed(6));
@@ -59,7 +123,7 @@ const createCustomIcon = (type, severityOrCount) => {
         <div class="marker-pin-wrapper marker-pin-sos">
           <div class="marker-pulse-ring"></div>
           <span>🚨</span>
-          ${severityOrCount ? `<div class="marker-badge-count">!</div>` : ''}
+          ${severityOrCount === 'Critical' ? `<div class="marker-badge-count">!</div>` : ''}
         </div>
       `;
       break;
@@ -84,6 +148,14 @@ const createCustomIcon = (type, severityOrCount) => {
       iconHtml = `
         <div class="marker-pin-wrapper marker-pin-resource">
           <span>🏥</span>
+        </div>
+      `;
+      break;
+
+    case 'incident':
+      iconHtml = `
+        <div class="marker-pin-wrapper" style="background: linear-gradient(135deg, #f97316, #ef4444); border-color: #f97316;">
+          <span>⚡</span>
         </div>
       `;
       break;
@@ -146,25 +218,27 @@ const DisasterMap = ({
   const [shelters, setShelters] = useState([]);
   const [affectedAreas, setAffectedAreas] = useState([]);
   const [resources, setResources] = useState([]);
+  const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter state: 'ALL' | 'SOS' | 'SHELTERS' | 'AREAS' | 'RESOURCES'
+  // Filter state: 'ALL' | 'SOS' | 'SHELTERS' | 'AREAS' | 'RESOURCES' | 'INCIDENTS'
   const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLegendExpanded, setIsLegendExpanded] = useState(true);
   const [recenterFlag, setRecenterFlag] = useState(false);
 
-  // Load all 4 endpoints
+  // Load real data from backend
   useEffect(() => {
     let isMounted = true;
     const loadMapData = async () => {
       setLoading(true);
       try {
-        const [sos, sh, areas, res] = await Promise.all([
+        const [sos, sh, areas, res, inc] = await Promise.all([
           fetchSosRequests(),
           fetchShelters(),
           fetchAffectedAreas(),
           fetchResources(),
+          fetchIncidents(),
         ]);
 
         if (isMounted) {
@@ -172,6 +246,7 @@ const DisasterMap = ({
           setShelters(sh || []);
           setAffectedAreas(areas || []);
           setResources(res || []);
+          setIncidents(inc || []);
         }
       } catch (err) {
         console.error('Error fetching map data:', err);
@@ -270,8 +345,26 @@ const DisasterMap = ({
       });
     });
 
+    // ⚡ Hazard / Incident Reports
+    (incidents || []).forEach((item, idx) => {
+      const coords = getEntityCoordinates(item, idx, 'incident');
+      list.push({
+        id: `inc-${item._id || idx}`,
+        type: 'incident',
+        category: 'Campus Hazard Report',
+        name: item.title || `Incident ${item.incidentId || idx + 1}`,
+        title: item.type || 'Hazard Warning',
+        coords,
+        severity: item.severity || 'Medium',
+        status: item.status || 'Pending',
+        locationText: item.location || 'Campus Hazard Zone',
+        description: item.description || 'Hazard ticket reported by student.',
+        raw: item,
+      });
+    });
+
     return list;
-  }, [sosList, shelters, affectedAreas, resources]);
+  }, [sosList, shelters, affectedAreas, resources, incidents]);
 
   // Filter and search markers
   const filteredMarkers = useMemo(() => {
@@ -281,6 +374,7 @@ const DisasterMap = ({
       if (activeFilter === 'SHELTERS' && marker.type !== 'shelter') return false;
       if (activeFilter === 'AREAS' && marker.type !== 'area') return false;
       if (activeFilter === 'RESOURCES' && marker.type !== 'resource') return false;
+      if (activeFilter === 'INCIDENTS' && marker.type !== 'incident') return false;
 
       // Search Query
       if (searchQuery.trim()) {
@@ -298,16 +392,35 @@ const DisasterMap = ({
     });
   }, [processedMarkers, activeFilter, searchQuery]);
 
-  // Counts for toolbar pills
-  const counts = useMemo(() => {
-    return {
-      all: processedMarkers.length,
-      sos: processedMarkers.filter((m) => m.type === 'sos').length,
-      shelter: processedMarkers.filter((m) => m.type === 'shelter').length,
-      area: processedMarkers.filter((m) => m.type === 'area').length,
-      resource: processedMarkers.filter((m) => m.type === 'resource').length,
-    };
-  }, [processedMarkers]);
+  // Filter circles for affected areas
+  const filteredAreas = useMemo(() => {
+    if (activeFilter !== 'ALL' && activeFilter !== 'AREAS') return [];
+    return affectedAreas.map((area, idx) => {
+      const coords = getEntityCoordinates(area, idx, 'area');
+      const radiusMap = {
+        Critical: 1800,
+        High: 1400,
+        Moderate: 1000,
+        Low: 700,
+      };
+      const radius = radiusMap[area.severity] || 1000;
+
+      const colorMap = {
+        Critical: '#ff334b',
+        High: '#f97316',
+        Moderate: '#f59e0b',
+        Low: '#10b981',
+      };
+      const color = colorMap[area.severity] || '#f59e0b';
+
+      return {
+        ...area,
+        coords,
+        radius,
+        color,
+      };
+    });
+  }, [affectedAreas, activeFilter]);
 
   const handleRecenter = useCallback(() => {
     setRecenterFlag(true);
@@ -317,205 +430,208 @@ const DisasterMap = ({
     setRecenterFlag(false);
   }, []);
 
-  return (
-    <div className="disaster-map-wrapper">
-      {/* Interactive Map Header & Toolbar */}
-      {showToolbar && (
-        <div className="disaster-map-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>
-                  🗺️ Live Interactive Disaster & Relief Map
-                </h3>
-                <span className="pulse-indicator" title="Live OpenStreetMap feed" />
-              </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0' }}>
-                Real-time geospatial signals from SOS beacons, shelters, hazard zones, and medical facilities
-              </p>
-            </div>
+  // Compute live counts
+  const sosCount = sosList.length;
+  const shelterCount = shelters.length;
+  const areaCount = affectedAreas.length;
+  const resourceCount = resources.length;
+  const incidentCount = incidents.length;
 
-            {/* Quick Search */}
-            <div style={{ position: 'relative', minWidth: '220px' }}>
-              <input
-                type="text"
-                placeholder="🔍 Search locations, shelters..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="form-input"
-                style={{
-                  padding: '0.45rem 0.85rem',
-                  fontSize: '0.82rem',
-                  borderRadius: '9999px',
-                  background: 'rgba(30, 41, 59, 0.8)',
-                  borderColor: 'var(--border-subtle)',
-                  width: '100%',
-                }}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  style={{
-                    position: 'absolute',
-                    right: '10px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: '#94a3b8',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
+  return (
+    <div
+      className="glass-card"
+      style={{
+        padding: 0,
+        overflow: 'hidden',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Map Control Toolbar */}
+      {showToolbar && (
+        <div
+          style={{
+            padding: '0.85rem 1.25rem',
+            background: 'rgba(15, 24, 44, 0.95)',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            zIndex: 10,
+          }}
+        >
+          {/* Layer Selector Chips */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => setActiveFilter('ALL')}
+              className={`btn ${activeFilter === 'ALL' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+              style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
+            >
+              <span>All Layers</span>
+              <span className="badge badge-neutral" style={{ fontSize: '0.65rem' }}>
+                {processedMarkers.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('SOS')}
+              className={`btn ${activeFilter === 'SOS' ? 'btn-danger' : 'btn-secondary'} btn-sm`}
+              style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
+            >
+              <span>🚨 SOS Distress</span>
+              <span className="badge badge-critical" style={{ fontSize: '0.65rem' }}>
+                {sosCount}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('SHELTERS')}
+              className={`btn ${activeFilter === 'SHELTERS' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+              style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
+            >
+              <span>🏠 Shelters</span>
+              <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
+                {shelterCount}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('AREAS')}
+              className={`btn ${activeFilter === 'AREAS' ? 'btn-secondary' : 'btn-secondary'} btn-sm`}
+              style={{
+                fontSize: '0.78rem',
+                padding: '0.35rem 0.75rem',
+                borderColor: activeFilter === 'AREAS' ? 'var(--accent-amber)' : 'var(--border-subtle)',
+                color: activeFilter === 'AREAS' ? '#fbbf24' : 'var(--text-secondary)',
+              }}
+            >
+              <span>⚠️ Impact Zones</span>
+              <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
+                {areaCount}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('RESOURCES')}
+              className={`btn ${activeFilter === 'RESOURCES' ? 'btn-secondary' : 'btn-secondary'} btn-sm`}
+              style={{
+                fontSize: '0.78rem',
+                padding: '0.35rem 0.75rem',
+                borderColor: activeFilter === 'RESOURCES' ? 'var(--accent-cyan)' : 'var(--border-subtle)',
+                color: activeFilter === 'RESOURCES' ? '#38bdf8' : 'var(--text-secondary)',
+              }}
+            >
+              <span>🏥 Facilities</span>
+              <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>
+                {resourceCount}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('INCIDENTS')}
+              className={`btn ${activeFilter === 'INCIDENTS' ? 'btn-secondary' : 'btn-secondary'} btn-sm`}
+              style={{
+                fontSize: '0.78rem',
+                padding: '0.35rem 0.75rem',
+                borderColor: activeFilter === 'INCIDENTS' ? '#f97316' : 'var(--border-subtle)',
+                color: activeFilter === 'INCIDENTS' ? '#fb923c' : 'var(--text-secondary)',
+              }}
+            >
+              <span>⚡ Hazards</span>
+              <span className="badge badge-neutral" style={{ fontSize: '0.65rem' }}>
+                {incidentCount}
+              </span>
+            </button>
           </div>
 
-          {/* Layer Filter Pills */}
-          <div className="disaster-map-toolbar">
-            <div className="map-filter-group">
-              <button
-                type="button"
-                className={`map-filter-chip ${activeFilter === 'ALL' ? 'active-all' : ''}`}
-                onClick={() => setActiveFilter('ALL')}
-              >
-                <span>🌐 All Layers</span>
-                <span className="map-chip-badge">{counts.all}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`map-filter-chip ${activeFilter === 'SOS' ? 'active-sos' : ''}`}
-                onClick={() => setActiveFilter('SOS')}
-              >
-                <span>🔴 SOS Distress</span>
-                <span className="map-chip-badge">{counts.sos}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`map-filter-chip ${activeFilter === 'SHELTERS' ? 'active-shelter' : ''}`}
-                onClick={() => setActiveFilter('SHELTERS')}
-              >
-                <span>🟢 Safe Shelters</span>
-                <span className="map-chip-badge">{counts.shelter}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`map-filter-chip ${activeFilter === 'AREAS' ? 'active-area' : ''}`}
-                onClick={() => setActiveFilter('AREAS')}
-              >
-                <span>🟠 Hazard Zones</span>
-                <span className="map-chip-badge">{counts.area}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`map-filter-chip ${activeFilter === 'RESOURCES' ? 'active-resource' : ''}`}
-                onClick={() => setActiveFilter('RESOURCES')}
-              >
-                <span>🔵 Hospitals & Units</span>
-                <span className="map-chip-badge">{counts.resource}</span>
-              </button>
+          {/* Search & Recenter Tools */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search map markers..."
+                style={{
+                  background: 'rgba(11, 18, 34, 0.9)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.35rem 0.75rem 0.35rem 2rem',
+                  fontSize: '0.78rem',
+                  color: '#ffffff',
+                  width: '180px',
+                }}
+              />
+              <span style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                <Icon name="search" size={13} />
+              </span>
             </div>
 
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Showing <strong>{filteredMarkers.length}</strong> active map pins
-            </div>
+            <button
+              type="button"
+              onClick={handleRecenter}
+              className="btn btn-secondary btn-sm"
+              style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
+              title="Auto-Fit and Center Map to Markers"
+            >
+              <Icon name="compass" size={14} />
+              <span>Center</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* Leaflet Map Canvas Container */}
-      <div
-        className={`disaster-map-canvas-container ${variant === 'compact' ? 'compact' : variant === 'large' ? 'large' : ''}`}
-        style={{ height }}
-      >
-        {/* Floating Top Controls (Recenter) */}
-        <div className="map-controls-overlay">
-          <button
-            type="button"
-            className="map-control-btn"
-            onClick={handleRecenter}
-            title="Recenter and fit all active pins into view"
+      {/* Leaflet Map Container */}
+      <div style={{ width: '100%', height, position: 'relative' }}>
+        {loading && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(8, 13, 26, 0.85)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              gap: '0.75rem',
+              color: '#ffffff',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+            }}
           >
-            <span>🎯</span>
-            <span>Fit All Pins</span>
-          </button>
-        </div>
-
-        {/* Floating Bottom Legend */}
-        {showLegend && (
-          <div className="map-legend-overlay">
-            <div className="map-legend-header">
-              <span>📍 Map Legend</span>
-              <button
-                type="button"
-                onClick={() => setIsLegendExpanded(!isLegendExpanded)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  fontSize: '0.75rem',
-                }}
-              >
-                {isLegendExpanded ? '▲ Hide' : '▼ Show'}
-              </button>
-            </div>
-
-            {isLegendExpanded && (
-              <div className="map-legend-list">
-                <div className="map-legend-item">
-                  <div className="map-legend-key">
-                    <span className="map-legend-dot red" />
-                    <span>🔴 SOS Requests</span>
-                  </div>
-                  <strong>{counts.sos}</strong>
-                </div>
-
-                <div className="map-legend-item">
-                  <div className="map-legend-key">
-                    <span className="map-legend-dot green" />
-                    <span>🟢 Safe Shelters</span>
-                  </div>
-                  <strong>{counts.shelter}</strong>
-                </div>
-
-                <div className="map-legend-item">
-                  <div className="map-legend-key">
-                    <span className="map-legend-dot amber" />
-                    <span>🟠 Disaster Areas</span>
-                  </div>
-                  <strong>{counts.area}</strong>
-                </div>
-
-                <div className="map-legend-item">
-                  <div className="map-legend-key">
-                    <span className="map-legend-dot cyan" />
-                    <span>🔵 Hospitals & Aid</span>
-                  </div>
-                  <strong>{counts.resource}</strong>
-                </div>
-              </div>
-            )}
+            <div
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                border: '3px solid rgba(99, 102, 241, 0.3)',
+                borderTopColor: 'var(--accent-indigo)',
+                animation: 'spin 1s linear infinite',
+              }}
+            />
+            <span>Loading Live Geo-Spatial Grid...</span>
           </div>
         )}
 
-        {/* Core Leaflet Map */}
         <MapContainer
           center={DEFAULT_CENTER}
           zoom={DEFAULT_ZOOM}
+          style={{ width: '100%', height: '100%', background: '#0b1222' }}
           scrollWheelZoom={true}
-          style={{ width: '100%', height: '100%' }}
         >
-          {/* OpenStreetMap Tiles with Official Attribution */}
+          {/* Dark CartoDB Tile Layer for Command Center Aesthetic */}
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             maxZoom={19}
           />
 
@@ -525,25 +641,43 @@ const DisasterMap = ({
             onRecenterDone={handleRecenterDone}
           />
 
-          {/* Render Affected Area Impact Radius Circles */}
-          {filteredMarkers
-            .filter((m) => m.type === 'area')
-            .map((areaMarker) => (
-              <Circle
-                key={`circle-${areaMarker.id}`}
-                center={[areaMarker.coords.lat, areaMarker.coords.lng]}
-                radius={areaMarker.severity === 'Critical' ? 1200 : areaMarker.severity === 'High' ? 850 : 500}
-                pathOptions={{
-                  color: areaMarker.severity === 'Critical' ? '#ef4444' : '#f59e0b',
-                  fillColor: areaMarker.severity === 'Critical' ? '#ef4444' : '#f59e0b',
-                  fillOpacity: 0.18,
-                  weight: 2,
-                  dashArray: '4, 6',
-                }}
-              />
-            ))}
+          {/* Affected Area Radii Circles */}
+          {filteredAreas.map((area) => (
+            <Circle
+              key={`circle-${area._id}`}
+              center={[area.coords.lat, area.coords.lng]}
+              radius={area.radius}
+              pathOptions={{
+                color: area.color,
+                fillColor: area.color,
+                fillOpacity: 0.15,
+                weight: 2,
+                dashArray: area.severity === 'Critical' ? '6, 6' : undefined,
+              }}
+            >
+              <Popup className="custom-leaflet-popup">
+                <div style={{ padding: '0.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <span className={`badge badge-${area.severity?.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>
+                      {area.severity} Zone
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Status: {area.status}</span>
+                  </div>
+                  <strong style={{ fontSize: '0.95rem', color: '#ffffff', display: 'block', marginBottom: '0.2rem' }}>
+                    {area.name}
+                  </strong>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                    Disaster: <strong>{area.disasterType}</strong> &bull; Affected: <strong>{area.affectedPeople?.toLocaleString()}</strong>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                    {area.description}
+                  </p>
+                </div>
+              </Popup>
+            </Circle>
+          ))}
 
-          {/* Render Interactive Custom Markers */}
+          {/* Markers */}
           {filteredMarkers.map((marker) => {
             const icon = createCustomIcon(marker.type, marker.severity);
 
@@ -553,171 +687,78 @@ const DisasterMap = ({
                 position={[marker.coords.lat, marker.coords.lng]}
                 icon={icon}
               >
-                <Popup>
-                  <div className="map-popup-card">
+                <Popup className="custom-leaflet-popup">
+                  <div style={{ minWidth: '220px', maxWidth: '280px', padding: '0.2rem' }}>
                     {/* Header */}
-                    <div>
-                      <div
-                        className="map-popup-category"
-                        style={{
-                          color:
-                            marker.type === 'sos'
-                              ? '#f87171'
-                              : marker.type === 'shelter'
-                              ? '#34d399'
-                              : marker.type === 'area'
-                              ? '#fbbf24'
-                              : '#38bdf8',
-                        }}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem', gap: '0.5rem' }}>
+                      <span
+                        className={`badge ${
+                          marker.type === 'sos'
+                            ? 'badge-critical'
+                            : marker.type === 'shelter'
+                            ? 'badge-success'
+                            : marker.type === 'area'
+                            ? 'badge-warning'
+                            : marker.type === 'incident'
+                            ? 'badge-warning'
+                            : 'badge-info'
+                        }`}
+                        style={{ fontSize: '0.65rem' }}
                       >
-                        {marker.type === 'sos' && '🚨 SOS Emergency'}
-                        {marker.type === 'shelter' && '🏠 Safe Shelter'}
-                        {marker.type === 'area' && '⚠️ Hazard Impact Area'}
-                        {marker.type === 'resource' && `🏥 ${marker.category}`}
-                      </div>
-                      <div className="map-popup-title">{marker.name}</div>
+                        {marker.category}
+                      </span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                        {marker.status}
+                      </span>
                     </div>
 
-                    {/* Demo Coordinates Flag */}
-                    {marker.coords.isDemoCoords && (
-                      <div className="map-popup-demo-tag">
-                        <span>⚠️</span>
-                        <span>[DEMO COORDINATES] Estimated Location</span>
+                    <strong style={{ fontSize: '0.95rem', color: '#ffffff', display: 'block', marginBottom: '0.25rem' }}>
+                      {marker.name}
+                    </strong>
+
+                    <div style={{ fontSize: '0.82rem', color: '#818cf8', fontWeight: 600, marginBottom: '0.4rem' }}>
+                      {marker.title}
+                    </div>
+
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.65rem', lineHeight: 1.4 }}>
+                      {marker.description}
+                    </p>
+
+                    {/* Metadata details based on type */}
+                    {marker.type === 'sos' && (
+                      <div style={{ fontSize: '0.75rem', background: 'rgba(0,0,0,0.3)', padding: '0.4rem 0.6rem', borderRadius: '4px', marginBottom: '0.5rem' }}>
+                        <div>👥 Affected: <strong>{marker.people} Person(s)</strong></div>
+                        <div>📞 Contact: <strong>{marker.contact}</strong></div>
                       </div>
                     )}
 
-                    {/* Specific Details: 🔴 SOS */}
-                    {marker.type === 'sos' && (
-                      <>
-                        <div className="map-popup-desc">
-                          <strong>Incident:</strong> {marker.description}
-                        </div>
-
-                        <div className="map-popup-meta-grid">
-                          <div>🚨 <strong>Severity:</strong> {marker.severity}</div>
-                          <div>👥 <strong>People:</strong> {marker.people}</div>
-                          <div>📍 <strong>Status:</strong> {marker.status}</div>
-                          <div>📞 <strong>Contact:</strong> {marker.contact}</div>
-                        </div>
-
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                          📍 <em>{marker.locationText}</em>
-                        </div>
-
-                        <div className="map-popup-actions">
-                          <a
-                            href={`tel:${marker.contact}`}
-                            className="map-popup-btn map-popup-btn-sos"
-                          >
-                            📞 Call Contact
-                          </a>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Specific Details: 🟢 Shelter */}
                     {marker.type === 'shelter' && (
-                      <>
-                        <div className="map-popup-meta-grid">
-                          <div>🛏️ <strong>Available:</strong> {marker.available} Beds</div>
-                          <div>👥 <strong>Occupancy:</strong> {marker.occupancy}/{marker.capacity}</div>
-                          <div>🚦 <strong>Status:</strong> {marker.status}</div>
-                          <div>📞 <strong>Phone:</strong> {marker.phone}</div>
+                      <div style={{ fontSize: '0.75rem', background: 'rgba(0,0,0,0.3)', padding: '0.4rem 0.6rem', borderRadius: '4px', marginBottom: '0.5rem' }}>
+                        <div>🛏️ Occupancy: <strong>{marker.occupancy} / {marker.capacity}</strong></div>
+                        <div style={{ color: marker.available > 0 ? '#34d399' : '#ff6b7e' }}>
+                          Available Beds: <strong>{marker.available}</strong>
                         </div>
-
-                        {marker.facilities && marker.facilities.length > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                            {marker.facilities.slice(0, 4).map((f, i) => (
-                              <span
-                                key={i}
-                                style={{
-                                  fontSize: '0.68rem',
-                                  padding: '0.15rem 0.4rem',
-                                  borderRadius: '4px',
-                                  background: 'rgba(16, 185, 129, 0.15)',
-                                  color: '#a7f3d0',
-                                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                                }}
-                              >
-                                ✓ {f}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                          📍 <em>{marker.address}</em>
-                        </div>
-
-                        <div className="map-popup-actions">
-                          <a
-                            href={`tel:${marker.phone}`}
-                            className="map-popup-btn map-popup-btn-primary"
-                          >
-                            📞 Call Shelter
-                          </a>
-                        </div>
-                      </>
+                      </div>
                     )}
 
-                    {/* Specific Details: 🟠 Affected Area */}
-                    {marker.type === 'area' && (
-                      <>
-                        <div className="map-popup-desc">
-                          {marker.description}
-                        </div>
-
-                        <div className="map-popup-meta-grid">
-                          <div>🌪️ <strong>Disaster:</strong> {marker.title}</div>
-                          <div>⚠️ <strong>Severity:</strong> {marker.severity}</div>
-                          <div>👥 <strong>Affected:</strong> {marker.affectedPeople?.toLocaleString()}</div>
-                          <div>🚨 <strong>Active SOS:</strong> {marker.activeSOS}</div>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', color: '#94a3b8' }}>
-                          <span>Status: <strong style={{ color: '#34d399' }}>{marker.status}</strong></span>
-                          <span>GPS: {marker.coords.lat}, {marker.coords.lng}</span>
-                        </div>
-
-                        {onOpenSos && (
-                          <div className="map-popup-actions">
-                            <button
-                              type="button"
-                              onClick={onOpenSos}
-                              className="map-popup-btn map-popup-btn-sos"
-                            >
-                              🚨 Report Distress in this Zone
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* Specific Details: 🔵 Resource */}
                     {marker.type === 'resource' && (
-                      <>
-                        <div className="map-popup-desc">
-                          {marker.description}
-                        </div>
-
-                        <div className="map-popup-meta-grid">
-                          <div>🏥 <strong>Facility:</strong> {marker.category}</div>
-                          <div>🟢 <strong>Status:</strong> {marker.status}</div>
-                          <div style={{ gridColumn: 'span 2' }}>
-                            📍 <strong>Address:</strong> {marker.address}
-                          </div>
-                        </div>
-
-                        <div className="map-popup-actions">
-                          <a
-                            href={`tel:${marker.phone}`}
-                            className="map-popup-btn map-popup-btn-primary"
-                          >
-                            📞 Call Emergency Unit ({marker.phone})
-                          </a>
-                        </div>
-                      </>
+                      <div style={{ fontSize: '0.75rem', background: 'rgba(0,0,0,0.3)', padding: '0.4rem 0.6rem', borderRadius: '4px', marginBottom: '0.5rem' }}>
+                        <div>📍 {marker.address}</div>
+                        <div>📞 {marker.phone}</div>
+                      </div>
                     )}
+
+                    {marker.type === 'incident' && (
+                      <div style={{ fontSize: '0.75rem', background: 'rgba(0,0,0,0.3)', padding: '0.4rem 0.6rem', borderRadius: '4px', marginBottom: '0.5rem' }}>
+                        <div>📍 Location: <strong>{marker.locationText}</strong></div>
+                        <div>Severity: <strong>{marker.severity}</strong></div>
+                      </div>
+                    )}
+
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.35rem', marginTop: '0.35rem', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Lat: {marker.coords.lat.toFixed(4)}, Lng: {marker.coords.lng.toFixed(4)}</span>
+                      {marker.coords.isDemoCoords && <span>(Campus Grid)</span>}
+                    </div>
                   </div>
                 </Popup>
               </Marker>
@@ -725,6 +766,62 @@ const DisasterMap = ({
           })}
         </MapContainer>
       </div>
+
+      {/* Expandable Map Legend */}
+      {showLegend && (
+        <div
+          style={{
+            padding: '0.65rem 1.25rem',
+            background: 'rgba(11, 18, 34, 0.95)',
+            borderTop: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.75rem',
+            color: 'var(--text-secondary)',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ fontSize: '0.9rem' }}>🚨</span>
+              <strong>Active SOS Distress Signal</strong>
+            </span>
+
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ fontSize: '0.9rem' }}>🏠</span>
+              <strong>Safe Relief Shelter</strong>
+            </span>
+
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ fontSize: '0.9rem' }}>⚠️</span>
+              <strong>Monitored Impact Zone</strong>
+            </span>
+
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ fontSize: '0.9rem' }}>🏥</span>
+              <strong>Emergency Facility</strong>
+            </span>
+
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ fontSize: '0.9rem' }}>⚡</span>
+              <strong>Hazard Ticket</strong>
+            </span>
+          </div>
+
+          {onOpenSos && (
+            <button
+              type="button"
+              onClick={onOpenSos}
+              className="btn btn-sos btn-sm"
+              style={{ fontSize: '0.74rem', padding: '0.25rem 0.75rem' }}
+            >
+              <span>+ Tag SOS on Map</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

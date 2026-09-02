@@ -62,16 +62,15 @@ exports.createIncident = async (req, res) => {
     const incidentId = `INC-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const incidentData = {
-      _id: `inc-${Date.now()}`,
       incidentId,
       title,
       type,
       description,
       location,
-      latitude: latitude || 28.6139,
-      longitude: longitude || 77.2090,
+      latitude: Number(latitude) || 28.6139,
+      longitude: Number(longitude) || 77.2090,
       severity: severity || 'Medium',
-      reporterName: req.user ? req.user.name : 'Student Reporter',
+      reporterName: (req.user && req.user.name) ? req.user.name : (req.body.reporterName || 'Anonymous Student'),
       status: 'Pending',
       createdAt: new Date(),
     };
@@ -81,10 +80,12 @@ exports.createIncident = async (req, res) => {
       return res.status(201).json({ success: true, message: 'Hazard incident reported', data: incident });
     }
 
-    memoryStore.incidents.unshift(incidentData);
-    return res.status(201).json({ success: true, message: 'Hazard incident reported (In-Memory)', data: incidentData });
+    const memoryIncident = { _id: `inc-${Date.now()}`, ...incidentData };
+    memoryStore.incidents.unshift(memoryIncident);
+    return res.status(201).json({ success: true, message: 'Hazard incident reported (In-Memory)', data: memoryIncident });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error reporting incident' });
+    console.error('Create incident error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error reporting incident' });
   }
 };
 

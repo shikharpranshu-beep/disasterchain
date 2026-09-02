@@ -54,7 +54,6 @@ exports.createDonation = async (req, res) => {
     const blockchainTransactionId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const donationData = {
-      _id: `don-${Date.now()}`,
       donationId,
       donor,
       type: type || 'Medical Supplies',
@@ -84,11 +83,13 @@ exports.createDonation = async (req, res) => {
       return res.status(201).json({ success: true, message: 'Donation logged & blockchain block minted', data: donation, blockchain: block });
     }
 
-    memoryStore.donations.unshift(donationData);
+    const memoryDonation = { _id: `don-${Date.now()}`, ...donationData };
+    memoryStore.donations.unshift(memoryDonation);
     memoryStore.blockchainRecords.unshift(block);
 
-    return res.status(201).json({ success: true, message: 'Donation logged & blockchain block minted (In-Memory)', data: donationData, blockchain: block });
+    return res.status(201).json({ success: true, message: 'Donation logged & blockchain block minted (In-Memory)', data: memoryDonation, blockchain: block });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error creating donation' });
+    console.error('Create donation error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error creating donation' });
   }
 };

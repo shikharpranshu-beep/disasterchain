@@ -28,10 +28,10 @@ exports.seedDatabase = async (req, res) => {
 
     // 2. Create Users (Verified by default for instant evaluation)
     const studentUser = await User.create({
-      name: 'Shikhar (Student)',
+      name: 'Shikhar (Volunteer)',
       email: 'student@disasterchain.org',
       password: 'student123',
-      role: 'student',
+      role: 'volunteer',
       isVerified: true,
     });
 

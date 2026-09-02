@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { fallbackData } from '../services/api';
+import Icon from '../components/Icons';
 
 const OfflineEmergencyPage = () => {
   const [smsData, setSmsData] = useState({
@@ -17,51 +17,61 @@ const OfflineEmergencyPage = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: '1.75rem' }}>
-        <div className="badge badge-success" style={{ marginBottom: '0.4rem' }}>
-          📡 LOCAL CACHE ACTIVE &bull; LOW-CONNECTIVITY MODE
+      <div className="page-header">
+        <div>
+          <div className="badge badge-success" style={{ marginBottom: '0.4rem' }}>
+            <Icon name="wifi-off" size={13} color="#34d399" />
+            <span>LOCAL CACHE ACTIVE &bull; LOW-CONNECTIVITY MODE</span>
+          </div>
+          <h1 className="page-header-title">
+            <Icon name="wifi-off" size={26} color="#38bdf8" />
+            <span>Low-Connectivity Emergency Support</span>
+          </h1>
+          <p className="page-header-subtitle">
+            Critical emergency protocols, telephone hotlines & SMS dispatch interface designed for zero/poor internet conditions
+          </p>
         </div>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Low-Connectivity Emergency Support</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Critical emergency protocols, local telephone hotlines & SMS dispatch interface designed for zero/poor internet conditions
-        </p>
       </div>
 
       {/* Emergency Hotlines Grid */}
-      <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
-        <div className="glass-card" style={{ textAlign: 'center', borderColor: 'rgba(239, 68, 68, 0.4)' }}>
+      <div className="grid-cols-4" style={{ marginBottom: '2rem' }}>
+        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(255, 51, 75, 0.45)', borderTop: '4px solid #ff334b' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🚨</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>National Emergency</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f87171', margin: '0.25rem 0' }}>112</div>
-          <a href="tel:112" className="btn btn-danger" style={{ fontSize: '0.78rem', width: '100%', padding: '0.4rem' }}>
-            Dial 112
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>National Emergency</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ff4d63', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>112</div>
+          <a href="tel:112" className="btn btn-danger" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
+            <Icon name="phone" size={14} />
+            <span>Dial 112</span>
           </a>
         </div>
 
-        <div className="glass-card" style={{ textAlign: 'center', borderColor: 'rgba(245, 158, 11, 0.4)' }}>
+        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(245, 158, 11, 0.45)', borderTop: '4px solid #f59e0b' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🚒</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Fire Brigade</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fbbf24', margin: '0.25rem 0' }}>101</div>
-          <a href="tel:101" className="btn btn-secondary" style={{ fontSize: '0.78rem', width: '100%', padding: '0.4rem' }}>
-            Dial 101
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>Fire Brigade</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fbbf24', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>101</div>
+          <a href="tel:101" className="btn btn-secondary" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
+            <Icon name="phone" size={14} />
+            <span>Dial 101</span>
           </a>
         </div>
 
-        <div className="glass-card" style={{ textAlign: 'center', borderColor: 'rgba(6, 182, 212, 0.4)' }}>
+        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(6, 182, 212, 0.45)', borderTop: '4px solid #06b6d4' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🚑</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Ambulance Triage</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#38bdf8', margin: '0.25rem 0' }}>108</div>
-          <a href="tel:108" className="btn btn-secondary" style={{ fontSize: '0.78rem', width: '100%', padding: '0.4rem' }}>
-            Dial 108
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>Ambulance Triage</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#38bdf8', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>108</div>
+          <a href="tel:108" className="btn btn-secondary" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
+            <Icon name="phone" size={14} />
+            <span>Dial 108</span>
           </a>
         </div>
 
-        <div className="glass-card" style={{ textAlign: 'center', borderColor: 'rgba(99, 102, 241, 0.4)' }}>
+        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(99, 102, 241, 0.45)', borderTop: '4px solid #6366f1' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🏛️</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Disaster Authority (NDRF)</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#818cf8', margin: '0.25rem 0' }}>1078</div>
-          <a href="tel:1078" className="btn btn-secondary" style={{ fontSize: '0.78rem', width: '100%', padding: '0.4rem' }}>
-            Dial 1078
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>Disaster Authority (NDRF)</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#818cf8', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>1078</div>
+          <a href="tel:1078" className="btn btn-secondary" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
+            <Icon name="phone" size={14} />
+            <span>Dial 1078</span>
           </a>
         </div>
       </div>
@@ -69,11 +79,12 @@ const OfflineEmergencyPage = () => {
       <div className="grid-cols-2" style={{ marginBottom: '1.75rem' }}>
         {/* SMS Emergency Dispatch Interface */}
         <div className="glass-card">
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>💬</span> SMS Emergency Dispatch Generator
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#ffffff' }}>
+            <Icon name="mail" size={20} color="var(--accent-indigo)" />
+            <span>SMS Emergency Dispatch Generator</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-            Generates standardized GSM SMS text messages to be sent via cellular network when mobile internet (4G/5G) is down.
+            Generates standardized cellular text payloads when mobile data (4G/5G) is unreachable.
           </p>
 
           <form onSubmit={handleSendSms}>
@@ -112,7 +123,8 @@ const OfflineEmergencyPage = () => {
             </div>
 
             <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-              📱 Generate SMS Template
+              <Icon name="mail" size={16} />
+              <span>Generate SMS Template</span>
             </button>
           </form>
 
@@ -121,7 +133,7 @@ const OfflineEmergencyPage = () => {
               style={{
                 marginTop: '1.25rem',
                 background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
                 borderRadius: 'var(--radius-md)',
                 padding: '0.85rem 1rem',
                 fontSize: '0.82rem',
@@ -130,39 +142,40 @@ const OfflineEmergencyPage = () => {
               }}
             >
               <strong>ℹ️ PROTOTYPE SMS STATUS:</strong><br />
-              SMS gateway is not configured in this academic prototype. In actual production deployment, this payload will dispatch via GSM SMS modem or Twilio gateway. Use your mobile phone to send this text directly to <strong>112</strong>.
+              SMS gateway is simulated in this academic prototype. In production deployment, this payload dispatches via Twilio or GSM hardware modem. Use your mobile phone to send this text directly to <strong>112</strong>.
             </div>
           )}
         </div>
 
         {/* Offline Cached Quick Safety Cards */}
         <div className="glass-card">
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>💾</span> Offline Cached Safety Checklist
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#ffffff' }}>
+            <Icon name="book" size={20} color="#10b981" />
+            <span>Offline Cached Safety Protocols</span>
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-            Essential life-safety reminders always accessible without network connection.
+            Essential life-safety instructions always accessible without network connection.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-              <strong style={{ color: '#f87171', fontSize: '0.9rem' }}>🏚️ Earthquake (Immediate):</strong>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+            <div style={{ background: 'rgba(11, 18, 34, 0.85)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.95rem' }}>
+              <strong style={{ color: '#ff6b7e', fontSize: '0.92rem' }}>🏚️ Earthquake (Immediate):</strong>
+              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                 DROP to floor, COVER head under sturdy desk, HOLD ON. Do not run outside during shaking.
               </div>
             </div>
 
-            <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-              <strong style={{ color: '#fbbf24', fontSize: '0.9rem' }}>🔥 Fire & Smoke:</strong>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                CRAWL LOW under smoke where clean air exists. Touch doors before opening. Never use elevators.
+            <div style={{ background: 'rgba(11, 18, 34, 0.85)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.95rem' }}>
+              <strong style={{ color: '#fbbf24', fontSize: '0.92rem' }}>🔥 Fire & Smoke:</strong>
+              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                CRAWL LOW under smoke where clean air exists. Touch doors with back of hand before opening. Never use elevators.
               </div>
             </div>
 
-            <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-              <strong style={{ color: '#38bdf8', fontSize: '0.9rem' }}>🌊 Flood Rising:</strong>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                Move to top floor or roof. Cut main electricity breaker. Never walk through moving water.
+            <div style={{ background: 'rgba(11, 18, 34, 0.85)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.95rem' }}>
+              <strong style={{ color: '#38bdf8', fontSize: '0.92rem' }}>🌊 Flood Rising:</strong>
+              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                Move to top floor or roof. Cut main electricity breaker. Never walk or drive through moving water.
               </div>
             </div>
           </div>

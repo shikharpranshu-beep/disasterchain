@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? 'https://disasterrchain-backend.onrender.com/api'
+    : 'http://localhost:5000/api');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -784,7 +788,6 @@ export const fallbackData = {
   ],
 };
 
-// Helper API functions that return real API data or fallback seamlessly
 export const fetchSosRequests = async (params = {}) => {
   try {
     const res = await api.get('/sos', { params });
@@ -792,6 +795,16 @@ export const fetchSosRequests = async (params = {}) => {
   } catch (err) {
     return fallbackData.sosRequests;
   }
+};
+
+export const createSosRequest = async (sosData) => {
+  const res = await api.post('/sos', sosData);
+  return res.data;
+};
+
+export const updateSosStatus = async (id, status) => {
+  const res = await api.put(`/sos/${id}/status`, { status });
+  return res.data;
 };
 
 export const fetchShelters = async (params = {}) => {
@@ -821,13 +834,23 @@ export const fetchAlerts = async (params = {}) => {
   }
 };
 
-export const fetchIncidents = async () => {
+export const fetchIncidents = async (params = {}) => {
   try {
-    const res = await api.get('/incidents');
+    const res = await api.get('/incidents', { params });
     return res.data.data;
   } catch (err) {
     return fallbackData.incidents;
   }
+};
+
+export const createIncident = async (incidentData) => {
+  const res = await api.post('/incidents', incidentData);
+  return res.data;
+};
+
+export const updateIncidentStatus = async (id, status) => {
+  const res = await api.put(`/incidents/${id}/status`, { status });
+  return res.data;
 };
 
 export const fetchResources = async (params = {}) => {
@@ -839,6 +862,11 @@ export const fetchResources = async (params = {}) => {
   }
 };
 
+export const createResource = async (resourceData) => {
+  const res = await api.post('/resources', resourceData);
+  return res.data;
+};
+
 export const fetchDonations = async () => {
   try {
     const res = await api.get('/donations');
@@ -848,6 +876,11 @@ export const fetchDonations = async () => {
   }
 };
 
+export const createDonation = async (donationData) => {
+  const res = await api.post('/donations', donationData);
+  return res.data;
+};
+
 export const fetchDistributions = async () => {
   try {
     const res = await api.get('/distributions');
@@ -855,6 +888,11 @@ export const fetchDistributions = async () => {
   } catch (err) {
     return fallbackData.distributions;
   }
+};
+
+export const createDistribution = async (distributionData) => {
+  const res = await api.post('/distributions', distributionData);
+  return res.data;
 };
 
 export const fetchBlockchainTransactions = async (params = {}) => {
@@ -910,6 +948,20 @@ export const updateUserProfile = async (name) => {
   return res.data.data;
 };
 
+export const fetchAdminUsers = async () => {
+  try {
+    const res = await api.get('/auth/users');
+    return res.data.data;
+  } catch (err) {
+    return fallbackData.adminStats.users || [];
+  }
+};
+
+export const updateUserRole = async (userId, role) => {
+  const res = await api.put(`/auth/users/${userId}/role`, { role });
+  return res.data;
+};
+
 export const logoutUser = async () => {
   try {
     await api.post('/auth/logout');
@@ -919,4 +971,5 @@ export const logoutUser = async () => {
 };
 
 export default api;
+
 

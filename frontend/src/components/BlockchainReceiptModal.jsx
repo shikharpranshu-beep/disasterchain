@@ -1,57 +1,83 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Icon from './Icons';
 
 const BlockchainReceiptModal = ({ isOpen, onClose, record }) => {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen || !record) return null;
+
+  const handleCopyHash = () => {
+    const hash = record.blockHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069';
+    navigator.clipboard.writeText(hash);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '620px' }}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.5rem' }}>⛓️</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                background: 'rgba(99, 102, 241, 0.15)',
+                border: '1px solid rgba(99, 102, 241, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name="blockchain" size={20} color="#818cf8" />
+            </div>
             <div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Cryptographic Blockchain Record</h2>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                DisasterChain Prototype Transparency Ledger
+                DisasterChain Prototype Audit Ledger
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
+            className="btn btn-ghost"
+            style={{ padding: '0.4rem', color: 'var(--text-muted)' }}
           >
-            ✕
+            <Icon name="close" size={20} />
           </button>
         </div>
 
-        {/* Verification Status Badge */}
+        {/* Verification Status Banner */}
         <div
           style={{
             background: 'rgba(16, 185, 129, 0.12)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
             borderRadius: 'var(--radius-md)',
-            padding: '0.85rem 1rem',
+            padding: '0.85rem 1.15rem',
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
             marginBottom: '1.25rem',
           }}
         >
-          <span style={{ fontSize: '1.5rem' }}>🛡️</span>
+          <div style={{ color: '#34d399' }}>
+            <Icon name="shield-check" size={24} color="#34d399" />
+          </div>
           <div>
             <div style={{ color: '#34d399', fontWeight: 700, fontSize: '0.9rem' }}>
               Cryptographically Verified & Immutable
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
-              SHA-256 block hash integrity validated across prototype network nodes.
+              SHA-256 block hash integrity validated across network audit nodes.
             </div>
           </div>
         </div>
 
-        {/* Block Details */}
+        {/* Block Data Box */}
         <div
           style={{
-            background: 'rgba(15, 23, 42, 0.9)',
+            background: 'rgba(11, 18, 34, 0.95)',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-lg)',
             padding: '1.25rem',
@@ -62,33 +88,45 @@ const BlockchainReceiptModal = ({ isOpen, onClose, record }) => {
             fontFamily: 'var(--font-mono)',
           }}
         >
-          <div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>TRANSACTION ID</div>
-            <div style={{ color: '#ffffff', fontWeight: 700 }}>{record.transactionId || 'TXN-881204'}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>TRANSACTION ID</div>
+              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{record.transactionId || 'TXN-881204'}</div>
+            </div>
+            <div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', textAlign: 'right' }}>BLOCK NUMBER</div>
+              <div style={{ color: '#818cf8', fontWeight: 700, textAlign: 'right' }}>#{record.blockNumber || 1001}</div>
+            </div>
           </div>
 
           <div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>BLOCK NUMBER</div>
-            <div style={{ color: '#818cf8', fontWeight: 700 }}>#{record.blockNumber || 1001}</div>
-          </div>
-
-          <div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>BLOCK HASH (SHA-256)</div>
-            <div style={{ color: '#38bdf8', wordBreak: 'break-all', fontSize: '0.78rem', background: 'rgba(0,0,0,0.3)', padding: '0.4rem', borderRadius: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>BLOCK HASH (SHA-256)</span>
+              <button
+                type="button"
+                onClick={handleCopyHash}
+                className="btn btn-ghost btn-sm"
+                style={{ fontSize: '0.72rem', padding: '0.15rem 0.5rem', color: copied ? '#34d399' : '#818cf8' }}
+              >
+                <Icon name={copied ? 'check' : 'copy'} size={13} />
+                <span>{copied ? 'Copied!' : 'Copy Hash'}</span>
+              </button>
+            </div>
+            <div style={{ color: '#38bdf8', wordBreak: 'break-all', fontSize: '0.78rem', background: 'rgba(0,0,0,0.35)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
               {record.blockHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'}
             </div>
           </div>
 
           <div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>PREVIOUS BLOCK HASH</div>
-            <div style={{ color: 'var(--text-secondary)', wordBreak: 'break-all', fontSize: '0.75rem' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem', textTransform: 'uppercase' }}>PREVIOUS BLOCK HASH</div>
+            <div style={{ color: 'var(--text-secondary)', wordBreak: 'break-all', fontSize: '0.74rem' }}>
               {record.previousBlockHash || '0x0000000000000000000000000000000000000000000000000000000000000000'}
             </div>
           </div>
 
           <div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' }}>DIGITAL SIGNATURE</div>
-            <div style={{ color: '#a78bfa', wordBreak: 'break-all', fontSize: '0.75rem' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem', textTransform: 'uppercase' }}>DIGITAL SIGNATURE</div>
+            <div style={{ color: '#a78bfa', wordBreak: 'break-all', fontSize: '0.74rem' }}>
               {record.signature || '0xa41c7b89d6e4f3a2b1c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6'}
             </div>
           </div>
@@ -96,22 +134,21 @@ const BlockchainReceiptModal = ({ isOpen, onClose, record }) => {
           <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-main)' }}>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Resource: </span>
-              <strong>{record.quantity} {record.unit || 'units'} {record.resourceName}</strong>
+              <strong>{record.quantity} {record.unit || 'units'} &bull; {record.resourceName}</strong>
             </div>
             <div>
-              <span style={{ color: 'var(--text-muted)' }}>Status: </span>
-              <span className="badge badge-success">{record.status}</span>
+              <span className="badge badge-success">{record.status || 'Verified on Blockchain'}</span>
             </div>
           </div>
         </div>
 
         {/* Prototype Disclaimer */}
         <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem', lineHeight: 1.5, textAlign: 'center' }}>
-          ℹ️ <em>Prototype Note:</em> This transaction provides a transparent, tamper-resistant verification reference for disaster supply allocations without involving real cryptocurrency.
+          ℹ️ <em>Prototype Note:</em> This transaction provides a transparent, tamper-resistant verification reference for disaster supply allocations without involving cryptocurrency trading.
         </div>
 
         <button onClick={onClose} className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }}>
-          Done
+          Close Audit Proof
         </button>
       </div>
     </div>

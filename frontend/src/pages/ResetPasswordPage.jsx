@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icons';
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
@@ -58,9 +59,11 @@ const ResetPasswordPage = () => {
   if (!token) {
     return (
       <div style={{ minHeight: 'calc(100vh - 70px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-        <div className="glass-card" style={{ maxWidth: '440px', width: '100%', padding: '2.5rem 2rem', textAlign: 'center', borderColor: 'rgba(239, 68, 68, 0.4)' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚠️</div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f87171', marginBottom: '0.5rem' }}>
+        <div className="glass-card" style={{ maxWidth: '460px', width: '100%', padding: '2.5rem 2.25rem', textAlign: 'center', borderColor: 'rgba(255, 51, 75, 0.4)' }}>
+          <div style={{ color: '#ff4d63', marginBottom: '1rem' }}>
+            <Icon name="warning" size={40} color="#ff334b" />
+          </div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ff6b7e', marginBottom: '0.5rem' }}>
             Invalid Reset Link
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
@@ -81,37 +84,37 @@ const ResetPasswordPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
+        padding: '2rem 1.5rem',
       }}
     >
       <div
         className="glass-card"
         style={{
-          maxWidth: '460px',
+          maxWidth: '480px',
           width: '100%',
-          padding: '2.5rem 2rem',
+          padding: '2.5rem 2.25rem',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
+              width: '52px',
+              height: '52px',
+              borderRadius: '14px',
               background: 'linear-gradient(135deg, #10b981, #6366f1)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.5rem',
-              marginBottom: '0.75rem',
+              marginBottom: '0.85rem',
+              boxShadow: '0 0 20px rgba(16, 185, 129, 0.45)',
             }}
           >
-            🔒
+            <Icon name="lock" size={26} color="#ffffff" />
           </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
             Create New Password
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
             Set a strong, secure password for your DisasterChain account
           </p>
         </div>
@@ -119,10 +122,10 @@ const ResetPasswordPage = () => {
         {error && (
           <div
             style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#f87171',
-              padding: '0.65rem 1rem',
+              background: 'rgba(255, 51, 75, 0.15)',
+              border: '1px solid rgba(255, 51, 75, 0.35)',
+              color: '#ff6b7e',
+              padding: '0.75rem 1rem',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.85rem',
               marginBottom: '1.25rem',
@@ -139,14 +142,14 @@ const ResetPasswordPage = () => {
                 background: 'rgba(16, 185, 129, 0.15)',
                 border: '1px solid rgba(16, 185, 129, 0.4)',
                 color: '#6ee7b7',
-                padding: '1rem',
+                padding: '1.15rem',
                 borderRadius: 'var(--radius-md)',
                 fontSize: '0.9rem',
                 marginBottom: '1.5rem',
                 lineHeight: 1.5,
               }}
             >
-              🎉 <strong>Password Reset Successful!</strong>
+              🎉 <strong style={{ color: '#ffffff' }}>Password Reset Successful!</strong>
               <div style={{ fontSize: '0.82rem', marginTop: '0.35rem', color: '#a7f3d0' }}>
                 Your account password has been updated. You can now sign in with your new credentials.
               </div>
@@ -172,7 +175,7 @@ const ResetPasswordPage = () => {
 
             {/* Password Strength Checklist */}
             {password && (
-              <div style={{ marginBottom: '1rem' }}>
+              <div style={{ marginBottom: '1.15rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.35rem' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Security Strength:</span>
                   <span
@@ -180,7 +183,7 @@ const ResetPasswordPage = () => {
                       fontWeight: 700,
                       color:
                         passwordScore <= 2
-                          ? '#ef4444'
+                          ? '#ff334b'
                           : passwordScore <= 4
                           ? '#f59e0b'
                           : '#10b981',
@@ -190,14 +193,14 @@ const ResetPasswordPage = () => {
                   </span>
                 </div>
 
-                <div style={{ width: '100%', height: '5px', background: '#334155', borderRadius: '3px', overflow: 'hidden', marginBottom: '0.65rem' }}>
+                <div style={{ width: '100%', height: '5px', background: '#1e293b', borderRadius: '3px', overflow: 'hidden', marginBottom: '0.65rem' }}>
                   <div
                     style={{
                       width: `${(passwordScore / 5) * 100}%`,
                       height: '100%',
                       background:
                         passwordScore <= 2
-                          ? '#ef4444'
+                          ? '#ff334b'
                           : passwordScore <= 4
                           ? '#f59e0b'
                           : '#10b981',
@@ -206,20 +209,20 @@ const ResetPasswordPage = () => {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', fontSize: '0.72rem' }}>
-                  <span style={{ color: passwordCriteria.hasLength ? '#34d399' : '#94a3b8' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', fontSize: '0.74rem' }}>
+                  <span style={{ color: passwordCriteria.hasLength ? '#34d399' : '#64748b' }}>
                     {passwordCriteria.hasLength ? '✓' : '○'} Min. 8 characters
                   </span>
-                  <span style={{ color: passwordCriteria.hasUpper ? '#34d399' : '#94a3b8' }}>
+                  <span style={{ color: passwordCriteria.hasUpper ? '#34d399' : '#64748b' }}>
                     {passwordCriteria.hasUpper ? '✓' : '○'} Uppercase letter
                   </span>
-                  <span style={{ color: passwordCriteria.hasLower ? '#34d399' : '#94a3b8' }}>
+                  <span style={{ color: passwordCriteria.hasLower ? '#34d399' : '#64748b' }}>
                     {passwordCriteria.hasLower ? '✓' : '○'} Lowercase letter
                   </span>
-                  <span style={{ color: passwordCriteria.hasNumber ? '#34d399' : '#94a3b8' }}>
+                  <span style={{ color: passwordCriteria.hasNumber ? '#34d399' : '#64748b' }}>
                     {passwordCriteria.hasNumber ? '✓' : '○'} At least 1 number
                   </span>
-                  <span style={{ color: passwordCriteria.hasSpecial ? '#34d399' : '#94a3b8', gridColumn: 'span 2' }}>
+                  <span style={{ color: passwordCriteria.hasSpecial ? '#34d399' : '#64748b', gridColumn: 'span 2' }}>
                     {passwordCriteria.hasSpecial ? '✓' : '○'} Special character (!@#$%...)
                   </span>
                 </div>
@@ -237,7 +240,7 @@ const ResetPasswordPage = () => {
                 placeholder="Re-enter new password"
               />
               {confirmPassword && password !== confirmPassword && (
-                <span style={{ fontSize: '0.75rem', color: '#f87171', marginTop: '0.25rem', display: 'block' }}>
+                <span style={{ fontSize: '0.75rem', color: '#ff6b7e', marginTop: '0.25rem', display: 'block' }}>
                   Passwords do not match
                 </span>
               )}
@@ -249,7 +252,8 @@ const ResetPasswordPage = () => {
               className="btn btn-primary"
               style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
             >
-              {loading ? 'Updating Password...' : 'Save New Password'}
+              <Icon name="check" size={16} />
+              <span>{loading ? 'Updating Password...' : 'Save New Password'}</span>
             </button>
           </form>
         )}

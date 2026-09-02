@@ -68,5 +68,6 @@ const createBlockchainRecord = async ({
 
 module.exports = {
   createBlockchainRecord,
+  recordTransaction: createBlockchainRecord,
   calculateHash,
 };

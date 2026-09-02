@@ -37,7 +37,8 @@ const AppLayout = () => {
   const location = useLocation();
   const [isSosOpen, setIsSosOpen] = useState(false);
   const [isIncidentOpen, setIsIncidentOpen] = useState(false);
-  const [sosRefreshCount, setSosRefreshCount] = useState(0);
+  const [refreshCount, setRefreshCount] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Show clean layout without sidebar on standalone authentication/landing pages
   const isPublicStandalone =
@@ -51,11 +52,20 @@ const AppLayout = () => {
   return (
     <div className="app-container">
       {/* Sidebar navigation */}
-      {!isPublicStandalone && <Sidebar />}
+      {!isPublicStandalone && (
+        <Sidebar
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Main Content Area */}
       <div className="main-content">
-        <Navbar onOpenSos={() => setIsSosOpen(true)} />
+        <Navbar
+          onOpenSos={() => setIsSosOpen(true)}
+          onToggleSidebar={() => setIsMobileMenuOpen((prev) => !prev)}
+          isMobileMenuOpen={isMobileMenuOpen}
+        />
 
         <main className={isPublicStandalone ? '' : 'page-body'}>
           <Routes>
@@ -77,7 +87,7 @@ const AppLayout = () => {
               path="/dashboard"
               element={
                 <EmergencyDashboard
-                  refreshKey={sosRefreshCount}
+                  refreshKey={refreshCount}
                   onOpenSos={() => setIsSosOpen(true)}
                   onOpenIncident={() => setIsIncidentOpen(true)}
                 />
@@ -87,7 +97,7 @@ const AppLayout = () => {
               path="/sos"
               element={
                 <SosPage
-                  refreshKey={sosRefreshCount}
+                  refreshKey={refreshCount}
                   onOpenSos={() => setIsSosOpen(true)}
                 />
               }
@@ -119,12 +129,13 @@ const AppLayout = () => {
       <SosModal
         isOpen={isSosOpen}
         onClose={() => setIsSosOpen(false)}
-        onSosSubmitted={() => setSosRefreshCount((c) => c + 1)}
+        onSosSubmitted={() => setRefreshCount((c) => c + 1)}
       />
 
       <IncidentModal
         isOpen={isIncidentOpen}
         onClose={() => setIsIncidentOpen(false)}
+        onIncidentSubmitted={() => setRefreshCount((c) => c + 1)}
       />
     </div>
   );

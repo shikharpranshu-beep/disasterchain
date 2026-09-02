@@ -1,4 +1,5 @@
 import React from 'react';
+import Icon from './Icons';
 
 const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
   if (!isOpen || !resourceData) return null;
@@ -6,7 +7,7 @@ const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
   const steps = [
     { title: '1. Donated & Registered', desc: `Donated by ${resourceData.donor || 'Relief Donor'}`, date: 'Day 1 - 09:00 AM', status: 'completed' },
     { title: '2. Cryptographic Block Verification', desc: `Block Hash: ${resourceData.blockchainTransactionId || 'TXN-881204'}`, date: 'Day 1 - 09:15 AM', status: 'completed' },
-    { title: '3. Received at Central Warehouse', desc: 'Inspection & inventory intake at Red Cross Logistics Hub', date: 'Day 1 - 02:30 PM', status: 'completed' },
+    { title: '3. Received at Central Warehouse', desc: 'Inspection & inventory intake at Logistics Hub', date: 'Day 1 - 02:30 PM', status: 'completed' },
     { title: '4. Dispatched to Shelter / Relief Zone', desc: `In-transit to ${resourceData.destination || 'Campus Shelter'}`, date: 'Day 2 - 08:00 AM', status: resourceData.status === 'In Transit' || resourceData.status === 'Delivered' || resourceData.status === 'Fully Distributed' ? 'completed' : 'active' },
     { title: '5. Distributed to Victims', desc: `Verified handover of ${resourceData.quantity || '500'} ${resourceData.unit || 'units'}`, date: 'Day 2 - 04:00 PM', status: resourceData.status === 'Fully Distributed' || resourceData.status === 'Distributed' ? 'completed' : 'pending' },
   ];
@@ -23,26 +24,27 @@ const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
               {resourceData.resourceName || 'Relief Supplies'}
             </h2>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Tracking ID: <strong>{resourceData.donationId || resourceData.distributionId || 'REL-1042'}</strong>
+              Tracking ID: <strong style={{ fontFamily: 'var(--font-mono)' }}>{resourceData.donationId || resourceData.distributionId || 'REL-1042'}</strong>
             </div>
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
+            className="btn btn-ghost"
+            style={{ padding: '0.4rem', color: 'var(--text-muted)' }}
           >
-            ✕
+            <Icon name="close" size={20} />
           </button>
         </div>
 
         {/* Journey Timeline */}
         <div style={{ position: 'relative', paddingLeft: '1.75rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-          {/* Vertical Line */}
+          {/* Vertical Track Line */}
           <div
             style={{
               position: 'absolute',
               left: '7px',
-              top: '10px',
-              bottom: '10px',
+              top: '12px',
+              bottom: '12px',
               width: '2px',
               background: 'linear-gradient(to bottom, #10b981, #6366f1, #334155)',
             }}
@@ -59,22 +61,22 @@ const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
                   style={{
                     position: 'absolute',
                     left: '-1.75rem',
-                    top: '2px',
+                    top: '3px',
                     width: '16px',
                     height: '16px',
                     borderRadius: '50%',
                     background: isCompleted ? '#10b981' : isActive ? '#6366f1' : '#334155',
-                    border: '3px solid #0f172a',
-                    boxShadow: isActive ? '0 0 8px #6366f1' : 'none',
+                    border: '3px solid #0d172e',
+                    boxShadow: isActive ? '0 0 10px #6366f1' : isCompleted ? '0 0 8px rgba(16, 185, 129, 0.4)' : 'none',
                   }}
                 />
 
                 <div
                   style={{
-                    background: 'rgba(30, 41, 59, 0.6)',
-                    border: `1px solid ${isActive ? 'rgba(99, 102, 241, 0.4)' : 'var(--border-subtle)'}`,
+                    background: 'rgba(15, 24, 44, 0.75)',
+                    border: `1px solid ${isActive ? 'rgba(99, 102, 241, 0.45)' : 'var(--border-subtle)'}`,
                     borderRadius: 'var(--radius-md)',
-                    padding: '0.85rem 1rem',
+                    padding: '0.85rem 1.1rem',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
@@ -92,7 +94,7 @@ const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
           })}
         </div>
 
-        {/* Blockchain Cryptographic Verification Bar */}
+        {/* Cryptographic Verification Proof */}
         <div
           style={{
             background: 'rgba(99, 102, 241, 0.1)',

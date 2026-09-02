@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icons';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -35,37 +36,37 @@ const ForgotPasswordPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
+        padding: '2rem 1.5rem',
       }}
     >
       <div
         className="glass-card"
         style={{
-          maxWidth: '440px',
+          maxWidth: '460px',
           width: '100%',
-          padding: '2.5rem 2rem',
+          padding: '2.5rem 2.25rem',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+              width: '52px',
+              height: '52px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #f59e0b, #ff334b)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.5rem',
-              marginBottom: '0.75rem',
+              marginBottom: '0.85rem',
+              boxShadow: '0 0 20px rgba(245, 158, 11, 0.45)',
             }}
           >
-            🔑
+            <Icon name="key" size={26} color="#ffffff" />
           </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
             Reset Password
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
             Enter your email to receive a secure password reset link
           </p>
         </div>
@@ -73,10 +74,10 @@ const ForgotPasswordPage = () => {
         {error && (
           <div
             style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#f87171',
-              padding: '0.65rem 1rem',
+              background: 'rgba(255, 51, 75, 0.15)',
+              border: '1px solid rgba(255, 51, 75, 0.35)',
+              color: '#ff6b7e',
+              padding: '0.75rem 1rem',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.85rem',
               marginBottom: '1.25rem',
@@ -93,7 +94,7 @@ const ForgotPasswordPage = () => {
                 background: 'rgba(16, 185, 129, 0.15)',
                 border: '1px solid rgba(16, 185, 129, 0.4)',
                 color: '#6ee7b7',
-                padding: '1rem',
+                padding: '1rem 1.15rem',
                 borderRadius: 'var(--radius-md)',
                 fontSize: '0.88rem',
                 marginBottom: '1.5rem',
@@ -103,7 +104,7 @@ const ForgotPasswordPage = () => {
               ✅ {message}
             </div>
 
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
               Please check your inbox (and spam folder) for an email from DisasterChain Security with instructions to reset your password. The link expires in 15 minutes.
             </p>
 
@@ -142,11 +143,12 @@ const ForgotPasswordPage = () => {
               className="btn btn-primary"
               style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
             >
-              {loading ? 'Sending Link...' : 'Send Password Reset Link'}
+              <Icon name="mail" size={16} />
+              <span>{loading ? 'Sending Link...' : 'Send Password Reset Link'}</span>
             </button>
 
-            <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem' }}>
-              <Link to="/login" style={{ color: 'var(--accent-indigo)', fontWeight: 600 }}>
+            <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.86rem' }}>
+              <Link to="/login" style={{ color: 'var(--accent-indigo)', fontWeight: 700 }}>
                 ← Back to Sign In
               </Link>
             </div>

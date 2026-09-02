@@ -10,8 +10,10 @@ const {
   getMe,
   updateDetails,
   logout,
+  getUsers,
+  updateUserRole,
 } = require('../controllers/authController');
-const { protect } = require('../middleware/auth');
+const { protect, authorizeAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
 
 // Public endpoints (rate limited)
@@ -23,8 +25,12 @@ router.post('/forgot-password', authLimiter, forgotPassword);
 router.post('/reset-password', authLimiter, resetPassword);
 router.post('/logout', logout);
 
-// Protected endpoints
+// Protected user endpoints
 router.get('/me', protect, getMe);
 router.put('/updatedetails', protect, updateDetails);
+
+// Admin endpoints
+router.get('/users', protect, authorizeAdmin, getUsers);
+router.put('/users/:id/role', protect, authorizeAdmin, updateUserRole);
 
 module.exports = router;

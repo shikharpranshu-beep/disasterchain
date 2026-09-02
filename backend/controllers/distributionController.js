@@ -35,7 +35,6 @@ exports.createDistribution = async (req, res) => {
     const blockchainTransactionId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const distData = {
-      _id: `dis-${Date.now()}`,
       distributionId,
       resourceName,
       quantity: Number(quantity),
@@ -65,11 +64,13 @@ exports.createDistribution = async (req, res) => {
       return res.status(201).json({ success: true, message: 'Distribution logged & blockchain block minted', data: dist, blockchain: block });
     }
 
-    memoryStore.distributions.unshift(distData);
+    const memoryDist = { _id: `dis-${Date.now()}`, ...distData };
+    memoryStore.distributions.unshift(memoryDist);
     memoryStore.blockchainRecords.unshift(block);
 
-    return res.status(201).json({ success: true, message: 'Distribution logged & blockchain block minted (In-Memory)', data: distData, blockchain: block });
+    return res.status(201).json({ success: true, message: 'Distribution logged & blockchain block minted (In-Memory)', data: memoryDist, blockchain: block });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error logging distribution' });
+    console.error('Create distribution error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error logging distribution' });
   }
 };

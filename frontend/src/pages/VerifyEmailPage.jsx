@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icons';
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
@@ -63,17 +64,17 @@ const VerifyEmailPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
+        padding: '2rem 1.5rem',
       }}
     >
       <div
         className="glass-card"
         style={{
-          maxWidth: '480px',
+          maxWidth: '500px',
           width: '100%',
-          padding: '2.5rem 2rem',
+          padding: '2.5rem 2.25rem',
           textAlign: 'center',
-          borderColor: verified ? 'rgba(16, 185, 129, 0.4)' : error ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-subtle)',
+          borderColor: verified ? 'rgba(16, 185, 129, 0.4)' : error ? 'rgba(255, 51, 75, 0.4)' : 'var(--border-subtle)',
         }}
       >
         {loading ? (
@@ -89,10 +90,10 @@ const VerifyEmailPage = () => {
                 margin: '0 auto 1.5rem',
               }}
             />
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+            <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
               Verifying Email Address...
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
               Validating cryptographic security token with DisasterChain
             </p>
           </div>
@@ -100,30 +101,30 @@ const VerifyEmailPage = () => {
           <div>
             <div
               style={{
-                width: '64px',
-                height: '64px',
+                width: '68px',
+                height: '68px',
                 borderRadius: '50%',
                 background: 'rgba(16, 185, 129, 0.15)',
                 border: '2px solid #10b981',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '2rem',
                 marginBottom: '1.25rem',
+                color: '#10b981',
               }}
             >
-              ✅
+              <Icon name="shield-check" size={34} color="#10b981" />
             </div>
 
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#34d399', marginBottom: '0.5rem' }}>
               Email Verified Successfully!
             </h2>
 
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
-              Your DisasterChain account is now active and fully verified. You can broadcast emergency distress signals, track relief logistics, and access the transparency ledger.
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+              Your DisasterChain account is now active and verified. You can broadcast distress signals, view safe shelter capacities, and access the transparency ledger.
             </p>
 
-            <Link to="/dashboard" className="btn btn-primary" style={{ display: 'inline-block', width: '100%', padding: '0.75rem' }}>
+            <Link to="/dashboard" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }}>
               Go to Emergency Dashboard →
             </Link>
           </div>
@@ -131,22 +132,22 @@ const VerifyEmailPage = () => {
           <div>
             <div
               style={{
-                width: '64px',
-                height: '64px',
+                width: '68px',
+                height: '68px',
                 borderRadius: '50%',
-                background: 'rgba(239, 68, 68, 0.15)',
-                border: '2px solid #ef4444',
+                background: 'rgba(255, 51, 75, 0.15)',
+                border: '2px solid #ff334b',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '2rem',
                 marginBottom: '1.25rem',
+                color: '#ff4d63',
               }}
             >
-              ⚠️
+              <Icon name="warning" size={32} color="#ff334b" />
             </div>
 
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f87171', marginBottom: '0.5rem' }}>
+            <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ff6b7e', marginBottom: '0.5rem' }}>
               {error ? 'Verification Link Expired' : 'No Verification Token Found'}
             </h2>
 
@@ -187,13 +188,14 @@ const VerifyEmailPage = () => {
                 type="submit"
                 disabled={resending}
                 className="btn btn-secondary"
-                style={{ width: '100%', padding: '0.65rem' }}
+                style={{ width: '100%', padding: '0.7rem' }}
               >
-                {resending ? 'Sending...' : '📩 Resend Verification Link'}
+                <Icon name="mail" size={15} />
+                <span>{resending ? 'Sending...' : 'Resend Verification Link'}</span>
               </button>
             </form>
 
-            <Link to="/login" style={{ fontSize: '0.85rem', color: 'var(--accent-indigo)', fontWeight: 600 }}>
+            <Link to="/login" style={{ fontSize: '0.85rem', color: 'var(--accent-indigo)', fontWeight: 700 }}>
               ← Return to Sign In
             </Link>
           </div>

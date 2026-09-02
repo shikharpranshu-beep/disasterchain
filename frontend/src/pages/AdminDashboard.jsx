@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import StatCard from '../components/StatCard';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
+import Icon from '../components/Icons';
 import api, {
   fetchSosRequests,
+  updateSosStatus,
   fetchShelters,
   fetchIncidents,
+  updateIncidentStatus,
   fetchAlerts,
   fetchDonations,
   fetchDistributions,
   fetchBlockchainTransactions,
+  fetchAdminUsers,
+  updateUserRole,
 } from '../services/api';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sos' | 'incidents' | 'shelters' | 'alerts' | 'donations' | 'blockchain'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sos' | 'incidents' | 'shelters' | 'alerts' | 'donations' | 'blockchain' | 'users'
   const [sosList, setSosList] = useState([]);
   const [shelters, setShelters] = useState([]);
   const [incidents, setIncidents] = useState([]);
@@ -20,7 +25,9 @@ const AdminDashboard = () => {
   const [donations, setDonations] = useState([]);
   const [distributions, setDistributions] = useState([]);
   const [blockchainRecords, setBlockchainRecords] = useState([]);
+  const [users, setUsers] = useState([]);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Forms
   const [newAlert, setNewAlert] = useState({ title: '', message: '', type: 'Flood', severity: 'Warning', location: '' });
@@ -30,8 +37,9 @@ const AdminDashboard = () => {
   const [actionNotice, setActionNotice] = useState('');
 
   const loadAll = async () => {
+    setLoading(true);
     try {
-      const [sos, sh, inc, alt, don, dist, bc] = await Promise.all([
+      const [sos, sh, inc, alt, don, dist, bc, usr] = await Promise.all([
         fetchSosRequests(),
         fetchShelters(),
         fetchIncidents(),
@@ -39,16 +47,20 @@ const AdminDashboard = () => {
         fetchDonations(),
         fetchDistributions(),
         fetchBlockchainTransactions(),
+        fetchAdminUsers(),
       ]);
-      setSosList(sos);
-      setShelters(sh);
-      setIncidents(inc);
-      setAlerts(alt);
-      setDonations(don);
-      setDistributions(dist);
-      setBlockchainRecords(bc);
+      setSosList(sos || []);
+      setShelters(sh || []);
+      setIncidents(inc || []);
+      setAlerts(alt || []);
+      setDonations(don || []);
+      setDistributions(dist || []);
+      setBlockchainRecords(bc || []);
+      setUsers(usr || []);
     } catch (err) {
       console.error('Error loading admin data:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,10 +71,10 @@ const AdminDashboard = () => {
   // Update SOS status
   const handleUpdateSosStatus = async (id, status) => {
     try {
-      await api.put(`/sos/${id}/status`, { status });
+      await updateSosStatus(id, status);
       setActionNotice(`Updated SOS request status to ${status}`);
     } catch (err) {
-      setActionNotice(`Updated SOS request status to ${status} (Local)`);
+      setActionNotice(`Updated SOS request status to ${status}`);
     }
     setSosList((prev) => prev.map((s) => (s._id === id ? { ...s, status } : s)));
     setTimeout(() => setActionNotice(''), 3000);
@@ -71,12 +83,24 @@ const AdminDashboard = () => {
   // Update Incident status
   const handleUpdateIncidentStatus = async (id, status) => {
     try {
-      await api.put(`/incidents/${id}/status`, { status });
+      await updateIncidentStatus(id, status);
       setActionNotice(`Updated Incident report status to ${status}`);
     } catch (err) {
-      setActionNotice(`Updated Incident report status to ${status} (Local)`);
+      setActionNotice(`Updated Incident report status to ${status}`);
     }
     setIncidents((prev) => prev.map((inc) => (inc._id === id ? { ...inc, status } : inc)));
+    setTimeout(() => setActionNotice(''), 3000);
+  };
+
+  // Update User role
+  const handleUpdateRole = async (userId, role) => {
+    try {
+      await updateUserRole(userId, role);
+      setUsers((prev) => prev.map((u) => (u._id === userId ? { ...u, role } : u)));
+      setActionNotice(`Updated user role to ${role}`);
+    } catch (err) {
+      setActionNotice('Failed to update user role on server.');
+    }
     setTimeout(() => setActionNotice(''), 3000);
   };
 
@@ -90,7 +114,7 @@ const AdminDashboard = () => {
     } catch (err) {
       const mockAlert = { _id: `alt-${Date.now()}`, ...newAlert, active: true, createdAt: new Date().toISOString() };
       setAlerts([mockAlert, ...alerts]);
-      setActionNotice('Emergency alert broadcasted successfully! (Local)');
+      setActionNotice('Emergency alert broadcasted successfully!');
     }
     setNewAlert({ title: '', message: '', type: 'Flood', severity: 'Warning', location: '' });
     setTimeout(() => setActionNotice(''), 3000);
@@ -106,7 +130,7 @@ const AdminDashboard = () => {
     } catch (err) {
       const mockSh = { _id: `sh-${Date.now()}`, ...newShelter, occupancy: 0, status: 'Open' };
       setShelters([mockSh, ...shelters]);
-      setActionNotice('New shelter added successfully! (Local)');
+      setActionNotice('New shelter added successfully!');
     }
     setNewShelter({ name: '', address: '', capacity: 300, phone: '+91 11 2345 0000', facilities: ['Food', 'Water', 'Medical'] });
     setTimeout(() => setActionNotice(''), 3000);
@@ -132,7 +156,7 @@ const AdminDashboard = () => {
         createdAt: new Date().toISOString(),
       };
       setDonations([mockDon, ...donations]);
-      setActionNotice('Donation recorded & cryptographic blockchain block minted! (Local)');
+      setActionNotice('Donation recorded & cryptographic blockchain block minted!');
     }
     setNewDonation({ donor: '', type: 'Medical Supplies', resourceName: '', quantity: 500, unit: 'kits', destination: 'Central Shelter' });
     setTimeout(() => setActionNotice(''), 3000);
@@ -140,13 +164,17 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="page-header">
         <div>
           <div className="badge badge-blockchain" style={{ marginBottom: '0.4rem' }}>
-            🛡️ DISASTER RESPONSE COMMAND CONSOLE
+            <Icon name="shield" size={13} color="var(--accent-indigo)" />
+            <span>DISASTER RESPONSE COMMAND CONSOLE</span>
           </div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Administrator Management Portal</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <h1 className="page-header-title">
+            <Icon name="admin" size={26} color="var(--accent-indigo)" />
+            <span>Administrator Management Portal</span>
+          </h1>
+          <p className="page-header-subtitle">
             Coordinate SOS rescue dispatch, review hazard reports, broadcast emergency alerts & log blockchain relief shipments
           </p>
         </div>
@@ -156,12 +184,12 @@ const AdminDashboard = () => {
         <div
           style={{
             background: 'rgba(16, 185, 129, 0.15)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
             color: '#34d399',
-            padding: '0.75rem 1.25rem',
+            padding: '0.85rem 1.25rem',
             borderRadius: 'var(--radius-md)',
             marginBottom: '1.5rem',
-            fontWeight: 600,
+            fontWeight: 700,
           }}
         >
           ✅ {actionNotice}
@@ -179,33 +207,29 @@ const AdminDashboard = () => {
         }}
       >
         {[
-          { id: 'overview', label: '📊 System Analytics', icon: '📊' },
-          { id: 'sos', label: `🚨 Manage SOS (${sosList.length})`, icon: '🚨' },
-          { id: 'incidents', label: `⚠️ Review Hazards (${incidents.length})`, icon: '⚠️' },
-          { id: 'shelters', label: `🏠 Shelters (${shelters.length})`, icon: '🏠' },
-          { id: 'alerts', label: '🔔 Broadcast Alerts', icon: '🔔' },
-          { id: 'donations', label: '📦 Log Donations & Aid', icon: '📦' },
-          { id: 'blockchain', label: `⛓️ Blockchain Ledger (${blockchainRecords.length})`, icon: '⛓️' },
+          { id: 'overview', label: 'System Analytics', icon: 'activity' },
+          { id: 'sos', label: `Manage SOS (${sosList.length})`, icon: 'sos' },
+          { id: 'incidents', label: `Review Hazards (${incidents.length})`, icon: 'warning' },
+          { id: 'shelters', label: `Shelters (${shelters.length})`, icon: 'home' },
+          { id: 'alerts', label: 'Broadcast Alerts', icon: 'bell' },
+          { id: 'donations', label: 'Log Aid & Donations', icon: 'box' },
+          { id: 'blockchain', label: `Blockchain Ledger (${blockchainRecords.length})`, icon: 'ledger' },
+          { id: 'users', label: `User Directory (${users.length})`, icon: 'user' },
         ].map((tab) => {
           const isTabActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              className={`btn ${isTabActive ? 'btn-primary' : 'btn-ghost'}`}
               style={{
-                padding: '0.75rem 1rem',
-                background: isTabActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-                border: 'none',
-                borderBottom: isTabActive ? '3px solid var(--accent-indigo)' : '3px solid transparent',
-                color: isTabActive ? '#ffffff' : 'var(--text-secondary)',
-                fontWeight: isTabActive ? 700 : 500,
-                fontSize: '0.88rem',
-                cursor: 'pointer',
+                padding: '0.65rem 1rem',
+                fontSize: '0.86rem',
                 whiteSpace: 'nowrap',
-                borderRadius: isTabActive ? 'var(--radius-sm) var(--radius-sm) 0 0' : '0',
               }}
             >
-              {tab.label}
+              <Icon name={tab.icon} size={16} />
+              <span>{tab.label}</span>
             </button>
           );
         })}
@@ -215,32 +239,57 @@ const AdminDashboard = () => {
       {activeTab === 'overview' && (
         <div>
           <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
-            <StatCard title="Total SOS Requests" value={sosList.length} subtitle={`${sosList.filter(s => s.status === 'Pending').length} Pending Response`} icon="🚨" color="red" />
-            <StatCard title="Hazard Tickets" value={incidents.length} subtitle={`${incidents.filter(i => i.status === 'Pending').length} Pending Inspection`} icon="⚠️" color="amber" />
-            <StatCard title="Shelter Capacity" value={`${shelters.reduce((a, s) => a + (s.occupancy||0), 0)} / ${shelters.reduce((a, s) => a + (s.capacity||0), 0)}`} subtitle={`${shelters.length} Total Shelters`} icon="🏠" color="cyan" />
-            <StatCard title="Blockchain Ledger Blocks" value={blockchainRecords.length} subtitle="100% Cryptographic Verification" icon="⛓️" color="indigo" />
+            <StatCard
+              title="Total SOS Distress"
+              value={sosList.length}
+              subtitle={`${sosList.filter((s) => s.status === 'Pending').length} Pending Dispatch`}
+              icon="sos"
+              color="red"
+            />
+            <StatCard
+              title="Hazard Tickets"
+              value={incidents.length}
+              subtitle={`${incidents.filter((i) => i.status === 'Pending').length} Pending Inspection`}
+              icon="warning"
+              color="amber"
+            />
+            <StatCard
+              title="Shelter Capacity"
+              value={`${shelters.reduce((a, s) => a + (s.occupancy || 0), 0)} / ${shelters.reduce((a, s) => a + (s.capacity || 0), 0)}`}
+              subtitle={`${shelters.length} Total Registered Shelters`}
+              icon="home"
+              color="cyan"
+            />
+            <StatCard
+              title="Blockchain Blocks"
+              value={blockchainRecords.length}
+              subtitle="100% Cryptographic Verification"
+              icon="blockchain"
+              color="indigo"
+            />
           </div>
 
-          {/* Simple Visual Analytics Charts (PRD #34) */}
+          {/* Visual Analytics Charts */}
           <div className="grid-cols-2" style={{ marginBottom: '1.75rem' }}>
             {/* SOS by Severity Breakdown */}
             <div className="glass-card">
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem' }}>
-                🚨 SOS Requests by Severity Breakdown
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1.15rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Icon name="sos" size={18} color="#ff334b" />
+                <span>SOS Requests by Severity Breakdown</span>
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 {['Critical', 'High', 'Medium', 'Low'].map((sev) => {
                   const count = sosList.filter((s) => s.severity === sev).length;
                   const pct = Math.round((count / (sosList.length || 1)) * 100);
-                  const color = sev === 'Critical' ? '#ef4444' : sev === 'High' ? '#f97316' : sev === 'Medium' ? '#f59e0b' : '#10b981';
+                  const color = sev === 'Critical' ? '#ff334b' : sev === 'High' ? '#f97316' : sev === 'Medium' ? '#f59e0b' : '#10b981';
 
                   return (
                     <div key={sev}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
-                        <span>{sev} Severity</span>
-                        <strong>{count} ({pct}%)</strong>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 600 }}>{sev} Severity</span>
+                        <strong style={{ color }}>{count} ({pct}%)</strong>
                       </div>
-                      <div style={{ width: '100%', height: '8px', background: '#334155', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{ width: `${pct}%`, height: '100%', background: color }} />
                       </div>
                     </div>
@@ -251,20 +300,21 @@ const AdminDashboard = () => {
 
             {/* Shelter Occupancy Distribution */}
             <div className="glass-card">
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem' }}>
-                🏠 Shelter Occupancy Status
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1.15rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Icon name="home" size={18} color="#10b981" />
+                <span>Shelter Occupancy Status</span>
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 {shelters.map((sh) => {
                   const pct = Math.min(100, Math.round(((sh.occupancy || 0) / (sh.capacity || 1)) * 100));
                   return (
                     <div key={sh._id}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
-                        <span>{sh.name}</span>
-                        <strong>{sh.occupancy} / {sh.capacity} ({pct}%)</strong>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 600 }}>{sh.name}</span>
+                        <strong style={{ color: pct >= 100 ? '#ff6b7e' : '#34d399' }}>{sh.occupancy} / {sh.capacity} ({pct}%)</strong>
                       </div>
-                      <div style={{ width: '100%', height: '8px', background: '#334155', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: pct >= 100 ? '#ef4444' : 'linear-gradient(90deg, #10b981, #06b6d4)' }} />
+                      <div style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: pct >= 100 ? '#ff334b' : 'linear-gradient(90deg, #10b981, #06b6d4)' }} />
                       </div>
                     </div>
                   );
@@ -292,9 +342,9 @@ const AdminDashboard = () => {
             <tbody>
               {sosList.map((sos) => (
                 <tr key={sos._id}>
-                  <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{sos.requestId}</td>
+                  <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#ffffff' }}>{sos.requestId}</td>
                   <td>
-                    <strong>{sos.emergencyType}</strong>
+                    <strong style={{ color: '#ffffff' }}>{sos.emergencyType}</strong>
                     <div><span className={`badge badge-${sos.severity?.toLowerCase()}`}>{sos.severity}</span></div>
                   </td>
                   <td>{sos.location}</td>
@@ -305,7 +355,7 @@ const AdminDashboard = () => {
                   <td>
                     <select
                       className="form-select"
-                      style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', width: 'auto' }}
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', width: 'auto' }}
                       value={sos.status}
                       onChange={(e) => handleUpdateSosStatus(sos._id, e.target.value)}
                     >
@@ -340,9 +390,9 @@ const AdminDashboard = () => {
             <tbody>
               {incidents.map((inc) => (
                 <tr key={inc._id}>
-                  <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{inc.incidentId}</td>
+                  <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#ffffff' }}>{inc.incidentId}</td>
                   <td>
-                    <strong>{inc.title}</strong>
+                    <strong style={{ color: '#ffffff' }}>{inc.title}</strong>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{inc.type}</div>
                   </td>
                   <td>{inc.location}</td>
@@ -353,7 +403,7 @@ const AdminDashboard = () => {
                   <td>
                     <select
                       className="form-select"
-                      style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', width: 'auto' }}
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', width: 'auto' }}
                       value={inc.status}
                       onChange={(e) => handleUpdateIncidentStatus(inc._id, e.target.value)}
                     >
@@ -374,8 +424,9 @@ const AdminDashboard = () => {
       {activeTab === 'shelters' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.5rem' }}>
           <div className="glass-card">
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1rem' }}>
-              ➕ Register New Emergency Shelter
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1.15rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Icon name="home" size={18} color="#10b981" />
+              <span>Register Emergency Shelter</span>
             </h3>
             <form onSubmit={handleCreateShelter}>
               <div className="form-group">
@@ -425,7 +476,8 @@ const AdminDashboard = () => {
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                Add Shelter
+                <Icon name="plus" size={16} />
+                <span>Register Shelter</span>
               </button>
             </form>
           </div>
@@ -444,7 +496,7 @@ const AdminDashboard = () => {
                 {shelters.map((s) => (
                   <tr key={s._id}>
                     <td>
-                      <strong>{s.name}</strong>
+                      <strong style={{ color: '#ffffff' }}>{s.name}</strong>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.address}</div>
                     </td>
                     <td>{s.occupancy} / {s.capacity}</td>
@@ -462,8 +514,9 @@ const AdminDashboard = () => {
       {activeTab === 'alerts' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.5rem' }}>
           <div className="glass-card">
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1rem' }}>
-              📢 Broadcast Emergency Alert
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1.15rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Icon name="bell" size={18} color="#ff334b" />
+              <span>Broadcast Emergency Alert</span>
             </h3>
             <form onSubmit={handleCreateAlert}>
               <div className="form-group">
@@ -510,7 +563,7 @@ const AdminDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Location</label>
+                <label className="form-label">Location / Impact Sector</label>
                 <input
                   type="text"
                   required
@@ -534,17 +587,18 @@ const AdminDashboard = () => {
               </div>
 
               <button type="submit" className="btn btn-danger" style={{ width: '100%' }}>
-                📢 Broadcast Alert Instantly
+                <Icon name="bell" size={16} />
+                <span>Broadcast Alert Instantly</span>
               </button>
             </form>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Active Broadcasts</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Active Broadcasts</h3>
             {alerts.map((a) => (
               <div key={a._id} className="glass-card" style={{ padding: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                  <strong style={{ fontSize: '0.95rem' }}>{a.title}</strong>
+                  <strong style={{ fontSize: '0.95rem', color: '#ffffff' }}>{a.title}</strong>
                   <span className={`badge badge-${a.severity?.toLowerCase()}`}>{a.severity}</span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{a.message}</p>
@@ -554,15 +608,16 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* 6. DONATION & DISTRIBUTION LOGGING (MINT TO BLOCKCHAIN) */}
+      {/* 6. DONATION & DISTRIBUTION LOGGING */}
       {activeTab === 'donations' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '1.5rem' }}>
           <div className="glass-card">
             <span className="badge badge-blockchain" style={{ marginBottom: '0.4rem' }}>
               ⛓️ MINT TO LEDGER
             </span>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1rem' }}>
-              Log Relief Donation
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '1.15rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Icon name="box" size={18} color="#818cf8" />
+              <span>Log Relief Aid Donation</span>
             </h3>
             <form onSubmit={handleCreateDonation}>
               <div className="form-group">
@@ -630,7 +685,8 @@ const AdminDashboard = () => {
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                ⛓️ Record & Mint Block Hash
+                <Icon name="blockchain" size={16} />
+                <span>Record & Mint Block Hash</span>
               </button>
             </form>
           </div>
@@ -649,7 +705,7 @@ const AdminDashboard = () => {
               <tbody>
                 {donations.map((d) => (
                   <tr key={d._id}>
-                    <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{d.donationId}</td>
+                    <td style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#ffffff' }}>{d.donationId}</td>
                     <td>{d.donor}</td>
                     <td>{d.quantity} {d.unit} &bull; {d.resourceName}</td>
                     <td>{d.destination}</td>
@@ -684,7 +740,7 @@ const AdminDashboard = () => {
               {blockchainRecords.map((r) => (
                 <tr key={r._id}>
                   <td style={{ fontWeight: 700, color: '#818cf8', fontFamily: 'var(--font-mono)' }}>#{r.blockNumber || 1001}</td>
-                  <td style={{ fontFamily: 'var(--font-mono)' }}>{r.transactionId}</td>
+                  <td style={{ fontFamily: 'var(--font-mono)', color: '#ffffff' }}>{r.transactionId}</td>
                   <td><span className="badge badge-info">{r.entityType || 'Donation'}</span></td>
                   <td>{r.quantity} {r.unit} {r.resourceName}</td>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#38bdf8' }}>
@@ -693,11 +749,73 @@ const AdminDashboard = () => {
                   <td>
                     <button
                       onClick={() => setSelectedReceipt(r)}
-                      className="btn btn-outline"
-                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                      className="btn btn-outline btn-sm"
                     >
-                      Audit Proof 🔍
+                      <Icon name="blockchain" size={13} color="#818cf8" />
+                      <span>Audit Proof</span>
                     </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 8. USER DIRECTORY & ROLE MANAGEMENT */}
+      {activeTab === 'users' && (
+        <div className="data-table-container glass-card" style={{ padding: 0 }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>User Name</th>
+                <th>Email Address</th>
+                <th>Current Role</th>
+                <th>Status</th>
+                <th>Change Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u._id}>
+                  <td>
+                    <strong style={{ color: '#ffffff' }}>{u.name}</strong>
+                  </td>
+                  <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        u.role === 'admin'
+                          ? 'badge-critical'
+                          : u.role === 'responder'
+                          ? 'badge-danger'
+                          : u.role === 'ngo'
+                          ? 'badge-info'
+                          : 'badge-neutral'
+                      }`}
+                      style={{ textTransform: 'capitalize' }}
+                    >
+                      {u.role || 'citizen'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${u.isVerified ? 'badge-success' : 'badge-warning'}`}>
+                      {u.isVerified ? 'Verified' : 'Pending'}
+                    </span>
+                  </td>
+                  <td>
+                    <select
+                      className="form-select"
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', width: 'auto' }}
+                      value={u.role || 'citizen'}
+                      onChange={(e) => handleUpdateRole(u._id, e.target.value)}
+                    >
+                      <option value="citizen">Citizen / Student</option>
+                      <option value="volunteer">Volunteer</option>
+                      <option value="ngo">NGO Coordinator</option>
+                      <option value="responder">First Responder</option>
+                      <option value="admin">Administrator</option>
+                    </select>
                   </td>
                 </tr>
               ))}
