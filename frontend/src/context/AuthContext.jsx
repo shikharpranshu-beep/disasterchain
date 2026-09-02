@@ -82,34 +82,12 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      // Offline Demo Fallback Credentials
-      const normalizedEmail = email.toLowerCase().trim();
-      if (
-        (normalizedEmail === 'student@disasterchain.org' && password === 'student123') ||
-        (normalizedEmail === 'admin@disasterchain.org' && password === 'admin123')
-      ) {
-        const isAdmin = normalizedEmail.includes('admin');
-        const fallbackUser = {
-          _id: isAdmin ? 'demo-admin-id-67890' : 'demo-student-id-12345',
-          name: isAdmin ? 'Chief Disaster Officer' : 'Shikhar (Student)',
-          email: normalizedEmail,
-          role: isAdmin ? 'admin' : 'student',
-          isVerified: true,
-        };
-        const mockToken = `mock_jwt_token_${isAdmin ? 'admin' : 'student'}_2026`;
-        localStorage.setItem('disasterchain_token', mockToken);
-        localStorage.setItem('disasterchain_user', JSON.stringify(fallbackUser));
-        setToken(mockToken);
-        setUser(fallbackUser);
-        return { success: true, user: fallbackUser };
-      }
-
       const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
       return { success: false, message };
     }
   };
 
-  // Instant Demo Login (for evaluation)
+  // Instant Login for Evaluation Accounts
   const demoLogin = (role = 'student') => {
     if (role === 'admin') {
       return login('admin@disasterchain.org', 'admin123');

@@ -135,11 +135,11 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
               </div>
               <div style={{ textAlign: 'left' }} className="hide-on-mobile">
                 <div style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#ffffff' }}>
-                  <span>{user?.name || 'Citizen'}</span>
+                  <span>{user?.name || 'User'}</span>
                   {user?.isVerified && <Icon name="check-circle" size={13} color="#10b981" />}
                 </div>
                 <div style={{ fontSize: '0.68rem', color: isAdmin ? '#a5b4fc' : '#67e8f9', textTransform: 'capitalize' }}>
-                  {isAdmin ? '🛡️ Administrator' : '👤 Citizen'}
+                  {isAdmin ? '🛡️ Administrator' : (user?.role ? `👤 ${user.role}` : '👤 Citizen')}
                 </div>
               </div>
             </Link>
@@ -156,27 +156,11 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={() => demoLogin('student')}
-              className="btn btn-secondary hide-on-mobile"
-              style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem' }}
-              title="Instant 1-click evaluation demo student login"
-            >
-              Student Demo
-            </button>
-            <button
-              type="button"
-              onClick={() => demoLogin('admin')}
-              className="btn btn-secondary hide-on-mobile"
-              style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem', borderColor: 'rgba(99, 102, 241, 0.4)' }}
-              title="Instant 1-click evaluation demo admin login"
-            >
-              Admin Demo
-            </button>
-            <Link to="/login" className="btn btn-primary" style={{ fontSize: '0.82rem', padding: '0.48rem 0.95rem' }}>
-              <Icon name="user" size={15} />
+            <Link to="/login" className="btn btn-secondary" style={{ fontSize: '0.82rem', padding: '0.48rem 0.95rem' }}>
               <span>Sign In</span>
+            </Link>
+            <Link to="/register" className="btn btn-primary" style={{ fontSize: '0.82rem', padding: '0.48rem 0.95rem' }}>
+              <span>Register</span>
             </Link>
           </div>
         )}

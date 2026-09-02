@@ -17,17 +17,21 @@ const MyReportsPage = () => {
     try {
       const [allSos, allInc] = await Promise.all([fetchSosRequests(), fetchIncidents()]);
 
-      // Filter by user name if user is logged in
-      const userName = user?.name?.toLowerCase().trim();
-      let mySos = allSos || [];
-      let myInc = allInc || [];
-
-      if (userName) {
-        const userSos = mySos.filter((s) => s.name?.toLowerCase().trim() === userName);
-        if (userSos.length > 0) mySos = userSos;
-
-        const userInc = myInc.filter((i) => i.reporterName?.toLowerCase().trim() === userName);
-        if (userInc.length > 0) myInc = userInc;
+      // Filter strictly by authenticated user's ID or name
+      if (user?._id || user?.name) {
+        const userId = user?._id?.toString();
+        const userName = user?.name?.toLowerCase().trim();
+        mySos = (allSos || []).filter(
+          (s) => (userId && (s.reportedBy === userId || s.reportedBy?._id?.toString() === userId)) ||
+                 (userName && s.name?.toLowerCase().trim() === userName)
+        );
+        myInc = (allInc || []).filter(
+          (i) => (userId && (i.reportedBy === userId || i.reportedBy?._id?.toString() === userId)) ||
+                 (userName && i.reporterName?.toLowerCase().trim() === userName)
+        );
+      } else {
+        mySos = [];
+        myInc = [];
       }
 
       setSosList(mySos);

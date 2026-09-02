@@ -45,7 +45,6 @@ export const getEntityCoordinates = (item, index = 0, typePrefix = 'sos') => {
     return {
       lat: item.latitude,
       lng: item.longitude,
-      isDemoCoords: false,
     };
   }
 
@@ -59,7 +58,6 @@ export const getEntityCoordinates = (item, index = 0, typePrefix = 'sos') => {
         return {
           lat: parsedLat,
           lng: parsedLng,
-          isDemoCoords: false,
         };
       }
     }
@@ -71,7 +69,6 @@ export const getEntityCoordinates = (item, index = 0, typePrefix = 'sos') => {
         return {
           lat: coords[0],
           lng: coords[1],
-          isDemoCoords: false,
         };
       }
     }
@@ -85,29 +82,13 @@ export const getEntityCoordinates = (item, index = 0, typePrefix = 'sos') => {
         return {
           lat: coords[0],
           lng: coords[1],
-          isDemoCoords: false,
         };
       }
     }
   }
 
-  // 5. Deterministic calculation around baseline for items with no explicit lat/long
-  const seedStr = (item?._id || item?.requestId || item?.incidentId || item?.name || `${typePrefix}-${index}`);
-  const seed = String(seedStr)
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-
-  const angle = (seed % 360) * (Math.PI / 180);
-  const distance = 0.012 + ((seed % 25) / 1000); // 1.2km to 3.7km radius
-
-  const generatedLat = parseFloat((DEFAULT_CENTER[0] + Math.sin(angle) * distance).toFixed(6));
-  const generatedLng = parseFloat((DEFAULT_CENTER[1] + Math.cos(angle) * distance * 1.15).toFixed(6));
-
-  return {
-    lat: generatedLat,
-    lng: generatedLng,
-    isDemoCoords: true,
-  };
+  // 5. If no valid coordinates can be parsed or matched, return null to skip
+  return null;
 };
 
 /**
@@ -270,6 +251,7 @@ const DisasterMap = ({
     // 🔴 SOS Requests
     (sosList || []).forEach((item, idx) => {
       const coords = getEntityCoordinates(item, idx, 'sos');
+      if (!coords) return;
       list.push({
         id: `sos-${item._id || idx}`,
         type: 'sos',
@@ -290,6 +272,7 @@ const DisasterMap = ({
     // 🟢 Shelters
     (shelters || []).forEach((item, idx) => {
       const coords = getEntityCoordinates(item, idx, 'shelter');
+      if (!coords) return;
       list.push({
         id: `shelter-${item._id || idx}`,
         type: 'shelter',
@@ -311,6 +294,7 @@ const DisasterMap = ({
     // 🟠 Affected / Hazard Areas
     (affectedAreas || []).forEach((item, idx) => {
       const coords = getEntityCoordinates(item, idx, 'area');
+      if (!coords) return;
       list.push({
         id: `area-${item._id || idx}`,
         type: 'area',
@@ -330,6 +314,7 @@ const DisasterMap = ({
     // 🔵 Hospitals & Emergency Resources
     (resources || []).forEach((item, idx) => {
       const coords = getEntityCoordinates(item, idx, 'resource');
+      if (!coords) return;
       list.push({
         id: `res-${item._id || idx}`,
         type: 'resource',
@@ -348,6 +333,7 @@ const DisasterMap = ({
     // ⚡ Hazard / Incident Reports
     (incidents || []).forEach((item, idx) => {
       const coords = getEntityCoordinates(item, idx, 'incident');
+      if (!coords) return;
       list.push({
         id: `inc-${item._id || idx}`,
         type: 'incident',
@@ -757,7 +743,7 @@ const DisasterMap = ({
 
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.35rem', marginTop: '0.35rem', display: 'flex', justifyContent: 'space-between' }}>
                       <span>Lat: {marker.coords.lat.toFixed(4)}, Lng: {marker.coords.lng.toFixed(4)}</span>
-                      {marker.coords.isDemoCoords && <span>(Campus Grid)</span>}
+                      <span>Verified Location</span>
                     </div>
                   </div>
                 </Popup>

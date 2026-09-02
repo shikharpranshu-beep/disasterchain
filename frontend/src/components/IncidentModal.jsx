@@ -60,12 +60,6 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
         () => {
           setDetectingGps(false);
           setGpsStatus('denied');
-          setFormData((prev) => ({
-            ...prev,
-            location: prev.location || 'North Campus, Academic Block 3',
-            latitude: 28.6180,
-            longitude: 77.2050,
-          }));
         },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );

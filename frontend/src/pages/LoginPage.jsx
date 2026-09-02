@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { login, demoLogin, resendVerification } = useAuth();
+  const { login, resendVerification } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,21 +50,6 @@ const LoginPage = () => {
     const res = await resendVerification(unverifiedEmail || email);
     setResending(false);
     setResendStatus(res.message);
-  };
-
-  const handleDemo = async (role) => {
-    setError('');
-    setIsUnverified(false);
-    setLoading(true);
-    const result = await demoLogin(role);
-    setLoading(false);
-    if (result.success) {
-      if (role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
-    }
   };
 
   return (
@@ -164,48 +149,6 @@ const LoginPage = () => {
             ℹ️ {resendStatus}
           </div>
         )}
-
-        {/* 1-Click Evaluation Demo Logins */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.55rem', textAlign: 'center', fontWeight: 600 }}>
-            ⚡ Instant Evaluation Demo Accounts:
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
-            <button
-              type="button"
-              onClick={() => handleDemo('student')}
-              className="btn btn-secondary"
-              style={{ fontSize: '0.82rem', padding: '0.6rem 0.5rem' }}
-            >
-              🎓 Student Demo
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemo('admin')}
-              className="btn btn-secondary"
-              style={{ fontSize: '0.82rem', padding: '0.6rem 0.5rem', borderColor: 'rgba(99, 102, 241, 0.4)' }}
-            >
-              🛡️ Admin Demo
-            </button>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            marginBottom: '1.5rem',
-            color: 'var(--text-muted)',
-            fontSize: '0.72rem',
-            fontWeight: 700,
-            letterSpacing: '0.05em',
-          }}
-        >
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
-          <span>OR SIGN IN WITH EMAIL</span>
-          <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
-        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">

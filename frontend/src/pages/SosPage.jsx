@@ -84,12 +84,6 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
         () => {
           setDetectingGps(false);
           setGpsStatus('denied');
-          setFormData((prev) => ({
-            ...prev,
-            location: prev.location || 'North Campus, Building 4 (Geofence Default)',
-            latitude: 28.6139,
-            longitude: 77.2090,
-          }));
         },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );

@@ -67,15 +67,6 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
         (error) => {
           setDetectingGps(false);
           setGpsStatus('denied');
-          if (!isAuto) {
-            // If user clicked manually and permission denied, provide fallback campus geofence
-            setFormData((prev) => ({
-              ...prev,
-              location: prev.location || 'North Campus, Building 4 (Geofence Default)',
-              latitude: 28.6139,
-              longitude: 77.2090,
-            }));
-          }
         },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );

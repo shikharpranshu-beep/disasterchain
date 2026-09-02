@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import StatCard from '../components/StatCard';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
 import Icon from '../components/Icons';
-import api, {
+import {
   fetchSosRequests,
   updateSosStatus,
   fetchShelters,
+  createShelter,
   fetchIncidents,
   updateIncidentStatus,
   fetchAlerts,
+  createAlert,
   fetchDonations,
+  createDonation,
   fetchDistributions,
   fetchBlockchainTransactions,
   fetchAdminUsers,
@@ -43,7 +46,7 @@ const AdminDashboard = () => {
         fetchSosRequests(),
         fetchShelters(),
         fetchIncidents(),
-        fetchAlerts({ activeOnly: 'false' }),
+        fetchAlerts(),
         fetchDonations(),
         fetchDistributions(),
         fetchBlockchainTransactions(),
@@ -58,7 +61,7 @@ const AdminDashboard = () => {
       setBlockchainRecords(bc || []);
       setUsers(usr || []);
     } catch (err) {
-      console.error('Error loading admin data:', err);
+      console.error('Failed to load admin data:', err);
     } finally {
       setLoading(false);
     }
@@ -72,11 +75,11 @@ const AdminDashboard = () => {
   const handleUpdateSosStatus = async (id, status) => {
     try {
       await updateSosStatus(id, status);
-      setActionNotice(`Updated SOS request status to ${status}`);
+      setActionNotice(`SOS #${id} status updated to ${status}`);
+      setSosList((prev) => prev.map((s) => (s._id === id ? { ...s, status } : s)));
     } catch (err) {
-      setActionNotice(`Updated SOS request status to ${status}`);
+      setActionNotice('Failed to update SOS status on server.');
     }
-    setSosList((prev) => prev.map((s) => (s._id === id ? { ...s, status } : s)));
     setTimeout(() => setActionNotice(''), 3000);
   };
 
@@ -84,11 +87,11 @@ const AdminDashboard = () => {
   const handleUpdateIncidentStatus = async (id, status) => {
     try {
       await updateIncidentStatus(id, status);
-      setActionNotice(`Updated Incident report status to ${status}`);
+      setActionNotice(`Incident status updated to ${status}`);
+      setIncidents((prev) => prev.map((inc) => (inc._id === id ? { ...inc, status } : inc)));
     } catch (err) {
-      setActionNotice(`Updated Incident report status to ${status}`);
+      setActionNotice('Failed to update incident status on server.');
     }
-    setIncidents((prev) => prev.map((inc) => (inc._id === id ? { ...inc, status } : inc)));
     setTimeout(() => setActionNotice(''), 3000);
   };
 
@@ -108,15 +111,15 @@ const AdminDashboard = () => {
   const handleCreateAlert = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/alerts', newAlert);
-      setAlerts([res.data.data, ...alerts]);
+      const res = await createAlert(newAlert);
+      if (res.data) {
+        setAlerts([res.data, ...alerts]);
+      }
       setActionNotice('Emergency alert broadcasted successfully!');
+      setNewAlert({ title: '', message: '', type: 'Flood', severity: 'Warning', location: '' });
     } catch (err) {
-      const mockAlert = { _id: `alt-${Date.now()}`, ...newAlert, active: true, createdAt: new Date().toISOString() };
-      setAlerts([mockAlert, ...alerts]);
-      setActionNotice('Emergency alert broadcasted successfully!');
+      setActionNotice('Failed to broadcast alert. Check server connection.');
     }
-    setNewAlert({ title: '', message: '', type: 'Flood', severity: 'Warning', location: '' });
     setTimeout(() => setActionNotice(''), 3000);
   };
 
@@ -124,15 +127,15 @@ const AdminDashboard = () => {
   const handleCreateShelter = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/shelters', newShelter);
-      setShelters([res.data.data, ...shelters]);
+      const res = await createShelter(newShelter);
+      if (res.data) {
+        setShelters([res.data, ...shelters]);
+      }
       setActionNotice('New shelter added successfully!');
+      setNewShelter({ name: '', address: '', capacity: 300, phone: '+91 11 2345 0000', facilities: ['Food', 'Water', 'Medical'] });
     } catch (err) {
-      const mockSh = { _id: `sh-${Date.now()}`, ...newShelter, occupancy: 0, status: 'Open' };
-      setShelters([mockSh, ...shelters]);
-      setActionNotice('New shelter added successfully!');
+      setActionNotice('Failed to add shelter. Check server connection.');
     }
-    setNewShelter({ name: '', address: '', capacity: 300, phone: '+91 11 2345 0000', facilities: ['Food', 'Water', 'Medical'] });
     setTimeout(() => setActionNotice(''), 3000);
   };
 
@@ -140,25 +143,18 @@ const AdminDashboard = () => {
   const handleCreateDonation = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/donations', newDonation);
-      setDonations([res.data.data, ...donations]);
-      if (res.data.blockchain) {
-        setBlockchainRecords([res.data.blockchain, ...blockchainRecords]);
+      const res = await createDonation(newDonation);
+      if (res.data) {
+        setDonations([res.data, ...donations]);
+      }
+      if (res.blockchain) {
+        setBlockchainRecords([res.blockchain, ...blockchainRecords]);
       }
       setActionNotice('Donation recorded & cryptographic blockchain block minted!');
+      setNewDonation({ donor: '', type: 'Medical Supplies', resourceName: '', quantity: 500, unit: 'kits', destination: 'Central Shelter' });
     } catch (err) {
-      const mockDon = {
-        _id: `don-${Date.now()}`,
-        donationId: `DON-${Math.floor(1000 + Math.random() * 9000)}`,
-        ...newDonation,
-        status: 'Verified',
-        blockchainTransactionId: `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
-        createdAt: new Date().toISOString(),
-      };
-      setDonations([mockDon, ...donations]);
-      setActionNotice('Donation recorded & cryptographic blockchain block minted!');
+      setActionNotice('Failed to record donation. Check server connection.');
     }
-    setNewDonation({ donor: '', type: 'Medical Supplies', resourceName: '', quantity: 500, unit: 'kits', destination: 'Central Shelter' });
     setTimeout(() => setActionNotice(''), 3000);
   };
 

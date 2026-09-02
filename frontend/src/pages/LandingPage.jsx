@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icons';
 
 const LandingPage = ({ onOpenSos }) => {
-  const { demoLogin, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const disasterCards = [
     { title: 'Earthquake', icon: '🏚️', desc: 'Seismic tremor precautions, structural safety & Drop-Cover-Hold protocols.' },
@@ -104,39 +104,6 @@ const LandingPage = ({ onOpenSos }) => {
             <Icon name="book" size={18} />
             <span>Safety Protocols</span>
           </Link>
-        </div>
-
-        {/* 1-Click Demo Testing Shortcuts for Student Evaluation */}
-        <div
-          style={{
-            marginTop: '2.5rem',
-            padding: '0.85rem 1.25rem',
-            background: 'rgba(15, 24, 44, 0.75)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.85rem',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-          }}
-        >
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            ⚡ Instant Evaluation Demo Accounts:
-          </span>
-          <button
-            onClick={() => demoLogin('student')}
-            className="btn btn-secondary btn-sm"
-          >
-            🎓 Login as Demo Student
-          </button>
-          <button
-            onClick={() => demoLogin('admin')}
-            className="btn btn-secondary btn-sm"
-            style={{ borderColor: 'rgba(99, 102, 241, 0.4)' }}
-          >
-            🛡️ Login as Demo Admin
-          </button>
         </div>
       </section>
 

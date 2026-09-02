@@ -34,11 +34,16 @@ const ProfilePage = () => {
           fetchIncidents(),
         ]);
 
-        const userSos = allSos.filter(
-          (s) => s.reportedBy === user?._id || s.name === user?.name || true
+        const userId = user?._id?.toString();
+        const userName = user?.name?.toLowerCase().trim();
+
+        const userSos = (allSos || []).filter(
+          (s) => (userId && (s.reportedBy === userId || s.reportedBy?._id?.toString() === userId)) ||
+                 (userName && s.name?.toLowerCase().trim() === userName)
         );
-        const userInc = allInc.filter(
-          (i) => i.reportedBy === user?._id || i.reporterName === user?.name || true
+        const userInc = (allInc || []).filter(
+          (i) => (userId && (i.reportedBy === userId || i.reportedBy?._id?.toString() === userId)) ||
+                 (userName && i.reporterName?.toLowerCase().trim() === userName)
         );
 
         setSosList(userSos.slice(0, 5));
