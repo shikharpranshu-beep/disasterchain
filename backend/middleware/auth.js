@@ -37,7 +37,7 @@ const protect = async (req, res, next) => {
           (u) => u._id === decoded.id || (decoded.email && u.email === decoded.email)
         ) || {
           _id: decoded.id,
-          role: decoded.role || 'user',
+          role: decoded.role || 'citizen',
           name: decoded.name || 'Demo User',
           email: decoded.email || 'student@disasterchain.org',
           isVerified: true,

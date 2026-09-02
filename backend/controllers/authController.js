@@ -425,9 +425,9 @@ exports.login = async (req, res) => {
       const isAdmin = normalizedEmail.includes('admin');
       const demoUser = {
         _id: isAdmin ? 'demo-admin-id-67890' : 'demo-student-id-12345',
-        name: isAdmin ? 'Chief Disaster Officer' : 'Shikhar (Student)',
+        name: isAdmin ? 'Chief Disaster Officer' : 'Shikhar (Volunteer)',
         email: normalizedEmail,
-        role: isAdmin ? 'admin' : 'student',
+        role: isAdmin ? 'admin' : 'volunteer',
         isVerified: true,
       };
 
