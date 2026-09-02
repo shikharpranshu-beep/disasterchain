@@ -396,7 +396,7 @@ exports.login = async (req, res) => {
           isUnverified: true,
           email: user.email,
           message:
-            'Your account email is not verified yet. Please check your inbox or request a new verification link.',
+            'Your account is awaiting verification. Please verify your email or contact an administrator.',
         });
       }
 
@@ -435,7 +435,7 @@ exports.login = async (req, res) => {
           isUnverified: true,
           email: memoryUser.email,
           message:
-            'Your account email is not verified yet. Please check your inbox or request a new verification link.',
+            'Your account is awaiting verification. Please verify your email or contact an administrator.',
         });
       }
 
@@ -897,6 +897,99 @@ exports.updateUserRole = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error updating user role.',
+    });
+  }
+};
+
+// @desc    Manually verify user account (Admin only approval)
+// @route   PUT /api/auth/users/:id/verify
+// @access  Private/Admin
+exports.adminVerifyUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required.',
+      });
+    }
+
+    if (isDbConnected()) {
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid user ID specified.',
+        });
+      }
+
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User account not found.',
+        });
+      }
+
+      user.isVerified = true;
+      user.verificationToken = undefined;
+      user.verificationTokenExpires = undefined;
+      user.updatedAt = new Date();
+      await user.save({ validateBeforeSave: false });
+
+      // Attempt to dispatch welcome/approval email via emailService (non-blocking)
+      sendWelcomeEmail({
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      }).catch((err) => {
+        console.warn(`[Admin Verify] Notice: Welcome email could not be delivered to ${user.email}: ${err.message}`);
+      });
+
+      const safeUser = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+
+      return res.json({
+        success: true,
+        message: 'User account verified successfully.',
+        data: safeUser,
+      });
+    }
+
+    // Fallback for in-memory store
+    const memUser = memoryStore.users.find((u) => u._id === id);
+    if (!memUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User account not found.',
+      });
+    }
+    memUser.isVerified = true;
+    memUser.verificationToken = undefined;
+
+    return res.json({
+      success: true,
+      message: 'User account verified successfully.',
+      data: {
+        _id: memUser._id,
+        name: memUser.name,
+        email: memUser.email,
+        role: memUser.role,
+        isVerified: true,
+      },
+    });
+  } catch (error) {
+    console.error('Admin verify user error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error during administrator user verification.',
     });
   }
 };

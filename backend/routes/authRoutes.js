@@ -13,6 +13,7 @@ const {
   logout,
   getUsers,
   updateUserRole,
+  adminVerifyUser,
   checkEmailStatus,
 } = require('../controllers/authController');
 const { protect, authorizeAdmin } = require('../middleware/auth');
@@ -34,9 +35,10 @@ router.get('/me', protect, getMe);
 router.put('/updatedetails', protect, updateDetails);
 router.put('/preferences', protect, updatePreferences);
 
-// Admin endpoints
+// Admin endpoints (strictly protected by protect + authorizeAdmin)
 router.get('/users', protect, authorizeAdmin, getUsers);
 router.put('/users/:id/role', protect, authorizeAdmin, updateUserRole);
+router.put('/users/:id/verify', protect, authorizeAdmin, adminVerifyUser);
 
 // Development-only zero-cost verification endpoint (Strictly omitted in production)
 if (process.env.NODE_ENV !== 'production') {

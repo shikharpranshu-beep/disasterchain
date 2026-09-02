@@ -17,6 +17,7 @@ import {
   fetchBlockchainTransactions,
   fetchAdminUsers,
   updateUserRole,
+  adminVerifyUser,
 } from '../services/api';
 
 const AdminDashboard = () => {
@@ -30,6 +31,9 @@ const AdminDashboard = () => {
   const [blockchainRecords, setBlockchainRecords] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [confirmVerifyUser, setConfirmVerifyUser] = useState(null);
+  const [verifyingUserId, setVerifyingUserId] = useState(null);
+  const [userFilter, setUserFilter] = useState('all'); // 'all' | 'pending' | 'verified'
   const [loading, setLoading] = useState(true);
 
   // Forms
@@ -105,6 +109,22 @@ const AdminDashboard = () => {
       setActionNotice('Failed to update user role on server.');
     }
     setTimeout(() => setActionNotice(''), 3000);
+  };
+
+  // Admin Manual User Verification
+  const handleVerifyUser = async (userId) => {
+    try {
+      setVerifyingUserId(userId);
+      await adminVerifyUser(userId);
+      setActionNotice('User account verified successfully.');
+      setUsers((prev) => prev.map((u) => (u._id === userId ? { ...u, isVerified: true } : u)));
+      setConfirmVerifyUser(null);
+    } catch (err) {
+      setActionNotice(err.response?.data?.message || 'Failed to verify user.');
+    } finally {
+      setVerifyingUserId(null);
+    }
+    setTimeout(() => setActionNotice(''), 4000);
   };
 
   // Create Alert
@@ -234,7 +254,7 @@ const AdminDashboard = () => {
       {/* 1. OVERVIEW & ANALYTICS CHARTS */}
       {activeTab === 'overview' && (
         <div>
-          <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
             <StatCard
               title="Total SOS Distress"
               value={sosList.length}
@@ -263,6 +283,22 @@ const AdminDashboard = () => {
               icon="blockchain"
               color="indigo"
             />
+            <div
+              onClick={() => {
+                setActiveTab('users');
+                setUserFilter('pending');
+              }}
+              style={{ cursor: 'pointer' }}
+              title="Click to view and approve pending users"
+            >
+              <StatCard
+                title="Pending Verifications"
+                value={users.filter((u) => !u.isVerified).length}
+                subtitle={`${users.filter((u) => !u.isVerified).length} Awaiting Approval →`}
+                icon="user"
+                color={users.filter((u) => !u.isVerified).length > 0 ? 'amber' : 'mint'}
+              />
+            </div>
           </div>
 
           {/* Visual Analytics Charts */}
@@ -758,65 +794,312 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* 8. USER DIRECTORY & ROLE MANAGEMENT */}
+      {/* 8. USER DIRECTORY & PENDING VERIFICATIONS MANAGEMENT */}
       {activeTab === 'users' && (
-        <div className="data-table-container glass-card" style={{ padding: 0 }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>User Name</th>
-                <th>Email Address</th>
-                <th>Current Role</th>
-                <th>Status</th>
-                <th>Change Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u._id}>
-                  <td>
-                    <strong style={{ color: '#ffffff' }}>{u.name}</strong>
-                  </td>
-                  <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        u.role === 'admin'
-                          ? 'badge-critical'
-                          : u.role === 'responder'
-                          ? 'badge-danger'
-                          : u.role === 'ngo'
-                          ? 'badge-info'
-                          : 'badge-neutral'
-                      }`}
-                      style={{ textTransform: 'capitalize' }}
-                    >
-                      {u.role || 'citizen'}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+          {/* Top Sub-Navigation & Filter */}
+          <div
+            className="spatial-panel"
+            style={{
+              padding: '1rem 1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+            }}
+          >
+            <div>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem 0' }}>
+                Personnel & Operator Management
+              </h2>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                Approve pending registrations, audit roles, and assign security clearances
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setUserFilter('all')}
+                className={`btn btn-sm ${userFilter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                All Operators ({users.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserFilter('pending')}
+                className={`btn btn-sm ${userFilter === 'pending' ? 'btn-primary' : 'btn-ghost'}`}
+                style={users.filter((u) => !u.isVerified).length > 0 && userFilter !== 'pending' ? { border: '1px solid var(--amber)', color: 'var(--amber)' } : {}}
+              >
+                Pending Approval ({users.filter((u) => !u.isVerified).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserFilter('verified')}
+                className={`btn btn-sm ${userFilter === 'verified' ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                Verified ({users.filter((u) => u.isVerified).length})
+              </button>
+            </div>
+          </div>
+
+          {/* Dedicated Section: PENDING VERIFICATIONS */}
+          {(userFilter === 'all' || userFilter === 'pending') && (
+            <div className="spatial-panel" style={{ padding: '1.5rem', border: '1px solid rgba(245, 158, 11, 0.35)', background: 'rgba(245, 158, 11, 0.03)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span style={{ fontSize: '1.25rem' }}>⏳</span>
+                  <div>
+                    <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.05rem', fontWeight: 800 }}>
+                      PENDING VERIFICATIONS
+                    </h3>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--amber)' }}>
+                      Awaiting administrator approval ({users.filter((u) => !u.isVerified).length} operators)
                     </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${u.isVerified ? 'badge-success' : 'badge-warning'}`}>
-                      {u.isVerified ? 'Verified' : 'Pending'}
-                    </span>
-                  </td>
-                  <td>
-                    <select
-                      className="form-select"
-                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', width: 'auto' }}
-                      value={u.role || 'citizen'}
-                      onChange={(e) => handleUpdateRole(u._id, e.target.value)}
-                    >
-                      <option value="citizen">Citizen / Student</option>
-                      <option value="volunteer">Volunteer</option>
-                      <option value="ngo">NGO Coordinator</option>
-                      <option value="responder">First Responder</option>
-                      <option value="admin">Administrator</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              </div>
+
+              {users.filter((u) => !u.isVerified).length === 0 ? (
+                <div style={{ padding: '1.75rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  ✓ All operator accounts are verified. No pending approvals in queue.
+                </div>
+              ) : (
+                <div className="data-table-container glass-card" style={{ padding: 0, margin: 0 }}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Registered Date</th>
+                        <th>Verification Status</th>
+                        <th style={{ textAlign: 'center' }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users
+                        .filter((u) => !u.isVerified)
+                        .map((u) => (
+                          <tr key={u._id}>
+                            <td>
+                              <strong style={{ color: '#ffffff' }}>{u.name}</strong>
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
+                            <td>
+                              <span
+                                className={`badge ${
+                                  u.role === 'admin'
+                                    ? 'badge-critical'
+                                    : u.role === 'responder'
+                                    ? 'badge-danger'
+                                    : u.role === 'ngo'
+                                    ? 'badge-info'
+                                    : 'badge-neutral'
+                                }`}
+                                style={{ textTransform: 'capitalize' }}
+                              >
+                                {u.role || 'citizen'}
+                              </span>
+                            </td>
+                            <td style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                              {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recent'}
+                            </td>
+                            <td>
+                              <span className="badge badge-warning">
+                                Pending
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmVerifyUser(u)}
+                                className="btn btn-primary btn-sm"
+                                style={{
+                                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                  borderColor: '#10b981',
+                                  padding: '0.35rem 0.85rem',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 800,
+                                }}
+                              >
+                                [ VERIFY ]
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Complete Directory Table */}
+          {userFilter !== 'pending' && (
+            <div className="data-table-container glass-card" style={{ padding: 0 }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>User Name</th>
+                    <th>Email Address</th>
+                    <th>Current Role</th>
+                    <th>Status</th>
+                    <th>Change Role</th>
+                    <th>Approval Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users
+                    .filter((u) => (userFilter === 'verified' ? u.isVerified : true))
+                    .map((u) => (
+                      <tr key={u._id}>
+                        <td>
+                          <strong style={{ color: '#ffffff' }}>{u.name}</strong>
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              u.role === 'admin'
+                                ? 'badge-critical'
+                                : u.role === 'responder'
+                                ? 'badge-danger'
+                                : u.role === 'ngo'
+                                ? 'badge-info'
+                                : 'badge-neutral'
+                            }`}
+                            style={{ textTransform: 'capitalize' }}
+                          >
+                            {u.role || 'citizen'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${u.isVerified ? 'badge-success' : 'badge-warning'}`}>
+                            {u.isVerified ? 'Verified' : 'Pending'}
+                          </span>
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', width: 'auto' }}
+                            value={u.role || 'citizen'}
+                            onChange={(e) => handleUpdateRole(u._id, e.target.value)}
+                          >
+                            <option value="citizen">Citizen / Student</option>
+                            <option value="volunteer">Volunteer</option>
+                            <option value="ngo">NGO Coordinator</option>
+                            <option value="responder">First Responder</option>
+                            <option value="admin">Administrator</option>
+                          </select>
+                        </td>
+                        <td>
+                          {!u.isVerified ? (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmVerifyUser(u)}
+                              className="btn btn-outline btn-sm"
+                              style={{ borderColor: 'var(--mint)', color: 'var(--mint)' }}
+                            >
+                              Verify Account
+                            </button>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>✓ Active</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Confirmation Modal for Admin Verification */}
+      {confirmVerifyUser && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(3, 7, 18, 0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="spatial-panel"
+            style={{
+              maxWidth: '460px',
+              width: '100%',
+              padding: '2rem',
+              background: '#0c1424',
+              border: '1px solid var(--border-highlight)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>🛡️</span>
+              <div>
+                <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.15rem', fontWeight: 800 }}>
+                  Administrator User Approval
+                </h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--cyan)' }}>MANUAL OPERATOR VERIFICATION</span>
+              </div>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+              Verify this user account?
+            </p>
+
+            <div
+              style={{
+                background: 'rgba(5, 8, 14, 0.6)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-xs)',
+                padding: '1rem',
+                marginBottom: '1.5rem',
+                fontSize: '0.82rem',
+              }}
+            >
+              <div style={{ marginBottom: '0.35rem' }}>
+                <strong style={{ color: '#ffffff' }}>Operator:</strong> {confirmVerifyUser.name}
+              </div>
+              <div style={{ marginBottom: '0.35rem' }}>
+                <strong style={{ color: '#ffffff' }}>Email:</strong> {confirmVerifyUser.email}
+              </div>
+              <div>
+                <strong style={{ color: '#ffffff' }}>Role:</strong>{' '}
+                <span style={{ textTransform: 'capitalize', color: 'var(--cyan)', fontWeight: 700 }}>
+                  {confirmVerifyUser.role}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setConfirmVerifyUser(null)}
+                className="btn btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={verifyingUserId === confirmVerifyUser._id}
+                onClick={() => handleVerifyUser(confirmVerifyUser._id)}
+                className="btn btn-primary"
+                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', borderColor: '#10b981' }}
+              >
+                {verifyingUserId === confirmVerifyUser._id ? 'Verifying...' : 'Verify Account'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

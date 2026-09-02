@@ -183,6 +183,11 @@ export const updateUserRole = async (userId, role) => {
   return res.data;
 };
 
+export const adminVerifyUser = async (userId) => {
+  const res = await api.put(`/auth/users/${userId}/verify`);
+  return res.data;
+};
+
 export const logoutUser = async () => {
   try {
     await api.post('/auth/logout');
