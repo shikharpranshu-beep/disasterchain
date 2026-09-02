@@ -258,26 +258,52 @@ exports.sendPasswordResetEmail = async ({ email, name, token }) => {
   });
 
   const resend = getResendClient();
+  const fromEmail = getFromEmail();
 
   if (resend) {
     try {
-      console.log('📧 Sending password reset email via Resend to:', email);
+      console.log(`📧 [Resend Dispatch] Initiating password reset email to: ${email} | From: ${fromEmail}`);
       const { data, error } = await resend.emails.send({
-        from: getFromEmail(),
+        from: fromEmail,
         to: [email],
         subject,
         html,
       });
 
       if (error) {
-        console.error('❌ Resend password reset error:', error);
-        throw new Error(error.message || 'Failed to send password reset email');
+        console.error('❌ Resend API error response:', JSON.stringify(error));
+        throw new Error(error.message || 'Failed to send password reset email via Resend');
       }
 
-      console.log('✅ Password reset email sent via Resend:', data?.id);
-      return { success: true, mode: 'resend', id: data?.id };
+      const emailId = data?.id;
+      console.log('✅ Resend API accepted email. Request ID:', emailId);
+
+      // Query Resend for real-time delivery event
+      let deliveryStatus = 'accepted';
+      let lastEvent = 'sent';
+      try {
+        const check = await resend.emails.get(emailId);
+        if (check?.data) {
+          lastEvent = check.data.last_event || 'sent';
+          deliveryStatus = lastEvent;
+          console.log(`📊 [Resend Event] ID: ${emailId} | Last Event: ${lastEvent}`);
+        }
+      } catch (evtErr) {
+        console.log('ℹ️ Deferred Resend event lookup:', evtErr.message);
+      }
+
+      return {
+        success: true,
+        mode: 'resend',
+        id: emailId,
+        from: fromEmail,
+        recipient: email,
+        lastEvent,
+        deliveryStatus,
+      };
     } catch (err) {
-      console.error('❌ Password reset email error:', err.message);
+      console.error('❌ Resend password reset error:', err.message);
+      return { success: false, mode: 'error', error: err.message, from: fromEmail, recipient: email };
     }
   }
 
@@ -288,7 +314,26 @@ exports.sendPasswordResetEmail = async ({ email, name, token }) => {
   console.log(`Password Reset URL: ${resetUrl}`);
   console.log('======================================================\n');
 
-  return { success: true, mode: 'console', resetUrl };
+  return { success: true, mode: 'console', resetUrl, from: fromEmail, recipient: email };
+};
+
+/**
+ * Get delivery status of an email directly from Resend
+ */
+exports.getEmailDeliveryStatus = async (emailId) => {
+  const resend = getResendClient();
+  if (!resend) {
+    return { available: false, reason: 'RESEND_API_KEY is not configured on this instance' };
+  }
+  try {
+    const res = await resend.emails.get(emailId);
+    if (res.error) {
+      return { available: false, error: res.error };
+    }
+    return { available: true, data: res.data };
+  } catch (err) {
+    return { available: false, error: err.message };
+  }
 };
 
 /**

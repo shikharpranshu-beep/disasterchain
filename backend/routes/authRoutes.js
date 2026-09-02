@@ -12,6 +12,7 @@ const {
   logout,
   getUsers,
   updateUserRole,
+  checkEmailStatus,
 } = require('../controllers/authController');
 const { protect, authorizeAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
@@ -22,7 +23,9 @@ router.post('/login', authLimiter, login);
 router.post('/verify-email', verifyEmail);
 router.post('/resend-verification', authLimiter, resendVerification);
 router.post('/forgot-password', authLimiter, forgotPassword);
+router.post('/forgotpassword', authLimiter, forgotPassword);
 router.post('/reset-password', authLimiter, resetPassword);
+router.get('/email-status/:id', checkEmailStatus);
 router.post('/logout', logout);
 
 // Protected user endpoints

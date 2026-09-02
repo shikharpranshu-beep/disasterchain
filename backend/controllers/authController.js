@@ -9,6 +9,7 @@ const {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendPasswordChangedConfirmation,
+  getEmailDeliveryStatus,
 } = require('../services/emailService');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
@@ -486,7 +487,7 @@ exports.forgotPassword = async (req, res) => {
       await user.save({ validateBeforeSave: false });
 
       // Send password reset email
-      await sendPasswordResetEmail({
+      const emailResult = await sendPasswordResetEmail({
         email: user.email,
         name: user.name,
         token: rawResetToken,
@@ -496,6 +497,14 @@ exports.forgotPassword = async (req, res) => {
         success: true,
         message:
           'If an account is associated with that email, a password reset link has been sent.',
+        emailDelivery: {
+          mode: emailResult.mode,
+          resendId: emailResult.id || null,
+          from: emailResult.from || null,
+          recipient: user.email,
+          status: emailResult.deliveryStatus || emailResult.lastEvent || (emailResult.mode === 'resend' ? 'accepted' : 'console'),
+          accountNotice: 'Testing domain onboarding@resend.dev delivers exclusively to your verified Resend account address.',
+        },
       });
     }
 
@@ -508,6 +517,25 @@ exports.forgotPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error while processing password reset request.',
+    });
+  }
+};
+
+// @desc    Check real-time delivery status of a Resend Email ID
+// @route   GET /api/auth/email-status/:id
+// @access  Public / Diagnostic
+exports.checkEmailStatus = async (req, res) => {
+  try {
+    const status = await getEmailDeliveryStatus(req.params.id);
+    return res.json({
+      success: true,
+      emailId: req.params.id,
+      resendStatus: status,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
