@@ -6,10 +6,9 @@ const DisasterGuidesPage = () => {
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDisaster, setSelectedDisaster] = useState('Earthquake');
-  const [activeTab, setActiveTab] = useState('before'); // 'before' | 'during' | 'after' | 'dos_donts' | 'kit'
+  const [activeTab, setActiveTab] = useState('immediate'); // 'immediate' | 'before' | 'during' | 'after' | 'checklist'
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Persist emergency kit checklist in localStorage
   const [checkedItems, setCheckedItems] = useState(() => {
     try {
       const saved = localStorage.getItem('disasterchain_kit_checklist');
@@ -64,38 +63,59 @@ const DisasterGuidesPage = () => {
   });
 
   return (
-    <div>
-      {/* Header */}
-      <div className="page-header">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Top Header */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1.5rem 2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: 'rgba(9, 14, 25, 0.94)',
+        }}
+      >
         <div>
-          <div className="badge badge-info" style={{ marginBottom: '0.4rem' }}>
-            <Icon name="book" size={13} color="#38bdf8" />
-            <span>CIVIL DEFENSE HANDBOOK &bull; EMERGENCY PREPAREDNESS</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+            <span className="badge badge-info">SURVIVAL OPERATIONAL MANUALS</span>
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+              CIVIL PROTECTION DIRECTIVES
+            </span>
           </div>
-          <h1 className="page-header-title">
-            <Icon name="book" size={26} color="var(--accent-cyan)" />
-            <span>Disaster Preparedness & Safety Manual</span>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+            Disaster Survival Protocols & Guides
           </h1>
-          <p className="page-header-subtitle">
-            Actionable Before/During/After safety protocols, survival do's and don'ts & interactive emergency kit checklist
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            Immediate life-safety actions, step-by-step mitigation procedures & offline survival checklist.
           </p>
         </div>
       </div>
 
-      {/* Search and Category Selector Chips */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+      {/* Guide Category Selection Bar */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '0.85rem 1.25rem',
+          background: 'rgba(9, 14, 25, 0.92)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+        }}
+      >
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {filteredGuides.map((g) => {
             const isSelected = g.disasterType === currentGuide?.disasterType;
             return (
               <button
                 key={g.disasterType}
+                type="button"
                 onClick={() => setSelectedDisaster(g.disasterType)}
                 className={`btn ${isSelected ? 'btn-primary' : 'btn-secondary'} btn-sm`}
-                style={{
-                  fontSize: '0.84rem',
-                  padding: '0.45rem 0.85rem',
-                }}
+                style={{ fontSize: '0.82rem' }}
               >
                 <span>{g.icon || '⚠️'}</span>
                 <span>{g.disasterType}</span>
@@ -104,215 +124,238 @@ const DisasterGuidesPage = () => {
           })}
         </div>
 
-        <div style={{ position: 'relative', width: '220px' }}>
-          <input
-            type="text"
-            className="form-input"
-            style={{ paddingLeft: '2rem', paddingRight: '0.75rem', fontSize: '0.82rem', height: '34px' }}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search guides..."
-          />
-          <span style={{ position: 'absolute', left: '0.65rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-            <Icon name="search" size={13} />
-          </span>
-        </div>
+        <input
+          type="text"
+          className="form-input"
+          style={{ maxWidth: '240px', padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+          placeholder="Search safety manual..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
+      {/* Loading state */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              border: '3px solid rgba(6, 182, 212, 0.2)',
-              borderTopColor: '#06b6d4',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 1rem',
-            }}
-          />
-          <div>Loading Disaster Guides...</div>
+        <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
+          <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
+          <span>Loading survival directives from database...</span>
         </div>
       )}
 
-      {/* Main Guide Content */}
-      {!loading && currentGuide && (
-        <div className="glass-card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-            <span style={{ fontSize: '2.5rem' }}>{currentGuide.icon || '⚠️'}</span>
+      {/* Active Tactical Survival Manual View */}
+      {currentGuide && !loading && (
+        <div className="spatial-panel" style={{ padding: '2rem', background: 'rgba(11, 17, 30, 0.88)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff' }}>{currentGuide.title}</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{currentGuide.description}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+                <span style={{ fontSize: '2rem' }}>{currentGuide.icon || '⚠️'}</span>
+                <div>
+                  <div className="micro-label" style={{ color: 'var(--cyan)' }}>
+                    TACTICAL PROTOCOL • {currentGuide.disasterType.toUpperCase()}
+                  </div>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 800, color: '#ffffff' }}>
+                    {currentGuide.title || `${currentGuide.disasterType} Safety Protocol`}
+                  </h2>
+                </div>
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', maxWidth: '750px' }}>
+                {currentGuide.description}
+              </p>
             </div>
           </div>
 
-          {/* Phase Tabs */}
-          <div
-            style={{
-              display: 'flex',
-              borderBottom: '1px solid var(--border-subtle)',
-              marginBottom: '1.75rem',
-              gap: '0.5rem',
-              overflowX: 'auto',
-            }}
-          >
+          {/* Phase Navigation Tabs */}
+          <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.85rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
             {[
-              { id: 'before', label: '1. Before Disaster' },
-              { id: 'during', label: '2. During Disaster' },
-              { id: 'after', label: '3. After Disaster' },
-              { id: 'dos_donts', label: "4. Do's & Don'ts" },
-              { id: 'kit', label: '5. Emergency Kit Checklist' },
-            ].map((tab) => {
-              const isTabActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+              { id: 'immediate', label: '🚨 WHAT TO DO FIRST' },
+              { id: 'during', label: 'DURING HAZARD' },
+              { id: 'after', label: 'AFTER / EVACUATION' },
+              { id: 'checklist', label: 'SURVIVAL KIT CHECKLIST' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+                style={{ fontSize: '0.78rem' }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab 1: WHAT TO DO FIRST (IMMEDIATE) */}
+          {activeTab === 'immediate' && (
+            <div>
+              <div
+                style={{
+                  padding: '1.25rem',
+                  background: 'rgba(255, 46, 77, 0.1)',
+                  border: '1px solid var(--border-red)',
+                  borderRadius: 'var(--radius-sm)',
+                  marginBottom: '1.5rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, color: '#ff6b81', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+                  <span>⚡</span>
+                  <span>IMMEDIATE LIFE-SAVING DIRECTIVES (FIRST 60 SECONDS)</span>
+                </div>
+                <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                  {currentGuide.immediateAction || 'Drop to ground, cover your head and neck under sturdy shelter, hold on firmly until movement ceases. If outdoors, move to an open area away from power lines and collapsing structures.'}
+                </div>
+              </div>
+
+              {/* Do's and Don'ts Matrix */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div
                   style={{
-                    padding: '0.75rem 1.15rem',
-                    background: isTabActive ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-                    border: 'none',
-                    borderBottom: isTabActive ? '3px solid var(--accent-indigo)' : '3px solid transparent',
-                    color: isTabActive ? '#ffffff' : 'var(--text-secondary)',
-                    fontWeight: isTabActive ? 700 : 500,
-                    fontSize: '0.88rem',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    borderRadius: isTabActive ? 'var(--radius-sm) var(--radius-sm) 0 0' : '0',
+                    background: 'rgba(16, 185, 129, 0.08)',
+                    border: '1px solid var(--border-mint)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '1.25rem',
                   }}
                 >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+                  <div style={{ fontWeight: 800, color: 'var(--mint)', fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>✓</span>
+                    <span>ESSENTIAL DO'S</span>
+                  </div>
+                  <ul style={{ paddingLeft: '1.2rem', color: 'var(--text-secondary)', fontSize: '0.84rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {currentGuide.dos?.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    )) || <li>Stay calm, protect your respiratory tract, monitor emergency radio.</li>}
+                  </ul>
+                </div>
 
-          {/* Tab Content */}
-          {activeTab === 'before' && (
-            <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#38bdf8', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Icon name="shield" size={18} color="#38bdf8" />
-                <span>Preventive Actions & Preparation (Before)</span>
-              </h3>
-              <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--text-primary)', fontSize: '0.92rem' }}>
-                {currentGuide.before?.map((point, i) => (
-                  <li key={i}>{point}</li>
-                ))}
-              </ul>
+                <div
+                  style={{
+                    background: 'rgba(255, 46, 77, 0.08)',
+                    border: '1px solid var(--border-red)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '1.25rem',
+                  }}
+                >
+                  <div style={{ fontWeight: 800, color: 'var(--crimson)', fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>✕</span>
+                    <span>CRITICAL DON'TS</span>
+                  </div>
+                  <ul style={{ paddingLeft: '1.2rem', color: 'var(--text-secondary)', fontSize: '0.84rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {currentGuide.donts?.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    )) || <li>Do not use elevators, do not re-enter damaged buildings, do not touch fallen cables.</li>}
+                  </ul>
+                </div>
+              </div>
             </div>
           )}
 
+          {/* Tab 2: DURING HAZARD */}
           {activeTab === 'during' && (
-            <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ff6b7e', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Icon name="sos" size={18} color="#ff334b" />
-                <span>Immediate Survival Actions (During)</span>
-              </h3>
-              <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--text-primary)', fontSize: '0.92rem' }}>
-                {currentGuide.during?.map((point, i) => (
-                  <li key={i}>{point}</li>
-                ))}
-              </ul>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Protective Actions During the Incident</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {currentGuide.during?.map((step, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: '1rem',
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <span className="micro-label" style={{ color: 'var(--cyan)', marginTop: 2 }}>
+                      STEP 0{idx + 1}
+                    </span>
+                    <span style={{ color: 'var(--text-primary)', fontSize: '0.88rem', lineHeight: 1.5 }}>
+                      {step}
+                    </span>
+                  </div>
+                )) || <p style={{ color: 'var(--text-secondary)' }}>Follow official broadcast alerts and maintain shelter.</p>}
+              </div>
             </div>
           )}
 
+          {/* Tab 3: AFTER HAZARD / EVACUATION */}
           {activeTab === 'after' && (
-            <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#34d399', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Icon name="check-circle" size={18} color="#10b981" />
-                <span>Recovery & Inspection Actions (After)</span>
-              </h3>
-              <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--text-primary)', fontSize: '0.92rem' }}>
-                {currentGuide.after?.map((point, i) => (
-                  <li key={i}>{point}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {activeTab === 'dos_donts' && (
-            <div className="grid-cols-2">
-              <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 'var(--radius-lg)', padding: '1.25rem' }}>
-                <h3 style={{ color: '#34d399', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <Icon name="check-circle" size={18} color="#34d399" />
-                  <span>Recommended Do's:</span>
-                </h3>
-                <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
-                  {currentGuide.dos?.map((d, i) => (
-                    <li key={i}>{d}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div style={{ background: 'rgba(255, 51, 75, 0.08)', border: '1px solid rgba(255, 51, 75, 0.3)', borderRadius: 'var(--radius-lg)', padding: '1.25rem' }}>
-                <h3 style={{ color: '#ff6b7e', fontWeight: 800, fontSize: '1.05rem', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <Icon name="x" size={18} color="#ff334b" />
-                  <span>Critical Don'ts:</span>
-                </h3>
-                <ul style={{ paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
-                  {currentGuide.donts?.map((d, i) => (
-                    <li key={i}>{d}</li>
-                  ))}
-                </ul>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Aftermath & Safe Evacuation Procedures</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {currentGuide.after?.map((step, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: '1rem',
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-sm)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <span className="micro-label" style={{ color: 'var(--mint)', marginTop: 2 }}>
+                      CHECK 0{idx + 1}
+                    </span>
+                    <span style={{ color: 'var(--text-primary)', fontSize: '0.88rem', lineHeight: 1.5 }}>
+                      {step}
+                    </span>
+                  </div>
+                )) || <p style={{ color: 'var(--text-secondary)' }}>Check for gas leaks and proceed to designated relief shelters.</p>}
               </div>
             </div>
           )}
 
-          {activeTab === 'kit' && (
+          {/* Tab 4: SURVIVAL KIT CHECKLIST */}
+          {activeTab === 'checklist' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Icon name="box" size={18} color="#f59e0b" />
-                  <span>Emergency Kit Readiness Checklist</span>
-                </h3>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  Stored locally for offline availability
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Survival Grab-and-Go Bag Checklist</h3>
+                <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+                  PERSISTED LOCALLY FOR OFFLINE
                 </span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {currentGuide.emergencyKit?.map((kit, i) => {
-                  const key = `${currentGuide.disasterType}-${i}`;
-                  const isChecked = !!checkedItems[key];
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
+                {(currentGuide.emergencyKit || [
+                  'Water (1 gallon per person per day for 3 days)',
+                  'Non-perishable food rations (minimum 3-day supply)',
+                  'Battery-powered or hand-crank emergency radio',
+                  'High-intensity LED flashlight & extra batteries',
+                  'Comprehensive first aid medical kit & prescription medications',
+                  'Emergency whistle to signal rescue personnel',
+                  'Dust masks to help filter contaminated air',
+                  'Moist towelettes, garbage bags, plastic ties for sanitation',
+                  'Local topographical maps & emergency contacts',
+                  'Cell phone with power banks and charging cords',
+                ]).map((item, idx) => {
+                  const itemKey = `${currentGuide.disasterType}_kit_${idx}`;
+                  const isChecked = !!checkedItems[itemKey];
 
                   return (
                     <div
-                      key={i}
-                      onClick={() => toggleCheckItem(key)}
+                      key={idx}
+                      onClick={() => toggleCheckItem(itemKey)}
                       style={{
+                        padding: '0.85rem 1rem',
+                        background: isChecked ? 'rgba(16, 185, 129, 0.1)' : 'rgba(15, 23, 42, 0.7)',
+                        border: `1px solid ${isChecked ? 'var(--border-mint)' : 'var(--border-subtle)'}`,
+                        borderRadius: 'var(--radius-sm)',
+                        cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.85rem',
-                        background: isChecked ? 'rgba(16, 185, 129, 0.12)' : 'rgba(11, 18, 34, 0.8)',
-                        border: `1px solid ${isChecked ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-subtle)'}`,
-                        borderRadius: 'var(--radius-md)',
-                        padding: '0.85rem 1.15rem',
-                        cursor: 'pointer',
+                        gap: '0.75rem',
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => {}}
-                        style={{ width: '18px', height: '18px', accentColor: '#10b981', cursor: 'pointer' }}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.92rem', textDecoration: isChecked ? 'line-through' : 'none', color: isChecked ? '#34d399' : '#ffffff' }}>
-                          {kit.item}
-                        </div>
-                        {kit.description && (
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                            {kit.description}
-                          </div>
-                        )}
-                      </div>
-                      {kit.essential && (
-                        <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
-                          ESSENTIAL
-                        </span>
-                      )}
+                      <span style={{ fontSize: '1.1rem', color: isChecked ? 'var(--mint)' : 'var(--text-muted)' }}>
+                        {isChecked ? '☑' : '☐'}
+                      </span>
+                      <span style={{ fontSize: '0.84rem', color: isChecked ? '#ffffff' : 'var(--text-secondary)', textDecoration: isChecked ? 'line-through' : 'none' }}>
+                        {item}
+                      </span>
                     </div>
                   );
                 })}

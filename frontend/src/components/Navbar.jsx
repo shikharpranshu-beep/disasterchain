@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Icon from './Icons';
 
-const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
-  const { user, isAuthenticated, isAdmin, logout, demoLogin } = useAuth();
+const Navbar = ({ onOpenSos }) => {
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const [timeStr, setTimeStr] = useState('');
+
+  // Live Mission Control Telemetry Clock (UTC + Local)
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = String(now.getUTCHours()).padStart(2, '0');
+      const mins = String(now.getUTCMinutes()).padStart(2, '0');
+      const secs = String(now.getUTCSeconds()).padStart(2, '0');
+      setTimeStr(`${hours}:${mins}:${secs} UTC`);
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -14,153 +29,86 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
 
   return (
     <header className="app-navbar">
-      {/* Brand & Mobile Hamburger Toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-        {/* Mobile Hamburger Button */}
-        <button
-          type="button"
-          onClick={onToggleSidebar}
-          className="btn btn-ghost btn-sm"
-          style={{
-            display: 'none',
-            padding: '0.4rem',
-            color: 'var(--text-secondary)',
-          }}
-          aria-label="Toggle navigation drawer"
-          id="mobile-sidebar-toggle"
-        >
-          <Icon name={isMobileMenuOpen ? 'x' : 'menu'} size={22} />
-        </button>
-
-        <style>{`
-          @media (max-width: 960px) {
-            #mobile-sidebar-toggle {
-              display: inline-flex !important;
-            }
-          }
-        `}</style>
-
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #ff334b, #6366f1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 16px rgba(255, 51, 75, 0.45)',
-              color: '#ffffff',
-            }}
-          >
-            <Icon name="shield-check" size={22} color="#ffffff" />
+      {/* Brand HUD Logo */}
+      <Link to="/" className="hud-logo">
+        <div className="hud-logo-icon">
+          <Icon name="shield-check" size={20} color="var(--cyan)" />
+        </div>
+        <div>
+          <div className="hud-logo-title">
+            <span>DISASTERCHAIN</span>
+            <span className="hud-logo-tag">NET v2.6</span>
           </div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff' }}>
-              <span>DisasterChain</span>
-              <span className="pulse-indicator" title="Live Emergency Grid Active"></span>
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1, letterSpacing: '0.02em' }}>
-              Crisis Command & Transparency
-            </div>
-          </div>
-        </Link>
+        </div>
+      </Link>
+
+      {/* Center Telemetry Readout */}
+      <div className="hud-telemetry">
+        <div className="telemetry-chip">
+          <span className="live-beacon-pulse" />
+          <span style={{ color: 'var(--cyan)' }}>OPERATIONAL</span>
+          <span style={{ opacity: 0.5 }}>|</span>
+          <span>{timeStr || 'SYNCING...'}</span>
+        </div>
       </div>
 
-      {/* Action Controls & Authentication Status */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'nowrap' }}>
-        {/* Urgent Emergency SOS Trigger Button */}
+      {/* Right Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        {/* Urgent Emergency Beacon Button */}
         <button
+          type="button"
           onClick={onOpenSos}
-          className="btn btn-sos"
-          style={{ fontSize: '0.84rem', padding: '0.55rem 1.15rem' }}
+          className="btn btn-emergency btn-sm"
           id="navbar-sos-btn"
+          style={{ letterSpacing: '0.04em' }}
         >
-          <Icon name="alert-circle" size={17} color="#ffffff" />
-          <span>SUBMIT SOS</span>
+          <Icon name="alert-circle" size={16} color="#ffffff" />
+          <span>BROADCAST SOS</span>
         </button>
 
         {/* Low-Connectivity Mode Switcher */}
         <Link
           to="/offline"
-          className="btn btn-outline"
-          style={{ fontSize: '0.8rem', padding: '0.5rem 0.85rem' }}
-          title="Low-Connectivity & Offline Emergency Hotlines"
+          className="btn btn-secondary btn-sm"
+          title="Offline & Survivability Mode"
         >
-          <Icon name="wifi-off" size={16} color="var(--accent-cyan)" />
-          <span className="hide-on-mobile">Low-Connectivity</span>
+          <Icon name="wifi-off" size={15} color="var(--cyan)" />
+          <span style={{ fontSize: '0.78rem' }}>Offline Mode</span>
         </Link>
 
-        <style>{`
-          @media (max-width: 640px) {
-            .hide-on-mobile {
-              display: none;
-            }
-          }
-        `}</style>
-
+        {/* User Status / Authentication */}
         {isAuthenticated ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Link
               to="/profile"
-              style={{
-                background: 'rgba(22, 35, 64, 0.75)',
-                border: '1px solid var(--border-subtle)',
-                padding: '0.35rem 0.75rem',
-                borderRadius: 'var(--radius-md)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.55rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-              title="View Account & Security Profile"
+              className="btn btn-ghost btn-sm"
+              style={{ padding: '0.35rem 0.65rem' }}
             >
-              <div
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  background: isAdmin ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '0.78rem',
-                  color: '#ffffff',
-                }}
-              >
-                {user?.name?.charAt(0) || 'U'}
-              </div>
-              <div style={{ textAlign: 'left' }} className="hide-on-mobile">
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#ffffff' }}>
-                  <span>{user?.name || 'User'}</span>
-                  {user?.isVerified && <Icon name="check-circle" size={13} color="#10b981" />}
-                </div>
-                <div style={{ fontSize: '0.68rem', color: isAdmin ? '#a5b4fc' : '#67e8f9', textTransform: 'capitalize' }}>
-                  {isAdmin ? '🛡️ Administrator' : (user?.role ? `👤 ${user.role}` : '👤 Citizen')}
-                </div>
-              </div>
+              <span className="badge badge-info" style={{ textTransform: 'capitalize' }}>
+                {user?.role || 'Citizen'}
+              </span>
+              <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.82rem' }}>
+                {user?.name?.split(' ')[0] || 'User'}
+              </span>
             </Link>
 
             <button
+              type="button"
               onClick={handleLogout}
-              className="btn btn-outline"
-              style={{ padding: '0.45rem 0.75rem', fontSize: '0.78rem' }}
+              className="btn btn-ghost btn-sm"
               title="Sign Out"
+              style={{ color: 'var(--text-muted)' }}
             >
-              <Icon name="log-out" size={15} />
-              <span className="hide-on-mobile">Logout</span>
+              <Icon name="logout" size={16} />
             </button>
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Link to="/login" className="btn btn-secondary" style={{ fontSize: '0.82rem', padding: '0.48rem 0.95rem' }}>
-              <span>Sign In</span>
+            <Link to="/login" className="btn btn-ghost btn-sm">
+              Sign In
             </Link>
-            <Link to="/register" className="btn btn-primary" style={{ fontSize: '0.82rem', padding: '0.48rem 0.95rem' }}>
-              <span>Register</span>
+            <Link to="/register" className="btn btn-primary btn-sm">
+              Register
             </Link>
           </div>
         )}

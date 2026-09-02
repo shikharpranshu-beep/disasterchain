@@ -56,6 +56,7 @@ const AppLayout = () => {
         <Sidebar
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
+          onOpenSos={() => setIsSosOpen(true)}
         />
       )}
 

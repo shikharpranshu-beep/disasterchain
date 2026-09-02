@@ -13,7 +13,6 @@ const ProfilePage = () => {
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [activeTab, setActiveTab] = useState('sos'); // 'sos' | 'incidents' | 'settings'
 
-  // Edit Name State
   const [editName, setEditName] = useState(user?.name || '');
   const [savingName, setSavingName] = useState(false);
   const [nameSuccess, setNameSuccess] = useState('');
@@ -68,10 +67,10 @@ const ProfilePage = () => {
 
     try {
       await updateUserProfile(editName.trim());
-      await refreshUser();
-      setNameSuccess('Profile name updated successfully!');
+      if (refreshUser) await refreshUser();
+      setNameSuccess('Dossier name updated successfully.');
     } catch (err) {
-      setNameError(err.response?.data?.message || 'Failed to update name.');
+      setNameError(err.response?.data?.message || 'Failed to update personnel name.');
     } finally {
       setSavingName(false);
     }
@@ -83,206 +82,195 @@ const ProfilePage = () => {
   };
 
   return (
-    <div>
-      <div className="page-header">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Top Header */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1.5rem 2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: 'rgba(9, 14, 25, 0.94)',
+        }}
+      >
         <div>
-          <h1 className="page-header-title">
-            <Icon name="user" size={26} color="var(--accent-indigo)" />
-            <span>User Account & Security Profile</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+            <span className="badge badge-info">PERSONNEL DOSSIER</span>
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+              IDENTITY & ROLE CLEARANCE
+            </span>
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+            Operator Identity & Security Clearance
           </h1>
-          <p className="page-header-subtitle">
-            Manage your verified credentials, active distress broadcasts, and reported hazard tickets
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            Verified credentials, operational activity history, and authentication parameters.
           </p>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="btn btn-secondary btn-sm"
+          style={{ borderColor: 'var(--border-red)', color: '#ff8597' }}
+        >
+          <Icon name="logout" size={14} />
+          <span>Sign Out of Grid</span>
+        </button>
       </div>
 
       {/* Main 2-Column Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 2fr',
-          gap: '1.75rem',
-          alignItems: 'flex-start',
-        }}
-      >
-        {/* Left Column: User Profile Card */}
-        <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Avatar & Badges */}
-          <div style={{ textAlign: 'center', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '1.5rem', alignItems: 'flex-start' }}>
+        {/* Left Column: Personnel Identity Card */}
+        <div className="spatial-panel" style={{ padding: '1.75rem', background: 'rgba(11, 17, 30, 0.92)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div
               style={{
-                width: '76px',
-                height: '76px',
+                width: '72px',
+                height: '72px',
                 borderRadius: '50%',
-                background: isAdmin ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                display: 'inline-flex',
+                background: 'linear-gradient(135deg, var(--cyan-dim), var(--violet-dim))',
+                border: '2px solid var(--cyan)',
+                boxShadow: 'var(--glow-cyan)',
+                margin: '0 auto 1rem',
+                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '2.1rem',
-                fontWeight: 800,
+                fontSize: '1.75rem',
                 color: '#ffffff',
-                marginBottom: '0.85rem',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                fontWeight: 800,
               }}
             >
-              {user?.name?.charAt(0) || 'U'}
+              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
 
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.25rem' }}>
-              {user?.name || 'Citizen'}
-            </h2>
-
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.85rem' }}>
-              {user?.email}
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+              {user?.name || 'Authorized Operator'}
+            </h3>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', marginBottom: '0.65rem' }}>
+              {user?.email || 'N/A'}
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <span className={`badge ${isVerified ? 'badge-success' : 'badge-warning'}`}>
-                {isVerified ? 'Verified Account' : 'Unverified'}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+              <span className="badge badge-info" style={{ textTransform: 'uppercase' }}>
+                ROLE: {user?.role || 'CITIZEN'}
               </span>
-
-              <span className={`badge ${isAdmin ? 'badge-critical' : 'badge-info'}`}>
-                {isAdmin ? '🛡️ Administrator' : '🎓 Student / Citizen'}
-              </span>
+              {isVerified ? (
+                <span className="badge badge-success">✓ EMAIL VERIFIED</span>
+              ) : (
+                <span className="badge badge-warning">UNVERIFIED</span>
+              )}
             </div>
           </div>
 
-          {/* Account Details List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-              <span>User ID</span>
-              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', fontSize: '0.78rem' }}>
-                {user?._id?.substring(0, 14)}...
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-              <span>Account Role</span>
-              <strong style={{ color: '#ffffff', textTransform: 'capitalize' }}>
-                {user?.role || 'Citizen'}
-              </strong>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-              <span>Distress Signals</span>
-              <strong style={{ color: '#ff6b7e' }}>{sosList.length} Broadcast(s)</strong>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-              <span>Hazard Reports</span>
-              <strong style={{ color: '#818cf8' }}>{incidents.length} Ticket(s)</strong>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '0.5rem' }}>
-            {isAdmin && (
-              <Link to="/admin" className="btn btn-secondary" style={{ width: '100%', borderColor: 'rgba(99, 102, 241, 0.4)' }}>
-                <Icon name="shield" size={16} color="#818cf8" />
-                <span>Go to Admin Control Center</span>
-              </Link>
-            )}
-
-            <button
-              onClick={handleLogout}
-              className="btn btn-outline"
-              style={{ width: '100%', borderColor: 'rgba(255, 51, 75, 0.4)', color: '#ff6b7e' }}
-            >
-              <Icon name="log-out" size={16} />
-              <span>Sign Out of DisasterChain</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Right Column: Interactive Tabs for Activity & Settings */}
-        <div className="glass-card">
-          {/* Tabs Navigation */}
           <div
             style={{
+              background: 'rgba(15, 23, 42, 0.7)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '1rem',
               display: 'flex',
-              gap: '0.75rem',
-              borderBottom: '1px solid var(--border-subtle)',
-              marginBottom: '1.75rem',
-              flexWrap: 'wrap',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              fontSize: '0.8rem',
+              marginBottom: '1.5rem',
             }}
           >
+            <div>
+              <span style={{ color: 'var(--text-muted)' }}>OPERATOR ID: </span>
+              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--cyan)' }}>{user?._id}</span>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-muted)' }}>ENROLLED: </span>
+              <span style={{ color: 'var(--text-primary)' }}>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Active'}</span>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-muted)' }}>CLEARANCE LEVEL: </span>
+              <span style={{ color: isAdmin ? 'var(--crimson)' : 'var(--mint)', fontWeight: 700 }}>
+                {isAdmin ? 'LEVEL 5 — FULL SYSTEM ADMIN' : 'LEVEL 1 — CIVIL DEFENSE'}
+              </span>
+            </div>
+          </div>
+
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="btn btn-primary"
+              style={{ width: '100%', textAlign: 'center' }}
+            >
+              Launch Admin Command Center →
+            </Link>
+          )}
+        </div>
+
+        {/* Right Column: Profile Management & History */}
+        <div className="spatial-panel" style={{ padding: '1.75rem', background: 'rgba(11, 17, 30, 0.92)' }}>
+          {/* Tabs Header */}
+          <div style={{ display: 'flex', gap: '0.65rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.85rem', marginBottom: '1.5rem' }}>
             <button
               type="button"
               onClick={() => setActiveTab('sos')}
-              className={`btn ${activeTab === 'sos' ? 'btn-danger' : 'btn-ghost'}`}
-              style={{ fontSize: '0.86rem', padding: '0.55rem 1rem' }}
+              className={`btn ${activeTab === 'sos' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             >
-              <Icon name="sos" size={15} />
-              <span>My SOS Signals ({sosList.length})</span>
+              My SOS Distresses ({sosList.length})
             </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('incidents')}
-              className={`btn ${activeTab === 'incidents' ? 'btn-primary' : 'btn-ghost'}`}
-              style={{ fontSize: '0.86rem', padding: '0.55rem 1rem' }}
+              className={`btn ${activeTab === 'incidents' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             >
-              <Icon name="warning" size={15} />
-              <span>My Hazard Tickets ({incidents.length})</span>
+              My Hazard Reports ({incidents.length})
             </button>
-
             <button
               type="button"
               onClick={() => setActiveTab('settings')}
-              className={`btn ${activeTab === 'settings' ? 'btn-secondary' : 'btn-ghost'}`}
-              style={{ fontSize: '0.86rem', padding: '0.55rem 1rem' }}
+              className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             >
-              <Icon name="user" size={15} />
-              <span>Account Settings</span>
+              Dossier Settings
             </button>
           </div>
 
-          {/* Tab 1: SOS Distress Signals */}
+          {/* Tab 1: SOS Activity */}
           {activeTab === 'sos' && (
             <div>
               {loadingActivity ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                  Loading SOS broadcast records...
+                <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)' }}>
+                  Loading distress activity...
                 </div>
               ) : sosList.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-                  <Icon name="sos" size={32} color="var(--text-muted)" />
-                  <div style={{ marginTop: '0.5rem' }}>No SOS distress signals broadcast from this account.</div>
+                <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🛡️</div>
+                  <div style={{ fontWeight: 700, color: '#ffffff' }}>No Active SOS Signals Registered</div>
+                  <div style={{ fontSize: '0.8rem' }}>You have not broadcasted any emergency distress calls.</div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {sosList.map((sos) => (
                     <div
                       key={sos._id}
                       style={{
-                        background: 'rgba(11, 18, 34, 0.85)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 'var(--radius-md)',
                         padding: '1rem',
+                        background: 'rgba(15, 23, 42, 0.7)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 'var(--radius-sm)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
-                            {sos.requestId} &bull; {sos.emergencyType}
-                          </span>
-                          <span className={`badge badge-${sos.severity?.toLowerCase()}`}>
-                            {sos.severity}
-                          </span>
+                      <div>
+                        <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '0.92rem' }}>
+                          {sos.emergencyType}
                         </div>
-                        <span className="badge badge-warning" style={{ fontSize: '0.72rem' }}>
-                          {sos.status}
-                        </span>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                          📍 {sos.location} • {new Date(sos.createdAt).toLocaleString()}
+                        </div>
                       </div>
-
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.65rem', lineHeight: 1.5 }}>
-                        {sos.description}
-                      </p>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        <span>📍 Location: <strong>{sos.location}</strong></span>
-                        <span>👥 {sos.peopleAffected || 1} Person(s)</span>
-                      </div>
+                      <span className={`badge ${sos.severity === 'Critical' ? 'badge-critical' : 'badge-warning'}`}>
+                        {sos.status || 'Pending'}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -290,55 +278,45 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {/* Tab 2: Hazard Reports */}
+          {/* Tab 2: Incidents Activity */}
           {activeTab === 'incidents' && (
             <div>
               {loadingActivity ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                  Loading hazard incident reports...
+                <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)' }}>
+                  Loading incident activity...
                 </div>
               ) : incidents.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
-                  <Icon name="warning" size={32} color="var(--text-muted)" />
-                  <div style={{ marginTop: '0.5rem' }}>No hazard tickets reported from this account.</div>
+                <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
+                  <div style={{ fontWeight: 700, color: '#ffffff' }}>No Hazard Tickets Filed</div>
+                  <div style={{ fontSize: '0.8rem' }}>You have not submitted any campus hazard reports.</div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {incidents.map((inc) => (
                     <div
                       key={inc._id}
                       style={{
-                        background: 'rgba(11, 18, 34, 0.85)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 'var(--radius-md)',
                         padding: '1rem',
+                        background: 'rgba(15, 23, 42, 0.7)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 'var(--radius-sm)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
-                            {inc.incidentId}
-                          </span>
-                          <span className={`badge badge-${inc.severity?.toLowerCase()}`}>
-                            {inc.severity}
-                          </span>
+                      <div>
+                        <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '0.92rem' }}>
+                          {inc.title}
                         </div>
-                        <span className="badge badge-info" style={{ fontSize: '0.72rem' }}>
-                          {inc.status}
-                        </span>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                          📍 {inc.location} • {new Date(inc.createdAt).toLocaleString()}
+                        </div>
                       </div>
-
-                      <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.35rem', color: '#ffffff' }}>
-                        {inc.title}
-                      </h3>
-
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.65rem', lineHeight: 1.5 }}>
-                        {inc.description}
-                      </p>
-
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        📍 Location: <strong>{inc.location}</strong>
-                      </div>
+                      <span className="badge badge-info">
+                        {inc.status || 'Pending'}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -346,94 +324,67 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {/* Tab 3: Account Settings */}
+          {/* Tab 3: Settings Form */}
           {activeTab === 'settings' && (
-            <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', marginBottom: '1.25rem' }}>
-                Update Account Information
-              </h3>
+            <form onSubmit={handleUpdateName} style={{ maxWidth: '420px' }}>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#ffffff', marginBottom: '0.75rem' }}>
+                Update Personnel Dossier Details
+              </div>
 
               {nameSuccess && (
-                <div
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    border: '1px solid rgba(16, 185, 129, 0.4)',
-                    color: '#6ee7b7',
-                    padding: '0.75rem 1rem',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: '0.85rem',
-                    marginBottom: '1.25rem',
-                  }}
-                >
-                  ✅ {nameSuccess}
+                <div style={{ padding: '0.65rem 1rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--border-mint)', borderRadius: 'var(--radius-xs)', color: 'var(--mint)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                  ✓ {nameSuccess}
                 </div>
               )}
 
               {nameError && (
-                <div
-                  style={{
-                    background: 'rgba(255, 51, 75, 0.15)',
-                    border: '1px solid rgba(255, 51, 75, 0.35)',
-                    color: '#ff6b7e',
-                    padding: '0.75rem 1rem',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: '0.85rem',
-                    marginBottom: '1.25rem',
-                  }}
-                >
+                <div style={{ padding: '0.65rem 1rem', background: 'rgba(255, 46, 77, 0.15)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-xs)', color: '#ff8597', fontSize: '0.8rem', marginBottom: '1rem' }}>
                   ⚠️ {nameError}
                 </div>
               )}
 
-              <form onSubmit={handleUpdateName} style={{ maxWidth: '460px' }}>
-                <div className="form-group">
-                  <label className="form-label">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-input"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Email Address (Read-only)</label>
-                  <input
-                    type="email"
-                    disabled
-                    className="form-input"
-                    value={user?.email || ''}
-                    style={{ opacity: 0.6, cursor: 'not-allowed' }}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={savingName}
-                  className="btn btn-primary"
-                  style={{ padding: '0.65rem 1.35rem' }}
-                >
-                  {savingName ? 'Saving Changes...' : 'Save Profile Changes'}
-                </button>
-              </form>
-
-              <div style={{ marginTop: '2.25rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '0.4rem', color: '#ff6b7e' }}>
-                  Password & Security Keys
-                </h4>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                  To change your password, request a secure verification reset link to your registered email address.
-                </p>
-                <Link to="/forgot-password" className="btn btn-outline btn-sm">
-                  <Icon name="key" size={14} />
-                  <span>Change Password via Reset Link</span>
-                </Link>
+              <div className="form-group">
+                <label className="form-label">Full Operator Name</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
               </div>
-            </div>
+
+              <div className="form-group">
+                <label className="form-label">Registered Email (Read-Only)</label>
+                <input
+                  type="email"
+                  disabled
+                  className="form-input"
+                  value={user?.email || ''}
+                  style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingName}
+                className="btn btn-primary"
+                style={{ marginTop: '0.5rem' }}
+              >
+                {savingName ? 'Saving...' : 'Save Dossier Changes'}
+              </button>
+            </form>
           )}
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 960px) {
+          div[style*="gridTemplateColumns: 360px 1fr"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

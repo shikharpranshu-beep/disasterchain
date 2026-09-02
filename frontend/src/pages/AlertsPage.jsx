@@ -19,8 +19,8 @@ const AlertsPage = () => {
       const data = await fetchAlerts({ activeOnly: 'false' });
       setAlerts(data || []);
     } catch (err) {
-      console.error('Error fetching alerts from backend:', err);
-      setError('Unable to load emergency alerts from server.');
+      console.error('Error fetching alerts:', err);
+      setError('Unable to load emergency broadcasts from backend server.');
     } finally {
       setLoading(false);
     }
@@ -39,24 +39,20 @@ const AlertsPage = () => {
   // Filter computation
   const filteredAlerts = useMemo(() => {
     return alerts.filter((a) => {
-      // Severity filter
-      if (filterSeverity !== 'ALL' && a.severity !== filterSeverity) {
+      if (filterSeverity !== 'ALL' && a.severity?.toLowerCase() !== filterSeverity.toLowerCase()) {
         return false;
       }
 
-      // Status filter
       const expired = isAlertExpired(a);
       if (filterStatus === 'ACTIVE' && expired) return false;
       if (filterStatus === 'EXPIRED' && !expired) return false;
 
-      // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTitle = a.title?.toLowerCase().includes(q);
         const matchesMessage = a.message?.toLowerCase().includes(q);
         const matchesLocation = a.location?.toLowerCase().includes(q);
         const matchesType = a.type?.toLowerCase().includes(q);
-
         if (!matchesTitle && !matchesMessage && !matchesLocation && !matchesType) {
           return false;
         }
@@ -66,349 +62,232 @@ const AlertsPage = () => {
     });
   }, [alerts, filterSeverity, filterStatus, searchQuery]);
 
-  // Statistics
+  // Telemetry counts
   const activeCount = alerts.filter((a) => !isAlertExpired(a)).length;
-  const criticalCount = alerts.filter((a) => a.severity === 'Critical' && !isAlertExpired(a)).length;
-  const dangerCount = alerts.filter((a) => a.severity === 'Danger' && !isAlertExpired(a)).length;
+  const criticalCount = alerts.filter((a) => (a.severity === 'Critical' || a.severity === 'Danger' || a.severity === 'Emergency') && !isAlertExpired(a)).length;
   const warningCount = alerts.filter((a) => a.severity === 'Warning' && !isAlertExpired(a)).length;
+  const advisoryCount = alerts.filter((a) => a.severity === 'Info' || a.severity === 'Advisory' || a.severity === 'General').length;
 
   return (
-    <div>
-      {/* Header */}
-      <div className="page-header">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Top Mission Control Header */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1.5rem 2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: 'rgba(9, 14, 25, 0.94)',
+        }}
+      >
         <div>
-          <div className="badge badge-critical" style={{ marginBottom: '0.4rem' }}>
-            <span className="pulse-indicator" style={{ width: '7px', height: '7px' }}></span>
-            <span>CIVIL DEFENSE &bull; EMERGENCY BROADCAST SYSTEM</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+            <span className="badge badge-critical">EMERGENCY BROADCAST STREAM</span>
+            <span className="micro-label" style={{ color: 'var(--amber)' }}>
+              PRIORITY THREAT INTEL
+            </span>
           </div>
-          <h1 className="page-header-title">
-            <Icon name="bell" size={26} color="#ff334b" />
-            <span>Emergency Broadcasts & Advisories</span>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+            Civil Defense Emergency Alerts
           </h1>
-          <p className="page-header-subtitle">
-            Official emergency warnings, severe weather hazards & real-time campus civil protection broadcasts
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            High-priority operational warnings, severe weather directives & disaster containment advisories.
           </p>
         </div>
+
+        <button
+          onClick={loadAlerts}
+          className="btn btn-secondary btn-sm"
+        >
+          <Icon name="refresh-cw" size={14} />
+          <span>Sync Feed</span>
+        </button>
       </div>
 
-      {/* KPI Metric Summary Bar */}
-      <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
-        <div className="glass-card" style={{ borderLeft: '4px solid #ff334b' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Active Broadcasts
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff', margin: '0.35rem 0 0.15rem' }}>
-            {activeCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Live emergency advisories
-          </div>
+      {/* Telemetry KPI Metrics */}
+      <div className="grid-cols-4">
+        <div className="telemetry-widget">
+          <span className="micro-label">ACTIVE BROADCASTS</span>
+          <div className="telemetry-num crimson">{activeCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Broadcasting live to all sectors</div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: '4px solid #ff4d63' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Critical Priority
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ff4d63', margin: '0.35rem 0 0.15rem' }}>
-            {criticalCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Immediate life-safety threats
-          </div>
+        <div className="telemetry-widget">
+          <span className="micro-label">CRITICAL THREATS</span>
+          <div className="telemetry-num amber">{criticalCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Immediate evacuation / protective action</div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: '4px solid #f97316' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Danger Advisories
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fb923c', margin: '0.35rem 0 0.15rem' }}>
-            {dangerCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Severe localized conditions
-          </div>
+        <div className="telemetry-widget">
+          <span className="micro-label">WARNING ADVISORIES</span>
+          <div className="telemetry-num cyan">{warningCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Hazard caution advised</div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Weather Warnings
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fbbf24', margin: '0.35rem 0 0.15rem' }}>
-            {warningCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Preparedness & flood alerts
-          </div>
+        <div className="telemetry-widget">
+          <span className="micro-label">MONITORED BULLETINS</span>
+          <div className="telemetry-num mint">{advisoryCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>General civil defense notices</div>
         </div>
       </div>
 
-      {/* Filter & Search Toolbar */}
-      <div className="filter-toolbar" style={{ marginBottom: '1.75rem' }}>
-        <div className="filter-group">
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Severity:</span>
-          <select
-            className="form-select"
-            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.84rem' }}
-            value={filterSeverity}
-            onChange={(e) => setFilterSeverity(e.target.value)}
-          >
-            <option value="ALL">All Severities</option>
-            <option value="Critical">🔴 Critical Alerts</option>
-            <option value="Danger">🟠 Danger Advisories</option>
-            <option value="Warning">🟡 Warnings</option>
-            <option value="Information">🔵 Information Notices</option>
-          </select>
-        </div>
+      {/* Filter and Search Bar */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1rem 1.5rem',
+          background: 'rgba(9, 14, 25, 0.92)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+        }}
+      >
+        <input
+          type="text"
+          className="form-input"
+          style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
+          placeholder="Search alerts by title, location, text..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
 
-        <div className="filter-group">
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Status:</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <select
             className="form-select"
-            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.84rem' }}
+            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="ALL">All Statuses ({alerts.length})</option>
-            <option value="ACTIVE">🟢 Active Advisories ({activeCount})</option>
-            <option value="EXPIRED">⚪ Expired / Archived</option>
+            <option value="ALL">All Broadcasts</option>
+            <option value="ACTIVE">Live / Active Only</option>
+            <option value="EXPIRED">Historical / Expired</option>
           </select>
-        </div>
 
-        <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: '300px' }}>
-          <input
-            type="text"
-            className="form-input"
-            style={{ paddingLeft: '2.2rem', paddingRight: '0.75rem', fontSize: '0.84rem', height: '36px' }}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by title, location, text..."
-          />
-          <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-            <Icon name="search" size={14} />
-          </span>
-        </div>
-
-        <div style={{ marginLeft: 'auto', fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-          Showing <strong>{filteredAlerts.length}</strong> of <strong>{alerts.length}</strong> broadcasts
+          <select
+            className="form-select"
+            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
+            value={filterSeverity}
+            onChange={(e) => setFilterSeverity(e.target.value)}
+          >
+            <option value="ALL">All Threat Tiers</option>
+            <option value="Critical">Critical Threat</option>
+            <option value="Danger">Danger</option>
+            <option value="Warning">Warning</option>
+            <option value="Info">Informational</option>
+          </select>
         </div>
       </div>
 
-      {/* Loading State */}
+      {/* Loading / Error / Empty States */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-secondary)' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              border: '3px solid rgba(255, 51, 75, 0.2)',
-              borderTopColor: '#ff334b',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 1rem',
-            }}
-          />
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>Loading Civil Broadcast Feed...</div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Synchronizing official emergency bulletins</div>
+        <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
+          <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
+          <span>Synchronizing active broadcasts from MongoDB Atlas...</span>
         </div>
       )}
 
-      {/* Error State */}
       {error && !loading && (
-        <div
-          style={{
-            background: 'rgba(255, 51, 75, 0.15)',
-            border: '1px solid rgba(255, 51, 75, 0.35)',
-            color: '#ff6b7e',
-            padding: '1.25rem',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>⚠️ {error}</div>
-          <button onClick={loadAlerts} className="btn btn-secondary btn-sm" style={{ marginTop: '0.75rem' }}>
-            Retry Loading Broadcasts
-          </button>
+        <div style={{ padding: '1rem', background: 'rgba(255, 46, 77, 0.1)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-sm)', color: '#ff8597', textAlign: 'center' }}>
+          {error}
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && !error && filteredAlerts.length === 0 && (
-        <div
-          className="glass-card"
-          style={{
-            textAlign: 'center',
-            padding: '3.5rem 1.5rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📢</div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            No Broadcasts Match Filter Criteria
-          </h3>
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 1.25rem' }}>
-            {searchQuery || filterSeverity !== 'ALL' || filterStatus !== 'ALL'
-              ? 'Try clearing your search query or selecting "All Severities" to view past bulletins.'
-              : 'There are currently no emergency alerts logged in the system.'}
-          </p>
-          <button
-            onClick={() => {
-              setFilterSeverity('ALL');
-              setFilterStatus('ALL');
-              setSearchQuery('');
-            }}
-            className="btn btn-secondary btn-sm"
-          >
-            Reset Filters
-          </button>
+        <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📡</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Emergency Broadcasts Found</div>
+          <div style={{ fontSize: '0.82rem' }}>No active emergency alerts match the specified filter criteria.</div>
         </div>
       )}
 
-      {/* Alerts Feed */}
-      {!loading && !error && filteredAlerts.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {filteredAlerts.map((alert) => {
-            const isCritical = alert.severity === 'Critical';
-            const isDanger = alert.severity === 'Danger';
-            const expired = isAlertExpired(alert);
+      {/* High-Priority Emergency Broadcast Feed */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {filteredAlerts.map((alt) => {
+          const isCritical = alt.severity === 'Critical' || alt.severity === 'Danger' || alt.severity === 'Emergency';
+          const expired = isAlertExpired(alt);
 
-            return (
-              <div
-                key={alert._id}
-                className={`glass-card glass-card-hoverable ${isCritical && !expired ? 'glass-card-critical' : ''}`}
-                style={{
-                  opacity: expired ? 0.75 : 1,
-                  borderLeft: `4px solid ${
-                    expired
-                      ? '#64748b'
-                      : isCritical
-                      ? '#ff334b'
-                      : isDanger
-                      ? '#f97316'
-                      : alert.severity === 'Warning'
-                      ? '#f59e0b'
-                      : '#38bdf8'
-                  }`,
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
-                        background: expired
-                          ? 'rgba(100, 116, 139, 0.15)'
-                          : isCritical
-                          ? 'rgba(255, 51, 75, 0.15)'
-                          : isDanger
-                          ? 'rgba(249, 115, 22, 0.15)'
-                          : 'rgba(245, 158, 11, 0.15)',
-                        border: `1px solid ${
-                          expired
-                            ? '#64748b'
-                            : isCritical
-                            ? 'rgba(255, 51, 75, 0.4)'
-                            : isDanger
-                            ? 'rgba(249, 115, 22, 0.4)'
-                            : 'rgba(245, 158, 11, 0.4)'
-                        }`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon
-                        name="bell"
-                        size={20}
-                        color={expired ? '#94a3b8' : isCritical ? '#ff334b' : isDanger ? '#f97316' : '#fbbf24'}
-                      />
-                    </div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <h3
-                          onClick={() => setSelectedAlert(alert)}
-                          style={{
-                            fontSize: '1.18rem',
-                            fontWeight: 800,
-                            color: '#ffffff',
-                            cursor: 'pointer',
-                            margin: 0,
-                          }}
-                        >
-                          {alert.title}
-                        </h3>
-                        {expired && (
-                          <span className="badge badge-neutral" style={{ fontSize: '0.65rem' }}>
-                            EXPIRED
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                        Category: <strong style={{ color: 'var(--text-secondary)' }}>{alert.type || 'General Civil Advisory'}</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className={`badge badge-${alert.severity?.toLowerCase()}`}>
-                      {alert.severity}
+          return (
+            <div
+              key={alt._id}
+              className={`spatial-panel ${isCritical && !expired ? 'spatial-panel-critical' : 'spatial-panel-hoverable'}`}
+              style={{
+                padding: '1.5rem',
+                borderLeft: `4px solid ${isCritical ? 'var(--crimson)' : 'var(--amber)'}`,
+                opacity: expired ? 0.65 : 1,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.65rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span className={`badge ${isCritical ? 'badge-critical' : 'badge-warning'}`}>
+                    {alt.severity?.toUpperCase() || 'ADVISORY'}
+                  </span>
+                  <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+                    TYPE: {alt.type || 'CIVIL PROTECTION'}
+                  </span>
+                  {expired && (
+                    <span className="badge" style={{ background: 'rgba(100, 116, 139, 0.2)', color: 'var(--text-muted)' }}>
+                      EXPIRED
                     </span>
-                    <button
-                      onClick={() => setSelectedAlert(alert)}
-                      className="btn btn-outline btn-sm"
-                      style={{ fontSize: '0.78rem', padding: '0.3rem 0.65rem' }}
-                    >
-                      <Icon name="info" size={13} />
-                      <span>Details</span>
-                    </button>
-                  </div>
+                  )}
                 </div>
 
-                <p style={{ color: 'var(--text-primary)', fontSize: '0.92rem', margin: '0.65rem 0', lineHeight: 1.6 }}>
-                  {alert.message}
-                </p>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '0.78rem',
-                    color: 'var(--text-muted)',
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '0.75rem',
-                    marginTop: '0.5rem',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Icon name="map-pin" size={13} color="#818cf8" />
-                    <span>Affected Sector: <strong style={{ color: 'var(--text-primary)' }}>{alert.location}</strong></span>
-                  </span>
-
-                  <div style={{ display: 'flex', gap: '1.25rem' }}>
-                    <span>Issued: {new Date(alert.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                    {alert.expiresAt && (
-                      <span>Expires: {new Date(alert.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    )}
-                  </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  📡 BROADCASTED: {new Date(alt.createdAt).toLocaleString()}
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* Alert Details Modal */}
-      <AlertDetailModal
-        isOpen={!!selectedAlert}
-        onClose={() => setSelectedAlert(null)}
-        alert={selectedAlert}
-      />
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+                {alt.title}
+              </h2>
+
+              <p style={{ color: 'var(--text-primary)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '1rem' }}>
+                {alt.message}
+              </p>
+
+              {/* Location & Instructions Bar */}
+              <div
+                style={{
+                  background: 'rgba(7, 11, 19, 0.75)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.75rem 1rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <span>📍 Impact Location:</span>
+                  <strong style={{ color: '#ffffff' }}>{alt.location}</strong>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedAlert(alt)}
+                  className="btn btn-primary btn-sm"
+                >
+                  View Full Directives →
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Alert Detail Modal */}
+      {selectedAlert && (
+        <AlertDetailModal
+          alert={selectedAlert}
+          onClose={() => setSelectedAlert(null)}
+        />
+      )}
     </div>
   );
 };

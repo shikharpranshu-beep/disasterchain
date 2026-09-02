@@ -3,71 +3,36 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Icon from './Icons';
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
   const { user, isAdmin } = useAuth();
   const role = user?.role || 'citizen';
-  const isResponder = role === 'responder';
-  const isNgo = role === 'ngo';
-  const isVolunteer = role === 'volunteer';
+  const isPrivileged = role === 'responder' || role === 'ngo' || role === 'volunteer';
 
-  const navGroups = [
-    {
-      title: 'Command Overview',
-      items: [
-        { label: 'Emergency Dashboard', path: '/dashboard', icon: 'activity' },
-      ],
-    },
-    {
-      title: 'Emergency Response',
-      items: [
-        { label: 'SOS Distress Signals', path: '/sos', icon: 'sos', badge: 'LIVE' },
-        { label: 'Available Shelters', path: '/shelters', icon: 'shelter' },
-        { label: 'Affected Areas Map', path: '/affected-areas', icon: 'map' },
-        { label: 'Emergency Alerts', path: '/alerts', icon: 'bell' },
-      ],
-    },
-    {
-      title: 'Preparedness & Reporting',
-      items: [
-        { label: 'Disaster Safety Guides', path: '/guides', icon: 'guide' },
-        { label: 'Report Campus Hazard', path: '/incidents', icon: 'warning' },
-        { label: 'Emergency Directory', path: '/resources', icon: 'hospital' },
-      ],
-    },
-    {
-      title: 'Cryptographic Transparency',
-      items: [
-        { label: 'Donations Registry', path: '/donations', icon: 'donations' },
-        { label: 'Resource Tracking', path: '/resource-tracking', icon: 'logistics' },
-        { label: 'Transparency Ledger', path: '/transparency', icon: 'ledger' },
-      ],
-    },
-    {
-      title: 'Personal & Offline',
-      items: [
-        { label: 'My Security Profile', path: '/profile', icon: 'profile' },
-        { label: 'My Submitted Reports', path: '/my-reports', icon: 'report' },
-        { label: 'Low-Connectivity Mode', path: '/offline', icon: 'offline' },
-      ],
-    },
+  const navItems = [
+    { label: 'Command HUD', path: '/dashboard', icon: 'activity', section: 'OPERATION' },
+    { label: 'Emergency SOS', path: '/sos', icon: 'sos', badge: 'LIVE', section: 'OPERATION' },
+    { label: 'Relief Shelters', path: '/shelters', icon: 'shelter', section: 'OPERATION' },
+    { label: 'Affected Areas', path: '/affected-areas', icon: 'map', section: 'OPERATION' },
+    { label: 'Crisis Alerts', path: '/alerts', icon: 'bell', section: 'OPERATION' },
+    { label: 'Hazard Reports', path: '/incidents', icon: 'warning', section: 'REPORTING' },
+    { label: 'My Submissions', path: '/my-reports', icon: 'report', section: 'REPORTING' },
+    { label: 'Emergency Facilities', path: '/resources', icon: 'hospital', section: 'SUPPLY' },
+    { label: 'Aid Donations', path: '/donations', icon: 'donations', section: 'SUPPLY' },
+    { label: 'Distribution Transit', path: '/resource-tracking', icon: 'logistics', section: 'SUPPLY' },
+    { label: 'Transparency Ledger', path: '/transparency', icon: 'ledger', section: 'AUDIT' },
+    { label: 'Safety Protocols', path: '/guides', icon: 'guide', section: 'SURVIVAL' },
+    { label: 'Offline Mode', path: '/offline', icon: 'offline', section: 'SURVIVAL' },
   ];
 
   return (
     <>
-      {/* Mobile Drawer Backdrop */}
-      <div
-        className={`sidebar-overlay ${isOpen ? 'active' : ''}`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      <aside className={`app-sidebar ${isOpen ? 'open' : ''}`}>
-        {/* Admin Quick Jump Banner */}
+      {/* Desktop Spatial Command Rail */}
+      <aside className="command-rail">
+        {/* Admin Quick Terminal Access */}
         {isAdmin && (
-          <div style={{ marginBottom: '1rem', padding: '0 0.25rem' }}>
+          <div style={{ marginBottom: '1.25rem' }}>
             <NavLink
               to="/admin"
-              onClick={onClose}
               className={({ isActive }) =>
                 `btn ${isActive ? 'btn-primary' : 'btn-secondary'}`
               }
@@ -75,92 +40,123 @@ const Sidebar = ({ isOpen, onClose }) => {
                 width: '100%',
                 justifyContent: 'flex-start',
                 padding: '0.65rem 0.85rem',
-                fontSize: '0.84rem',
-                borderColor: 'rgba(99, 102, 241, 0.4)',
-                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(67, 56, 202, 0.3))',
+                fontSize: '0.8rem',
+                border: '1px solid var(--border-highlight)',
+                boxShadow: 'var(--glow-cyan)',
               }}
             >
-              <Icon name="shield" size={17} color="#a5b4fc" />
-              <span>Admin Control Center</span>
+              <Icon name="shield" size={16} color="var(--cyan)" />
+              <span>ADMIN COMMAND</span>
             </NavLink>
           </div>
         )}
 
-        {/* Responder / NGO Role Badge */}
-        {!isAdmin && (isResponder || isNgo || isVolunteer) && (
+        {/* Operational Role Badge */}
+        {!isAdmin && isPrivileged && (
           <div
             style={{
               marginBottom: '1rem',
-              padding: '0.5rem 0.85rem',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(99, 102, 241, 0.1)',
-              border: '1px solid rgba(99, 102, 241, 0.3)',
-              fontSize: '0.78rem',
-              color: '#c7d2fe',
+              padding: '0.45rem 0.75rem',
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgba(0, 240, 255, 0.08)',
+              border: '1px solid var(--border-subtle)',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.45rem',
+              gap: '0.5rem',
             }}
           >
-            <Icon name="shield-check" size={14} color="#818cf8" />
-            <span>Role: <strong style={{ textTransform: 'capitalize', color: '#ffffff' }}>{role}</strong></span>
+            <span className="live-beacon-pulse" />
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+              ROLE: {role.toUpperCase()}
+            </span>
           </div>
         )}
 
-        {/* Navigation Sections */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {navGroups.map((group, gIdx) => (
-            <div key={gIdx}>
-              <div className="nav-section-label">{group.title}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                {group.items.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `nav-link-item ${isActive ? 'active' : ''}`
-                    }
-                  >
-                    <Icon name={item.icon} size={18} />
-                    <span style={{ flex: 1 }}>{item.label}</span>
-                    {item.badge && (
-                      <span
-                        className="badge badge-critical"
-                        style={{ fontSize: '0.62rem', padding: '0.15rem 0.45rem' }}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
+        {/* Grouped Navigation Links */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div className="rail-section-title">MISSION DIRECTORY</div>
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `rail-nav-item ${isActive ? 'active' : ''}`
+              }
+            >
+              <span className="nav-icon-wrap">
+                <Icon name={item.icon} size={17} />
+              </span>
+              <span>{item.label}</span>
+              {item.badge && (
+                <span className="rail-nav-badge badge badge-critical">
+                  {item.badge}
+                </span>
+              )}
+            </NavLink>
           ))}
-        </nav>
+        </div>
 
-        {/* Cryptographic Ledger Status Footer */}
-        <div
-          style={{
-            marginTop: 'auto',
-            paddingTop: '1.25rem',
-            borderTop: '1px solid var(--border-subtle)',
-            fontSize: '0.74rem',
-            color: 'var(--text-muted)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.35rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#a5b4fc', fontWeight: 700 }}>
-            <Icon name="blockchain" size={15} color="var(--accent-indigo)" />
-            <span>Prototype Testnet Active</span>
-          </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-dim)' }}>
-            SHA-256 Ledger &bull; Node Sync OK
-          </div>
+        {/* Tactical Personnel Account Link */}
+        <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `rail-nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <span className="nav-icon-wrap">
+              <Icon name="profile" size={17} />
+            </span>
+            <span>Personnel Dossier</span>
+          </NavLink>
         </div>
       </aside>
+
+      {/* Mobile Floating Bottom Navigation Bar */}
+      <nav className="mobile-nav-bar" aria-label="Mobile Navigation">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Icon name="activity" size={19} />
+          <span>HUD</span>
+        </NavLink>
+
+        <NavLink
+          to="/alerts"
+          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Icon name="bell" size={19} />
+          <span>Alerts</span>
+        </NavLink>
+
+        {/* Floating Center SOS Beacon Button */}
+        <button
+          type="button"
+          onClick={onOpenSos}
+          className="mobile-nav-beacon"
+          aria-label="Emergency SOS Beacon"
+          title="Emergency SOS Dispatch"
+        >
+          <Icon name="alert-circle" size={24} color="#ffffff" />
+        </button>
+
+        <NavLink
+          to="/shelters"
+          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Icon name="shelter" size={19} />
+          <span>Shelter</span>
+        </NavLink>
+
+        <NavLink
+          to="/offline"
+          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Icon name="offline" size={19} />
+          <span>Offline</span>
+        </NavLink>
+      </nav>
     </>
   );
 };

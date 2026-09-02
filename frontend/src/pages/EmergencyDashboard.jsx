@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import StatCard from '../components/StatCard';
-import EmergencyAlertBanner from '../components/EmergencyAlertBanner';
+import CrisisGlobe3D from '../components/CrisisGlobe3D';
+import DisasterMap from '../components/DisasterMap';
 import ResourceJourneyModal from '../components/ResourceJourneyModal';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
-import DisasterMap from '../components/DisasterMap';
 import Icon from '../components/Icons';
 import {
   fetchSosRequests,
@@ -30,7 +29,10 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
   const [blockchainRecords, setBlockchainRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Selected item for modals
+  // Center display mode: '3D' | 'MAP'
+  const [viewCenterMode, setViewCenterMode] = useState('3D');
+
+  // Modals
   const [selectedJourney, setSelectedJourney] = useState(null);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
@@ -74,7 +76,6 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
 
     loadDashboardData();
 
-    // Auto-refresh emergency dashboard every 25 seconds
     const interval = setInterval(() => {
       loadDashboardData(true);
     }, 25000);
@@ -85,468 +86,286 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
     };
   }, [refreshKey]);
 
-  // Compute all statistics dynamically from real MongoDB data
-  const criticalSosCount = sosList.filter((s) => s.severity === 'Critical' && s.status !== 'Resolved' && s.status !== 'Cancelled').length;
-  const activeSosCount = sosList.filter((s) => s.status !== 'Resolved' && s.status !== 'Cancelled').length;
-  const totalShelterCapacity = shelters.reduce((acc, s) => acc + (Number(s.capacity) || 0), 0);
-  const totalShelterOccupancy = shelters.reduce((acc, s) => acc + (Number(s.occupancy) || 0), 0);
+  // Telemetry KPIs from live MongoDB collections
+  const criticalSosCount = useMemo(() => {
+    return sosList.filter((s) => s.severity === 'Critical' && s.status !== 'Resolved' && s.status !== 'Cancelled').length;
+  }, [sosList]);
+
+  const activeSosCount = useMemo(() => {
+    return sosList.filter((s) => s.status !== 'Resolved' && s.status !== 'Cancelled').length;
+  }, [sosList]);
+
+  const totalShelterCapacity = useMemo(() => {
+    return shelters.reduce((acc, s) => acc + (Number(s.capacity) || 0), 0);
+  }, [shelters]);
+
+  const totalShelterOccupancy = useMemo(() => {
+    return shelters.reduce((acc, s) => acc + (Number(s.occupancy) || 0), 0);
+  }, [shelters]);
+
   const availableBeds = Math.max(0, totalShelterCapacity - totalShelterOccupancy);
-  const totalAffectedPeople = affectedAreas.reduce((acc, a) => acc + (Number(a.affectedPeople) || 0), 0);
-  const totalReliefQuantity = donations.reduce((acc, d) => acc + (Number(d.quantity) || 0), 0);
-  const activeIncidentsCount = incidents.filter((i) => i.status !== 'Resolved' && i.status !== 'Rejected').length;
-  const operationalResourcesCount = resources.filter((r) => r.status === 'Operational' || r.status === 'Available').length;
+
+  const totalAffectedPeople = useMemo(() => {
+    return affectedAreas.reduce((acc, a) => acc + (Number(a.affectedPeople) || 0), 0);
+  }, [affectedAreas]);
+
+  const activeIncidentsCount = useMemo(() => {
+    return incidents.filter((i) => i.status !== 'Resolved' && i.status !== 'Rejected').length;
+  }, [incidents]);
+
+  const operationalResourcesCount = useMemo(() => {
+    return resources.filter((r) => r.status === 'Operational' || r.status === 'Available').length;
+  }, [resources]);
+
+  // Operational threat condition
+  const threatTier = criticalSosCount > 3 ? 'TIER 1 — CRITICAL RESPONSE' : criticalSosCount > 0 ? 'TIER 2 — ELEVATED HAZARD' : 'TIER 3 — NOMINAL MONITORING';
+  const threatColor = criticalSosCount > 3 ? 'var(--crimson)' : criticalSosCount > 0 ? 'var(--amber)' : 'var(--mint)';
 
   return (
-    <div>
-      {/* Top Critical Alert Ticker from real backend Alerts */}
-      <EmergencyAlertBanner alerts={alerts} />
-
-      {/* Page Header */}
-      <div className="page-header">
-        <div>
-          <h1 className="page-header-title">
-            <Icon name="activity" size={26} color="var(--accent-indigo)" />
-            <span>Emergency Response Command Center</span>
-          </h1>
-          <p className="page-header-subtitle">
-            Real-time situation overview, casualty signals, shelter readiness & verified aid distribution
-          </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* TOP: Mission Control HUD Header Bar */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1.15rem 1.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: 'rgba(9, 14, 25, 0.94)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              backgroundColor: threatColor,
+              boxShadow: `0 0 14px ${threatColor}`,
+            }}
+          />
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', color: '#ffffff' }}>
+              CRISIS OPERATIONS CENTER
+            </div>
+            <div className="micro-label" style={{ color: threatColor }}>
+              {threatTier} • {activeSosCount} ACTIVE DISTRESS SIGNALS
+            </div>
+          </div>
         </div>
 
-        <div className="page-header-actions">
-          <button onClick={onOpenSos} className="btn btn-sos" id="dashboard-sos-btn">
-            <Icon name="sos" size={17} color="#ffffff" />
-            <span>Broadcast SOS</span>
-          </button>
-          <button onClick={onOpenIncident} className="btn btn-secondary" id="dashboard-incident-btn">
-            <Icon name="warning" size={16} />
+        {/* Tactical Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              background: 'rgba(15, 23, 42, 0.85)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-xs)',
+              overflow: 'hidden',
+              marginRight: '0.5rem',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setViewCenterMode('3D')}
+              style={{
+                padding: '5px 12px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                background: viewCenterMode === '3D' ? 'var(--cyan)' : 'transparent',
+                color: viewCenterMode === '3D' ? '#040812' : 'var(--text-secondary)',
+              }}
+            >
+              3D Globe
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewCenterMode('MAP')}
+              style={{
+                padding: '5px 12px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                background: viewCenterMode === 'MAP' ? 'var(--cyan)' : 'transparent',
+                color: viewCenterMode === 'MAP' ? '#040812' : 'var(--text-secondary)',
+              }}
+            >
+              Tactical Map
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenIncident}
+            className="btn btn-secondary btn-sm"
+          >
+            <Icon name="warning" size={15} color="var(--amber)" />
             <span>Report Hazard</span>
           </button>
-          <Link to="/offline" className="btn btn-outline">
-            <Icon name="wifi-off" size={15} />
-            <span>Offline Mode</span>
-          </Link>
+
+          <button
+            type="button"
+            onClick={onOpenSos}
+            className="btn btn-emergency btn-sm"
+          >
+            <Icon name="alert-circle" size={15} color="#ffffff" />
+            <span>Broadcast SOS</span>
+          </button>
         </div>
       </div>
 
-      {/* Top 4 Key Metric StatCards - 100% dynamically computed */}
-      <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
-        <StatCard
-          title="Active Distress Signals"
-          value={activeSosCount}
-          subtitle={`${criticalSosCount} Critical Emergencies \u2022 ${sosList.length} Total`}
-          icon="sos"
-          color="red"
-          badge={criticalSosCount > 0 ? `${criticalSosCount} CRITICAL` : 'STABLE'}
-        />
-
-        <StatCard
-          title="Available Shelter Beds"
-          value={availableBeds}
-          subtitle={`${totalShelterOccupancy} / ${totalShelterCapacity} Occupied (${shelters.length} Shelters)`}
-          icon="home"
-          color="cyan"
-          badge="SAFE HAVENS"
-        />
-
-        <StatCard
-          title="Impact Hazard Zones"
-          value={affectedAreas.length}
-          subtitle={`${totalAffectedPeople.toLocaleString()} Affected People Monitored`}
-          icon="map"
-          color="amber"
-          badge="MONITORED"
-        />
-
-        <StatCard
-          title="Blockchain Verified Aid"
-          value={blockchainRecords.length}
-          subtitle={`${totalReliefQuantity.toLocaleString()} Units Logged on Testnet`}
-          icon="blockchain"
-          color="indigo"
-          badge="LEDGER ON"
-        />
-      </div>
-
-      {/* Interactive Disaster & Relief Map connected to real backend coordinates */}
-      <div style={{ marginBottom: '1.75rem' }}>
-        <DisasterMap
-          height="480px"
-          onOpenSos={onOpenSos}
-          showToolbar={true}
-          showLegend={true}
-        />
-      </div>
-
-      {/* Main Grid: Impact Zones Overview & Priority SOS Stream */}
+      {/* CENTER WORKSPACE WITH DUAL RAILS */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '1.5rem',
-          marginBottom: '1.75rem',
+          gridTemplateColumns: '320px 1fr 340px',
+          gap: '1.25rem',
+          alignItems: 'stretch',
         }}
       >
-        {/* Monitored Sector Hazard Cards from real MongoDB affected-areas */}
-        <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* LEFT RAIL: Critical Emergency Queue */}
+        <div
+          className="spatial-panel"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '520px',
+            background: 'rgba(10, 15, 26, 0.92)',
+          }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff' }}>
-                <Icon name="map" size={18} color="#f59e0b" />
-                <span>Monitored Hazard Sectors</span>
-              </h2>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Active casualty counts and sector risk levels ({affectedAreas.length} Zones)
+              <div className="micro-label" style={{ color: 'var(--crimson)' }}>
+                DISTRESS QUEUE
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ffffff' }}>
+                Active SOS Feed ({sosList.length})
               </div>
             </div>
-            <Link to="/affected-areas" style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span>Full Map</span>
-              <Icon name="arrow-right" size={13} />
+            <Link to="/sos" className="micro-label" style={{ color: 'var(--cyan)' }}>
+              View All →
             </Link>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', overflowY: 'auto', maxHeight: '300px' }}>
-            {affectedAreas.length === 0 ? (
-              <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                No active hazard zones reported.
-              </div>
-            ) : (
-              affectedAreas.slice(0, 4).map((area) => {
-                const isCritical = area.severity === 'Critical';
-                const isHigh = area.severity === 'High';
-                const isModerate = area.severity === 'Moderate';
-
-                const borderCol = isCritical
-                  ? '#ff334b'
-                  : isHigh
-                  ? '#f97316'
-                  : isModerate
-                  ? '#f59e0b'
-                  : '#10b981';
-
-                const bgCol = isCritical
-                  ? 'rgba(255, 51, 75, 0.12)'
-                  : isHigh
-                  ? 'rgba(249, 115, 22, 0.12)'
-                  : 'rgba(245, 158, 11, 0.12)';
-
-                return (
-                  <div
-                    key={area._id}
-                    style={{
-                      background: bgCol,
-                      border: `1px solid ${borderCol}`,
-                      borderRadius: 'var(--radius-md)',
-                      padding: '0.85rem',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                      <strong style={{ fontSize: '0.88rem', color: '#ffffff' }}>{area.name}</strong>
-                      <span className={`badge badge-${area.severity?.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>
-                        {area.severity}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                      {area.disasterType}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                      <span>👥 {Number(area.affectedPeople || 0).toLocaleString()}</span>
-                      <span style={{ color: '#ff6b7e', fontWeight: 700 }}>🚨 {area.activeSOS || 0} SOS</span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Live SOS Emergency Stream from real MongoDB SOS requests */}
-        <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ff6b7e', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Icon name="sos" size={18} color="#ff334b" />
-                <span>Priority SOS Distress Queue</span>
-              </h2>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Latest distress broadcasts awaiting dispatch ({sosList.length} Signals)
-              </div>
-            </div>
-            <Link to="/sos" style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span>View All ({sosList.length})</span>
-              <Icon name="arrow-right" size={13} />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', overflowY: 'auto', maxHeight: '300px' }}>
+          <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             {sosList.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                No active SOS signals at this time.
+              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🛡️</div>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>No Active SOS Signals</div>
+                <div style={{ fontSize: '0.75rem' }}>Emergency queue is currently clear.</div>
               </div>
             ) : (
-              sosList.slice(0, 4).map((sos) => (
+              sosList.slice(0, 6).map((sos) => (
                 <div
                   key={sos._id}
                   style={{
-                    background: 'rgba(11, 18, 34, 0.75)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '0.85rem 1rem',
+                    padding: '0.75rem',
+                    background: sos.severity === 'Critical' ? 'rgba(255, 46, 77, 0.08)' : 'rgba(15, 23, 42, 0.75)',
+                    border: `1px solid ${sos.severity === 'Critical' ? 'var(--border-red)' : 'var(--border-subtle)'}`,
+                    borderRadius: 'var(--radius-sm)',
+                    transition: 'all 0.15s ease',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#ffffff' }}>
-                      {sos.requestId || 'SOS'} \u2022 {sos.emergencyType}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                    <span className={`badge ${sos.severity === 'Critical' ? 'badge-critical' : 'badge-warning'}`} style={{ fontSize: '0.65rem' }}>
+                      {sos.severity}
                     </span>
-                    <span className={`badge badge-${sos.severity?.toLowerCase()}`}>{sos.severity}</span>
+                    <span className="micro-label" style={{ fontSize: '0.68rem', color: 'var(--cyan)' }}>
+                      {sos.status || 'Pending'}
+                    </span>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {sos.description}
+                  <div style={{ fontWeight: 700, fontSize: '0.86rem', color: '#ffffff', marginBottom: '0.2rem' }}>
+                    {sos.emergencyType} — {sos.name}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    <span>📍 {sos.location}</span>
-                    <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>{sos.status}</span>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    📍 {sos.location}
                   </div>
                 </div>
               ))
             )}
           </div>
         </div>
-      </div>
 
-      {/* Lower Section: Shelters & Blockchain Relief Feed from real MongoDB collections */}
-      <div className="grid-cols-2" style={{ marginBottom: '1.75rem' }}>
-        {/* Shelter Occupancy Meters */}
-        <div className="glass-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff' }}>
-                <Icon name="home" size={18} color="#10b981" />
-                <span>Shelter Capacity & Safe Havens</span>
-              </h2>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Real-time bed availability & amenities ({shelters.length} Shelters)
-              </div>
-            </div>
-            <Link to="/shelters" style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span>All Shelters</span>
-              <Icon name="arrow-right" size={13} />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {shelters.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                No shelter data available.
-              </div>
-            ) : (
-              shelters.slice(0, 3).map((shelter) => {
-                const cap = Number(shelter.capacity) || 1;
-                const occ = Number(shelter.occupancy) || 0;
-                const percent = Math.min(100, Math.round((occ / cap) * 100));
-                const isFull = percent >= 100;
-                const avail = Math.max(0, cap - occ);
-
-                return (
-                  <div key={shelter._id}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#ffffff' }}>{shelter.name}</span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isFull ? '#ff6b7e' : '#34d399' }}>
-                        {occ} / {cap} ({percent}%)
-                      </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          width: `${percent}%`,
-                          height: '100%',
-                          background: isFull
-                            ? '#ff334b'
-                            : percent > 75
-                            ? '#f59e0b'
-                            : 'linear-gradient(90deg, #10b981, #06b6d4)',
-                          transition: 'width 0.4s ease',
-                        }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      <span>📍 {shelter.address}</span>
-                      <span style={{ color: isFull ? '#ff6b7e' : '#38bdf8' }}>
-                        {isFull ? 'FULL' : `${avail} beds available`}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+        {/* CENTER VISUAL CENTERPIECE: 3D Globe or Leaflet Map */}
+        <div style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+          {viewCenterMode === '3D' ? (
+            <CrisisGlobe3D
+              sosRequests={sosList}
+              affectedAreas={affectedAreas}
+              shelters={shelters}
+            />
+          ) : (
+            <DisasterMap
+              height="480px"
+              showToolbar={true}
+              showLegend={false}
+              onOpenSos={onOpenSos}
+            />
+          )}
         </div>
 
-        {/* Blockchain Transparency Feed from real MongoDB blockchain records */}
-        <div className="glass-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <div>
-              <span className="badge badge-blockchain" style={{ marginBottom: '0.25rem' }}>
-                \u26D3\uFE0F CRYPTOGRAPHIC AUDIT
-              </span>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
-                Blockchain Relief Ledger
-              </h2>
-            </div>
-            <Link to="/transparency" style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span>Full Ledger</span>
-              <Icon name="arrow-right" size={13} />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {blockchainRecords.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                No blockchain transactions recorded yet.
-              </div>
-            ) : (
-              blockchainRecords.slice(0, 3).map((rec) => (
-                <div
-                  key={rec._id}
-                  style={{
-                    background: 'rgba(11, 18, 34, 0.75)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '0.85rem 1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '0.75rem',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: '#818cf8', fontWeight: 700 }}>
-                        {rec.transactionId}
-                      </span>
-                      <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>{rec.status}</span>
-                    </div>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#ffffff' }}>
-                      {rec.quantity} {rec.unit || 'units'} \u2022 {rec.resourceName}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                      Destination: {rec.destination}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setSelectedReceipt(rec)}
-                    className="btn btn-outline btn-sm"
-                    style={{ borderColor: 'rgba(99, 102, 241, 0.4)', color: '#a5b4fc', whiteSpace: 'nowrap' }}
-                  >
-                    <Icon name="blockchain" size={13} color="#818cf8" />
-                    <span>Verify</span>
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Additional Lower Grid: Hazards & Facilities Summary */}
-      <div className="grid-cols-2" style={{ marginBottom: '1.75rem' }}>
-        {/* Campus Hazard Reports Quick Summary */}
-        <div className="glass-card">
+        {/* RIGHT RAIL: Situation Intelligence & Priority Alerts */}
+        <div
+          className="spatial-panel"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '520px',
+            background: 'rgba(10, 15, 26, 0.92)',
+          }}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff' }}>
-                <Icon name="warning" size={18} color="#f97316" />
-                <span>Campus Hazard Reports</span>
-              </h2>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                {activeIncidentsCount} Active Tickets \u2022 {incidents.length} Total Reported
+              <div className="micro-label" style={{ color: 'var(--amber)' }}>
+                SITUATION INTEL
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ffffff' }}>
+                Crisis Broadcasts ({alerts.length})
               </div>
             </div>
-            <Link to="/incidents" style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span>All Hazards</span>
-              <Icon name="arrow-right" size={13} />
+            <Link to="/alerts" className="micro-label" style={{ color: 'var(--cyan)' }}>
+              Alerts Feed →
             </Link>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', overflowY: 'auto', maxHeight: '240px' }}>
-            {incidents.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
-                No hazard tickets reported.
+          <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {alerts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>📡</div>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>No Active Broadcasts</div>
+                <div style={{ fontSize: '0.75rem' }}>All monitored sectors are nominal.</div>
               </div>
             ) : (
-              incidents.slice(0, 3).map((inc) => (
+              alerts.slice(0, 5).map((alt) => (
                 <div
-                  key={inc._id}
+                  key={alt._id}
                   style={{
-                    background: 'rgba(11, 18, 34, 0.75)',
+                    padding: '0.75rem',
+                    background: 'rgba(15, 23, 42, 0.75)',
                     border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '0.75rem 0.95rem',
+                    borderRadius: 'var(--radius-sm)',
+                    borderLeft: `3px solid ${alt.severity === 'Danger' || alt.severity === 'Emergency' ? 'var(--crimson)' : 'var(--amber)'}`,
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ffffff' }}>
-                      {inc.incidentId || 'INC'} \u2022 {inc.title}
+                    <span className="micro-label" style={{ color: 'var(--amber)' }}>
+                      {alt.type || 'Advisory'}
                     </span>
-                    <span className={`badge badge-${inc.severity?.toLowerCase()}`}>{inc.severity}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    <span>📍 {inc.location}</span>
-                    <span className="badge badge-neutral" style={{ fontSize: '0.65rem' }}>{inc.status}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Emergency Resources Directory Quick Summary */}
-        <div className="glass-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff' }}>
-                <Icon name="hospital" size={18} color="#06b6d4" />
-                <span>Emergency Directory & Facilities</span>
-              </h2>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                {operationalResourcesCount} Operational Facilities \u2022 {resources.length} Total
-              </div>
-            </div>
-            <Link to="/resources" style={{ fontSize: '0.82rem', color: 'var(--accent-indigo)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <span>Directory</span>
-              <Icon name="arrow-right" size={13} />
-            </Link>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', overflowY: 'auto', maxHeight: '240px' }}>
-            {resources.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
-                No emergency facilities registered.
-              </div>
-            ) : (
-              resources.slice(0, 3).map((res) => (
-                <div
-                  key={res._id}
-                  style={{
-                    background: 'rgba(11, 18, 34, 0.75)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '0.75rem 0.95rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ffffff' }}>
-                      {res.name}
+                    <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      {new Date(alt.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                    <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>{res.type}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    <span>📍 {res.address}</span>
-                    <span style={{ color: '#38bdf8', fontWeight: 700 }}>📞 {res.phone}</span>
+                  <div style={{ fontWeight: 700, fontSize: '0.84rem', color: '#ffffff', marginBottom: '0.2rem' }}>
+                    {alt.title}
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: 1.3 }}>
+                    {alt.message}
                   </div>
                 </div>
               ))
@@ -555,18 +374,97 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
         </div>
       </div>
 
-      {/* Modals */}
-      <ResourceJourneyModal
-        isOpen={!!selectedJourney}
-        onClose={() => setSelectedJourney(null)}
-        resourceData={selectedJourney}
-      />
+      <style>{`
+        @media (max-width: 1280px) {
+          div[style*="gridTemplateColumns: 320px 1fr 340px"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
 
-      <BlockchainReceiptModal
-        isOpen={!!selectedReceipt}
-        onClose={() => setSelectedReceipt(null)}
-        record={selectedReceipt}
-      />
+      {/* BOTTOM: Compact Live Telemetry KPIs Grid */}
+      <div className="grid-cols-4">
+        {/* 1. SOS Signals */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">ACTIVE DISTRESS</span>
+            <span className="live-beacon-pulse critical" />
+          </div>
+          <div className="telemetry-num crimson">
+            {activeSosCount}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>Critical: {criticalSosCount}</span>
+            <Link to="/sos" style={{ color: 'var(--cyan)' }}>Dispatch Feed →</Link>
+          </div>
+        </div>
+
+        {/* 2. Shelter Capacity */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">AVAILABLE BEDS</span>
+            <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>
+              {shelters.length} Shelters
+            </span>
+          </div>
+          <div className="telemetry-num cyan">
+            {availableBeds.toLocaleString()}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>Total Cap: {totalShelterCapacity.toLocaleString()}</span>
+            <Link to="/shelters" style={{ color: 'var(--cyan)' }}>View Facilities →</Link>
+          </div>
+        </div>
+
+        {/* 3. Hazard Impact Zones */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">IMPACT ZONES</span>
+            <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
+              {affectedAreas.length} Zones
+            </span>
+          </div>
+          <div className="telemetry-num amber">
+            {totalAffectedPeople.toLocaleString()}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>People in Risk Area</span>
+            <Link to="/affected-areas" style={{ color: 'var(--cyan)' }}>Hazard Map →</Link>
+          </div>
+        </div>
+
+        {/* 4. Cryptographic Blockchain Ledger */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">TRANSPARENCY LEDGER</span>
+            <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
+              Verified
+            </span>
+          </div>
+          <div className="telemetry-num mint">
+            {blockchainRecords.length}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>Mined Blocks</span>
+            <Link to="/transparency" style={{ color: 'var(--cyan)' }}>Audit Trail →</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Modals for Resource Journey and Blockchain Audit Receipt */}
+      {selectedJourney && (
+        <ResourceJourneyModal
+          item={selectedJourney}
+          onClose={() => setSelectedJourney(null)}
+        />
+      )}
+
+      {selectedReceipt && (
+        <BlockchainReceiptModal
+          item={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
+        />
+      )}
     </div>
   );
 };

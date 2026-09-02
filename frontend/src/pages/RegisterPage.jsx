@@ -18,7 +18,6 @@ const RegisterPage = () => {
 
   const { register, resendVerification } = useAuth();
 
-  // Real-time password validation criteria
   const passwordCriteria = useMemo(() => {
     return {
       hasLength: password.length >= 8,
@@ -59,7 +58,7 @@ const RegisterPage = () => {
       setRegisteredSuccess(true);
       setRegisteredEmail(email);
     } else {
-      setError(result.message || 'Registration failed. Please check your details.');
+      setError(result.message || 'Registration failed. Please verify submitted parameters.');
     }
   };
 
@@ -71,104 +70,73 @@ const RegisterPage = () => {
     setResendStatus(res.message);
   };
 
-  // Verification Instructions Screen upon successful registration
   if (registeredSuccess) {
     return (
       <div
         style={{
-          minHeight: 'calc(100vh - 70px)',
+          minHeight: 'calc(100vh - 68px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '2rem 1.5rem',
+          background: 'var(--bg-space)',
         }}
       >
         <div
-          className="glass-card"
+          className="spatial-panel"
           style={{
             maxWidth: '500px',
             width: '100%',
             padding: '2.5rem 2.25rem',
             textAlign: 'center',
-            borderColor: 'rgba(16, 185, 129, 0.4)',
+            border: '1px solid var(--border-mint)',
+            boxShadow: '0 0 24px rgba(16, 185, 129, 0.2)',
           }}
         >
           <div
             style={{
-              width: '68px',
-              height: '68px',
+              width: '64px',
+              height: '64px',
               borderRadius: '50%',
               background: 'rgba(16, 185, 129, 0.15)',
-              border: '2px solid #10b981',
+              border: '2px solid var(--mint)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: '1.25rem',
-              color: '#10b981',
+              color: 'var(--mint)',
             }}
           >
-            <Icon name="mail" size={32} color="#10b981" />
+            <Icon name="shield-check" size={32} />
           </div>
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: '#ffffff' }}>
-            Verify Your Email Address
+          <div className="micro-label" style={{ color: 'var(--mint)', marginBottom: '0.3rem' }}>
+            REGISTRATION BROADCASTED
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+            Verification Dispatch Sent
           </h2>
-
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-            We've sent a secure verification link to <strong style={{ color: '#ffffff' }}>{registeredEmail}</strong>. Please check your inbox and click the link to activate your DisasterChain account.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+            A cryptographic verification link has been dispatched to <strong style={{ color: '#ffffff' }}>{registeredEmail}</strong>. Please check your inbox or spam folder.
           </p>
 
-          <div
-            style={{
-              background: 'rgba(11, 18, 34, 0.85)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)',
-              padding: '1.1rem',
-              fontSize: '0.84rem',
-              color: 'var(--text-muted)',
-              marginBottom: '1.75rem',
-              textAlign: 'left',
-              lineHeight: 1.5,
-            }}
-          >
-            💡 <strong style={{ color: 'var(--text-primary)' }}>Next steps:</strong>
-            <ul style={{ paddingLeft: '1.25rem', marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <li>Open your email client and find the verification email.</li>
-              <li>Click <strong>Verify Email Address</strong> within 24 hours.</li>
-              <li>Once verified, sign in to broadcast emergency signals or view relief records.</li>
-            </ul>
-          </div>
-
           {resendStatus && (
-            <div
-              style={{
-                background: 'rgba(99, 102, 241, 0.15)',
-                border: '1px solid rgba(99, 102, 241, 0.4)',
-                color: '#a5b4fc',
-                padding: '0.75rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '0.85rem',
-                marginBottom: '1.25rem',
-              }}
-            >
-              ℹ️ {resendStatus}
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid var(--border-mint)', color: 'var(--mint)', padding: '0.65rem', borderRadius: 'var(--radius-xs)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+              ✓ {resendStatus}
             </div>
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <Link to="/login" className="btn btn-primary" style={{ padding: '0.75rem' }}>
+            <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
               Proceed to Sign In
             </Link>
-
             <button
               type="button"
               onClick={handleResend}
               disabled={resending}
-              className="btn btn-outline"
-              style={{ fontSize: '0.85rem', padding: '0.65rem' }}
+              className="btn btn-secondary btn-sm"
             >
-              <Icon name="mail" size={15} />
-              <span>{resending ? 'Resending Link...' : 'Resend Verification Email'}</span>
+              {resending ? 'Dispatching...' : 'Resend Verification Dispatch'}
             </button>
           </div>
         </div>
@@ -179,76 +147,55 @@ const RegisterPage = () => {
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 70px)',
+        minHeight: 'calc(100vh - 68px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem 1.5rem',
+        padding: '2.5rem 1.5rem',
+        background: 'var(--bg-space)',
       }}
     >
       <div
-        className="glass-card"
+        className="spatial-panel"
         style={{
           maxWidth: '520px',
           width: '100%',
           padding: '2.5rem 2.25rem',
+          border: '1px solid var(--border-highlight)',
+          boxShadow: 'var(--glow-cyan)',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-          <div
-            style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #ff334b, #6366f1)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '0.85rem',
-              boxShadow: '0 0 20px rgba(255, 51, 75, 0.45)',
-            }}
-          >
-            <Icon name="shield-check" size={28} color="#ffffff" />
+          <div className="micro-label" style={{ color: 'var(--cyan)', marginBottom: '0.25rem' }}>
+            PERSONNEL ENROLLMENT
           </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            Create DisasterChain Account
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
+            Register Operator Account
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
-            Join the verified emergency response & transparent relief network
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
+            Join the DisasterChain emergency response and verification grid
           </p>
         </div>
 
         {error && (
-          <div
-            style={{
-              background: 'rgba(255, 51, 75, 0.15)',
-              border: '1px solid rgba(255, 51, 75, 0.35)',
-              color: '#ff6b7e',
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.85rem',
-              marginBottom: '1.25rem',
-            }}
-          >
+          <div style={{ background: 'rgba(255, 46, 77, 0.15)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-xs)', padding: '0.75rem 1rem', color: '#ff8597', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
             ⚠️ {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Full Name */}
           <div className="form-group">
-            <label className="form-label">Full Name</label>
+            <label className="form-label">Full Operator Name</label>
             <input
               type="text"
               required
               className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Shikhar Sharma"
+              placeholder="e.g. Captain Shikhar Sharma"
             />
           </div>
 
-          {/* Email */}
           <div className="form-group">
             <label className="form-label">Email Address</label>
             <input
@@ -257,26 +204,24 @@ const RegisterPage = () => {
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. citizen@example.com"
+              placeholder="operator@disasterchain.org"
             />
           </div>
 
-          {/* Account Role */}
           <div className="form-group">
-            <label className="form-label">Account Role</label>
+            <label className="form-label">Operational Role</label>
             <select
               className="form-select"
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
-              <option value="citizen">👤 Citizen / Community Member</option>
-              <option value="volunteer">🤝 Volunteer Responder</option>
-              <option value="ngo">🏢 NGO / Relief Coordinator</option>
-              <option value="responder">🚑 First Responder / Emergency Staff</option>
+              <option value="citizen">Citizen / Campus Resident</option>
+              <option value="volunteer">Volunteer Responder</option>
+              <option value="ngo">NGO Relief Coordinator</option>
+              <option value="responder">Frontline First Responder</option>
             </select>
           </div>
 
-          {/* Password */}
           <div className="form-group">
             <label className="form-label">Password</label>
             <input
@@ -285,69 +230,29 @@ const RegisterPage = () => {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a strong password"
+              placeholder="••••••••••••"
             />
           </div>
 
-          {/* Password Strength Meter */}
-          {password && (
-            <div style={{ marginBottom: '1.15rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.35rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Security Strength:</span>
-                <span
-                  style={{
-                    fontWeight: 700,
-                    color:
-                      passwordScore <= 2
-                        ? '#ff334b'
-                        : passwordScore <= 4
-                        ? '#f59e0b'
-                        : '#10b981',
-                  }}
-                >
-                  {passwordScore <= 2 ? 'Weak' : passwordScore <= 4 ? 'Moderate' : 'Strong ✅'}
-                </span>
-              </div>
+          {/* Password Security Check Chips */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', marginBottom: '1rem', fontSize: '0.72rem', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ color: passwordCriteria.hasLength ? 'var(--mint)' : 'var(--text-muted)' }}>
+              {passwordCriteria.hasLength ? '✓' : '○'} 8+ Characters
+            </span>
+            <span style={{ color: passwordCriteria.hasUpper ? 'var(--mint)' : 'var(--text-muted)' }}>
+              {passwordCriteria.hasUpper ? '✓' : '○'} Uppercase Letter
+            </span>
+            <span style={{ color: passwordCriteria.hasLower ? 'var(--mint)' : 'var(--text-muted)' }}>
+              {passwordCriteria.hasLower ? '✓' : '○'} Lowercase Letter
+            </span>
+            <span style={{ color: passwordCriteria.hasNumber ? 'var(--mint)' : 'var(--text-muted)' }}>
+              {passwordCriteria.hasNumber ? '✓' : '○'} Number (0-9)
+            </span>
+            <span style={{ color: passwordCriteria.hasSpecial ? 'var(--mint)' : 'var(--text-muted)' }}>
+              {passwordCriteria.hasSpecial ? '✓' : '○'} Special Symbol (!@#$)
+            </span>
+          </div>
 
-              {/* Progress Bar */}
-              <div style={{ width: '100%', height: '5px', background: '#1e293b', borderRadius: '3px', overflow: 'hidden', marginBottom: '0.65rem' }}>
-                <div
-                  style={{
-                    width: `${(passwordScore / 5) * 100}%`,
-                    height: '100%',
-                    background:
-                      passwordScore <= 2
-                        ? '#ff334b'
-                        : passwordScore <= 4
-                        ? '#f59e0b'
-                        : '#10b981',
-                    transition: 'width 0.3s ease',
-                  }}
-                />
-              </div>
-
-              {/* Checklist */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', fontSize: '0.74rem' }}>
-                <span style={{ color: passwordCriteria.hasLength ? '#34d399' : '#64748b' }}>
-                  {passwordCriteria.hasLength ? '✓' : '○'} Min. 8 characters
-                </span>
-                <span style={{ color: passwordCriteria.hasUpper ? '#34d399' : '#64748b' }}>
-                  {passwordCriteria.hasUpper ? '✓' : '○'} Uppercase letter (A-Z)
-                </span>
-                <span style={{ color: passwordCriteria.hasLower ? '#34d399' : '#64748b' }}>
-                  {passwordCriteria.hasLower ? '✓' : '○'} Lowercase letter (a-z)
-                </span>
-                <span style={{ color: passwordCriteria.hasNumber ? '#34d399' : '#64748b' }}>
-                  {passwordCriteria.hasNumber ? '✓' : '○'} At least 1 number (0-9)
-                </span>
-                <span style={{ color: passwordCriteria.hasSpecial ? '#34d399' : '#64748b', gridColumn: 'span 2' }}>
-                  {passwordCriteria.hasSpecial ? '✓' : '○'} Special character (!@#$%^&*...)
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Confirm Password */}
           <div className="form-group">
             <label className="form-label">Confirm Password</label>
             <input
@@ -356,30 +261,24 @@ const RegisterPage = () => {
               className="form-input"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter your password"
+              placeholder="••••••••••••"
             />
-            {confirmPassword && password !== confirmPassword && (
-              <span style={{ fontSize: '0.75rem', color: '#ff6b7e', marginTop: '0.25rem', display: 'block' }}>
-                Passwords do not match
-              </span>
-            )}
           </div>
 
           <button
             type="submit"
             disabled={loading}
             className="btn btn-primary"
-            style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
+            style={{ width: '100%', marginTop: '0.5rem' }}
           >
-            <Icon name="shield-check" size={17} />
-            <span>{loading ? 'Creating Secure Account...' : 'Create Account'}</span>
+            {loading ? 'Registering Operator...' : 'Complete Enrollment →'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
-          Already have an account?{' '}
-          <Link to="/login" style={{ color: 'var(--accent-indigo)', fontWeight: 700 }}>
-            Sign In Here
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+          Already registered?{' '}
+          <Link to="/login" style={{ color: 'var(--cyan)', fontWeight: 700 }}>
+            Sign In to Grid
           </Link>
         </div>
       </div>

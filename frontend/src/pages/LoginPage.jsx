@@ -40,7 +40,7 @@ const LoginPage = () => {
         setIsUnverified(true);
         setUnverifiedEmail(result.email || email);
       }
-      setError(result.message || 'Login failed. Please check credentials.');
+      setError(result.message || 'Authentication rejected. Verify email and credentials.');
     }
   };
 
@@ -55,19 +55,22 @@ const LoginPage = () => {
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 70px)',
+        minHeight: 'calc(100vh - 68px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1.5rem',
+        background: 'var(--bg-space)',
       }}
     >
       <div
-        className="glass-card"
+        className="spatial-panel"
         style={{
           maxWidth: '460px',
           width: '100%',
           padding: '2.5rem 2.25rem',
+          border: '1px solid var(--border-highlight)',
+          boxShadow: 'var(--glow-cyan)',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
@@ -75,101 +78,87 @@ const LoginPage = () => {
             style={{
               width: '52px',
               height: '52px',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #ff334b, #6366f1)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'linear-gradient(135deg, var(--crimson), var(--cyan))',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: '0.85rem',
-              boxShadow: '0 0 20px rgba(255, 51, 75, 0.45)',
+              boxShadow: 'var(--glow-cyan)',
             }}
           >
-            <Icon name="shield-check" size={28} color="#ffffff" />
+            <Icon name="shield-check" size={26} color="#ffffff" />
           </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
+          <div className="micro-label" style={{ color: 'var(--cyan)', marginBottom: '0.25rem' }}>
+            OPERATOR AUTHENTICATION
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
             Sign In to DisasterChain
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
-            Access crisis response tools & transparent relief records
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
+            Access crisis operational dispatch & cryptographic relief systems
           </p>
         </div>
 
-        {/* Error / Unverified Notice */}
+        {/* Error Notice */}
         {error && (
           <div
             style={{
-              background: isUnverified ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 51, 75, 0.15)',
-              border: `1px solid ${isUnverified ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255, 51, 75, 0.35)'}`,
-              color: isUnverified ? '#fcd34d' : '#ff6b7e',
-              padding: '0.85rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.85rem',
+              background: 'rgba(255, 46, 77, 0.15)',
+              border: '1px solid var(--border-red)',
+              borderRadius: 'var(--radius-xs)',
+              padding: '0.75rem 1rem',
+              color: '#ff8597',
+              fontSize: '0.82rem',
               marginBottom: '1.25rem',
-              lineHeight: 1.5,
             }}
           >
-            <div style={{ fontWeight: 700 }}>{isUnverified ? '⚠️ Email Not Verified' : `⚠️ ${error}`}</div>
+            <div>⚠️ {error}</div>
             {isUnverified && (
-              <div style={{ marginTop: '0.65rem' }}>
-                <p style={{ fontSize: '0.8rem', color: '#fef3c7', marginBottom: '0.5rem' }}>
-                  Your account requires email verification before accessing DisasterChain.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={resending}
-                  className="btn btn-secondary btn-sm"
-                  style={{
-                    fontSize: '0.78rem',
-                    background: 'rgba(0, 0, 0, 0.4)',
-                    borderColor: 'rgba(245, 158, 11, 0.5)',
-                    color: '#fef08a',
-                  }}
-                >
-                  <Icon name="mail" size={13} />
-                  <span>{resending ? 'Sending...' : 'Resend Verification Email'}</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--cyan)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontSize: '0.8rem',
+                  marginTop: '0.4rem',
+                }}
+              >
+                {resending ? 'Sending...' : 'Resend verification email'}
+              </button>
             )}
           </div>
         )}
 
         {resendStatus && (
-          <div
-            style={{
-              background: 'rgba(99, 102, 241, 0.15)',
-              border: '1px solid rgba(99, 102, 241, 0.4)',
-              color: '#a5b4fc',
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.85rem',
-              marginBottom: '1.25rem',
-            }}
-          >
-            ℹ️ {resendStatus}
+          <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid var(--border-mint)', color: 'var(--mint)', padding: '0.65rem 1rem', borderRadius: 'var(--radius-xs)', fontSize: '0.8rem', marginBottom: '1rem' }}>
+            ✓ {resendStatus}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label">Registered Email Address</label>
             <input
               type="email"
               required
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. student@disasterchain.org"
+              placeholder="operator@disasterchain.org"
             />
           </div>
 
           <div className="form-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
               <label className="form-label" style={{ margin: 0 }}>Password</label>
-              <Link
-                to="/forgot-password"
-                style={{ fontSize: '0.78rem', color: 'var(--accent-indigo)', fontWeight: 700 }}
-              >
+              <Link to="/forgot-password" style={{ fontSize: '0.75rem', color: 'var(--cyan)' }}>
                 Forgot Password?
               </Link>
             </div>
@@ -179,7 +168,7 @@ const LoginPage = () => {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="••••••••••••"
             />
           </div>
 
@@ -187,17 +176,16 @@ const LoginPage = () => {
             type="submit"
             disabled={loading}
             className="btn btn-primary"
-            style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
+            style={{ width: '100%', marginTop: '0.5rem' }}
           >
-            <Icon name="lock" size={16} />
-            <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
+            {loading ? 'Authenticating Operator...' : 'Authenticate & Enter Grid'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ color: 'var(--accent-indigo)', fontWeight: 700 }}>
-            Create Account
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+          New operator?{' '}
+          <Link to="/register" style={{ color: 'var(--cyan)', fontWeight: 700 }}>
+            Register Personnel Account
           </Link>
         </div>
       </div>

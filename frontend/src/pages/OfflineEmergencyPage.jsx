@@ -3,184 +3,253 @@ import Icon from '../components/Icons';
 
 const OfflineEmergencyPage = () => {
   const [smsData, setSmsData] = useState({
-    recipient: '112 (National Emergency)',
+    recipient: '112',
     messageType: 'Medical Assistance',
-    details: 'Trapped on terrace with 4 students. Need evacuation.',
+    location: '',
+    details: 'Immediate emergency dispatch required.',
   });
 
-  const [smsSentNotice, setSmsSentNotice] = useState(false);
+  const [copiedSms, setCopiedSms] = useState(false);
 
-  const handleSendSms = (e) => {
-    e.preventDefault();
-    setSmsSentNotice(true);
+  const fullSmsBody = `[EMERGENCY SOS] Type: ${smsData.messageType} | Location: ${smsData.location || 'GPS Unknown'} | Info: ${smsData.details}`;
+
+  const handleCopySms = () => {
+    navigator.clipboard.writeText(fullSmsBody);
+    setCopiedSms(true);
+    setTimeout(() => setCopiedSms(false), 2500);
   };
 
   return (
-    <div>
-      <div className="page-header">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* High-Contrast Survival Banner */}
+      <div
+        className="spatial-panel spatial-panel-critical"
+        style={{
+          padding: '1.75rem 2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          borderLeft: '4px solid var(--crimson)',
+        }}
+      >
         <div>
-          <div className="badge badge-success" style={{ marginBottom: '0.4rem' }}>
-            <Icon name="wifi-off" size={13} color="#34d399" />
-            <span>LOCAL CACHE ACTIVE &bull; LOW-CONNECTIVITY MODE</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+            <span className="badge badge-critical">LOCAL AIR-GAP SURVIVAL MODE</span>
+            <span className="micro-label" style={{ color: 'var(--amber)' }}>
+              OFFLINE PRE-CACHED DIRECTIVES
+            </span>
           </div>
-          <h1 className="page-header-title">
-            <Icon name="wifi-off" size={26} color="#38bdf8" />
-            <span>Low-Connectivity Emergency Support</span>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+            Low-Connectivity Emergency Telephony & SMS
           </h1>
-          <p className="page-header-subtitle">
-            Critical emergency protocols, telephone hotlines & SMS dispatch interface designed for zero/poor internet conditions
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            Zero-internet survival tools, direct GSM cellular calling, and standardized SMS distress dispatchers.
           </p>
+        </div>
+
+        <div className="telemetry-chip" style={{ background: 'rgba(255, 46, 77, 0.15)', borderColor: 'var(--border-red)' }}>
+          <span className="live-beacon-pulse critical" />
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>CELLULAR READY</span>
         </div>
       </div>
 
-      {/* Emergency Hotlines Grid */}
-      <div className="grid-cols-4" style={{ marginBottom: '2rem' }}>
-        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(255, 51, 75, 0.45)', borderTop: '4px solid #ff334b' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🚨</div>
-          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>National Emergency</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ff4d63', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>112</div>
-          <a href="tel:112" className="btn btn-danger" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
-            <Icon name="phone" size={14} />
-            <span>Dial 112</span>
-          </a>
-        </div>
-
-        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(245, 158, 11, 0.45)', borderTop: '4px solid #f59e0b' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🚒</div>
-          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>Fire Brigade</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fbbf24', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>101</div>
-          <a href="tel:101" className="btn btn-secondary" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
-            <Icon name="phone" size={14} />
-            <span>Dial 101</span>
-          </a>
-        </div>
-
-        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(6, 182, 212, 0.45)', borderTop: '4px solid #06b6d4' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🚑</div>
-          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>Ambulance Triage</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#38bdf8', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>108</div>
-          <a href="tel:108" className="btn btn-secondary" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
-            <Icon name="phone" size={14} />
-            <span>Dial 108</span>
-          </a>
-        </div>
-
-        <div className="glass-card glass-card-hoverable" style={{ textAlign: 'center', borderColor: 'rgba(99, 102, 241, 0.45)', borderTop: '4px solid #6366f1' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>🏛️</div>
-          <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', fontWeight: 700 }}>Disaster Authority (NDRF)</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#818cf8', margin: '0.25rem 0', fontFamily: 'var(--font-mono)' }}>1078</div>
-          <a href="tel:1078" className="btn btn-secondary" style={{ fontSize: '0.8rem', width: '100%', padding: '0.45rem' }}>
-            <Icon name="phone" size={14} />
-            <span>Dial 1078</span>
-          </a>
-        </div>
-      </div>
-
-      <div className="grid-cols-2" style={{ marginBottom: '1.75rem' }}>
-        {/* SMS Emergency Dispatch Interface */}
-        <div className="glass-card">
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#ffffff' }}>
-            <Icon name="mail" size={20} color="var(--accent-indigo)" />
-            <span>SMS Emergency Dispatch Generator</span>
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-            Generates standardized cellular text payloads when mobile data (4G/5G) is unreachable.
-          </p>
-
-          <form onSubmit={handleSendSms}>
-            <div className="form-group">
-              <label className="form-label">Dispatch Recipient</label>
-              <input
-                type="text"
-                className="form-input"
-                value={smsData.recipient}
-                onChange={(e) => setSmsData({ ...smsData, recipient: e.target.value })}
-              />
+      {/* Emergency Hotlines Large-Button Grid */}
+      <div className="grid-cols-4">
+        {[
+          { name: 'National Emergency', num: '112', icon: '🚨', color: 'var(--crimson)', desc: 'Police, Ambulance & Fire' },
+          { name: 'Fire & Rescue Brigade', num: '101', icon: '🚒', color: 'var(--amber)', desc: 'Fire Hazard & Extrication' },
+          { name: 'Ambulance / Trauma', num: '108', icon: '🚑', color: 'var(--cyan)', desc: 'Emergency Medical Service' },
+          { name: 'NDRF Disaster Force', num: '1078', icon: '🏛️', color: 'var(--mint)', desc: 'National Disaster Triage' },
+        ].map((line) => (
+          <div
+            key={line.num}
+            className="spatial-panel"
+            style={{
+              textAlign: 'center',
+              padding: '1.5rem',
+              background: 'rgba(11, 17, 30, 0.88)',
+              borderTop: `3px solid ${line.color}`,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '2.25rem', marginBottom: '0.35rem' }}>{line.icon}</div>
+              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#ffffff' }}>{line.name}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.85rem' }}>{line.desc}</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '2rem', color: line.color, marginBottom: '1rem' }}>
+                {line.num}
+              </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Distress Category</label>
-              <select
-                className="form-select"
-                value={smsData.messageType}
-                onChange={(e) => setSmsData({ ...smsData, messageType: e.target.value })}
-              >
-                <option value="Medical Assistance">Medical Emergency Assistance</option>
-                <option value="Fire Alarm">Fire Incident Alert</option>
-                <option value="Flood Evacuation">Flood Trapped Evacuation</option>
-                <option value="Structural Collapse">Structural Damage / Collapse</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Formatted Emergency Payload</label>
-              <textarea
-                rows={3}
-                className="form-textarea"
-                value={smsData.details}
-                onChange={(e) => setSmsData({ ...smsData, details: e.target.value })}
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-              <Icon name="mail" size={16} />
-              <span>Generate SMS Template</span>
-            </button>
-          </form>
-
-          {smsSentNotice && (
-            <div
-              style={{
-                marginTop: '1.25rem',
-                background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid rgba(245, 158, 11, 0.35)',
-                borderRadius: 'var(--radius-md)',
-                padding: '0.85rem 1rem',
-                fontSize: '0.82rem',
-                color: '#fbbf24',
-                lineHeight: 1.5,
-              }}
+            <a
+              href={`tel:${line.num}`}
+              className="btn btn-emergency"
+              style={{ width: '100%', fontSize: '0.85rem', padding: '0.55rem' }}
             >
-              <strong>ℹ️ PROTOTYPE SMS STATUS:</strong><br />
-              SMS gateway is simulated in this academic prototype. In production deployment, this payload dispatches via Twilio or GSM hardware modem. Use your mobile phone to send this text directly to <strong>112</strong>.
-            </div>
-          )}
-        </div>
+              📞 Direct Call {line.num}
+            </a>
+          </div>
+        ))}
+      </div>
 
-        {/* Offline Cached Quick Safety Cards */}
-        <div className="glass-card">
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#ffffff' }}>
-            <Icon name="book" size={20} color="#10b981" />
-            <span>Offline Cached Safety Protocols</span>
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-            Essential life-safety instructions always accessible without network connection.
+      {/* SMS Cellular Generator & Survival Protocols */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        {/* Left: SMS Emergency Dispatch Generator */}
+        <div className="spatial-panel" style={{ padding: '1.75rem', background: 'rgba(11, 17, 30, 0.88)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem' }}>
+            <span className="badge badge-info">CELLULAR SMS</span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
+              Standardized SMS Distress Generator
+            </h3>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
+            When 4G/5G data is severed, standard GSM SMS can pass through high network congestion.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ background: 'rgba(11, 18, 34, 0.85)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.95rem' }}>
-              <strong style={{ color: '#ff6b7e', fontSize: '0.92rem' }}>🏚️ Earthquake (Immediate):</strong>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                DROP to floor, COVER head under sturdy desk, HOLD ON. Do not run outside during shaking.
-              </div>
-            </div>
+          <div className="form-group">
+            <label className="form-label">Recipient Hotline Number</label>
+            <input
+              type="text"
+              className="form-input"
+              value={smsData.recipient}
+              onChange={(e) => setSmsData({ ...smsData, recipient: e.target.value })}
+            />
+          </div>
 
-            <div style={{ background: 'rgba(11, 18, 34, 0.85)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.95rem' }}>
-              <strong style={{ color: '#fbbf24', fontSize: '0.92rem' }}>🔥 Fire & Smoke:</strong>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                CRAWL LOW under smoke where clean air exists. Touch doors with back of hand before opening. Never use elevators.
-              </div>
-            </div>
+          <div className="form-group">
+            <label className="form-label">Emergency Category</label>
+            <select
+              className="form-select"
+              value={smsData.messageType}
+              onChange={(e) => setSmsData({ ...smsData, messageType: e.target.value })}
+            >
+              <option value="Medical Assistance">Medical Assistance / Trauma</option>
+              <option value="Trapped in Collapse">Trapped in Collapse / Structure</option>
+              <option value="Fire Hazard">Fire Hazard / Smoke</option>
+              <option value="Rising Flood Water">Rising Flood Water</option>
+            </select>
+          </div>
 
-            <div style={{ background: 'rgba(11, 18, 34, 0.85)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.95rem' }}>
-              <strong style={{ color: '#38bdf8', fontSize: '0.92rem' }}>🌊 Flood Rising:</strong>
-              <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                Move to top floor or roof. Cut main electricity breaker. Never walk or drive through moving water.
+          <div className="form-group">
+            <label className="form-label">Last Known Location / Floor</label>
+            <input
+              type="text"
+              className="form-input"
+              value={smsData.location}
+              onChange={(e) => setSmsData({ ...smsData, location: e.target.value })}
+              placeholder="e.g. Science Complex 3rd floor room 304"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Critical Situation Summary</label>
+            <textarea
+              rows={2}
+              className="form-textarea"
+              value={smsData.details}
+              onChange={(e) => setSmsData({ ...smsData, details: e.target.value })}
+            />
+          </div>
+
+          <div
+            style={{
+              background: 'rgba(5, 8, 14, 0.85)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-xs)',
+              padding: '0.75rem',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              color: 'var(--cyan)',
+              marginBottom: '1rem',
+              wordBreak: 'break-word',
+            }}
+          >
+            {fullSmsBody}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <button
+              type="button"
+              onClick={handleCopySms}
+              className="btn btn-secondary"
+              style={{ fontSize: '0.8rem' }}
+            >
+              {copiedSms ? '✓ Copied' : '📋 Copy Text Payload'}
+            </button>
+
+            <a
+              href={`sms:${smsData.recipient}?body=${encodeURIComponent(fullSmsBody)}`}
+              className="btn btn-primary"
+              style={{ fontSize: '0.8rem', textAlign: 'center' }}
+            >
+              ✉️ Open Native SMS App
+            </a>
+          </div>
+        </div>
+
+        {/* Right: Instant Air-Gap Safety Rules */}
+        <div className="spatial-panel" style={{ padding: '1.75rem', background: 'rgba(11, 17, 30, 0.88)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem' }}>
+            <span className="badge badge-warning">OFFLINE PROTOCOLS</span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
+              Essential Survival Directives
+            </h3>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
+            Critical instructions that remain active even if all telecommunications fail.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            {[
+              {
+                title: 'Conserve Mobile Battery Power',
+                text: 'Enable Battery Saver / Low Power Mode, set brightness to minimum, disable Bluetooth and GPS background scanning when not acquiring coordinates.',
+              },
+              {
+                title: 'Emergency Sound Signalling',
+                text: 'Use a whistle (3 short blasts indicates SOS) or rhythmically bang on metal pipes/beams. Shouting drains oxygen and can inhale dangerous toxic particulates.',
+              },
+              {
+                title: 'Water Purification & Rationing',
+                text: 'Boil water for at least 1 full minute if power is available. Store potable drinking water in sealed containers; avoid tap water if flood inundation occurs.',
+              },
+              {
+                title: 'Check Structural Gas & Electrical Lines',
+                text: 'If you smell sulfur/gas, DO NOT operate light switches or match flames. Shut off main gas valves and evacuate immediately into open air.',
+              },
+            ].map((rule, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: '0.85rem 1rem',
+                  background: 'rgba(15, 23, 42, 0.7)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                }}
+              >
+                <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#ffffff', marginBottom: '0.2rem' }}>
+                  {idx + 1}. {rule.title}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                  {rule.text}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 960px) {
+          div[style*="gridTemplateColumns: 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,7 +1,32 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { fetchDistributions, fetchDonations } from '../services/api';
+import { fetchDistributions } from '../services/api';
 import ResourceJourneyModal from '../components/ResourceJourneyModal';
 import Icon from '../components/Icons';
+
+const PIPELINE_STAGES = ['SOURCE', 'VERIFICATION', 'TRANSIT', 'DELIVERY', 'DISTRIBUTION'];
+
+const getStageIndex = (status) => {
+  switch ((status || '').toLowerCase()) {
+    case 'sourced':
+    case 'intake':
+    case 'allocated':
+      return 0;
+    case 'verified':
+    case 'inspected':
+      return 1;
+    case 'in transit':
+    case 'dispatched':
+      return 2;
+    case 'delivered':
+    case 'arrived':
+      return 3;
+    case 'distributed':
+    case 'completed':
+      return 4;
+    default:
+      return 2;
+  }
+};
 
 const ResourceTrackingPage = () => {
   const [distributions, setDistributions] = useState([]);
@@ -31,7 +56,7 @@ const ResourceTrackingPage = () => {
 
   const filteredDistributions = useMemo(() => {
     return distributions.filter((dist) => {
-      if (filterStatus !== 'ALL' && dist.status !== filterStatus) return false;
+      if (filterStatus !== 'ALL' && dist.status?.toLowerCase() !== filterStatus.toLowerCase()) return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -49,282 +74,262 @@ const ResourceTrackingPage = () => {
     });
   }, [distributions, filterStatus, searchQuery]);
 
-  // Statistics
-  const totalUnits = distributions.reduce((acc, d) => acc + (Number(d.quantity) || 0), 0);
-  const inTransitCount = distributions.filter((d) => d.status === 'In Transit').length;
-  const deliveredCount = distributions.filter((d) => d.status === 'Delivered' || d.status === 'Distributed').length;
+  // Derived Telemetry
+  const totalUnits = useMemo(() => distributions.reduce((acc, d) => acc + (Number(d.quantity) || 0), 0), [distributions]);
+  const inTransitCount = useMemo(() => distributions.filter((d) => d.status === 'In Transit').length, [distributions]);
+  const deliveredCount = useMemo(() => distributions.filter((d) => d.status === 'Delivered' || d.status === 'Distributed').length, [distributions]);
 
   return (
-    <div>
-      {/* Header */}
-      <div className="page-header">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Top Header */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1.5rem 2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: 'rgba(9, 14, 25, 0.94)',
+        }}
+      >
         <div>
-          <div className="badge badge-info" style={{ marginBottom: '0.4rem' }}>
-            <Icon name="truck" size={13} color="#38bdf8" />
-            <span>RELIEF SUPPLY CHAIN &bull; 5-STAGE PIPELINE TRACKING</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+            <span className="badge badge-info">LOGISTICS TELEMETRY</span>
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+              5-STAGE VISUAL SUPPLY CHAIN
+            </span>
           </div>
-          <h1 className="page-header-title">
-            <Icon name="truck" size={26} color="var(--accent-cyan)" />
-            <span>Resource Distribution & Logistics Tracking</span>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+            Resource Distribution & Supply Flow
           </h1>
-          <p className="page-header-subtitle">
-            Monitor the active flow of emergency relief items from intake warehouses to disaster-affected shelters with immutable blockchain audit milestones
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            End-to-end tracking of relief aid shipments from intake warehouses to frontline distribution nodes.
           </p>
         </div>
+
+        <button
+          onClick={loadDistributions}
+          className="btn btn-secondary btn-sm"
+        >
+          <Icon name="refresh-cw" size={14} />
+          <span>Sync Logistics</span>
+        </button>
       </div>
 
-      {/* KPI Metric Summary Cards */}
-      <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
-        <div className="glass-card" style={{ borderLeft: '4px solid #06b6d4' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Units in Transit Flow
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#38bdf8', margin: '0.35rem 0 0.15rem' }}>
-            {totalUnits.toLocaleString()}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Total relief cargo tracked
-          </div>
+      {/* Visual Pipeline Banner */}
+      <div className="spatial-panel" style={{ padding: '1.25rem 1.5rem', background: 'rgba(11, 17, 30, 0.88)' }}>
+        <div className="micro-label" style={{ color: 'var(--cyan)', marginBottom: '0.75rem' }}>
+          SUPPLY CHAIN PROGRESSION PIPELINE
         </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Active Convoys
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fbbf24', margin: '0.35rem 0 0.15rem' }}>
-            {inTransitCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Currently in transit
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #10b981' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Delivered Shipments
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399', margin: '0.35rem 0 0.15rem' }}>
-            {deliveredCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Verified at shelter hubs
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #6366f1' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Total Dispatches
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#818cf8', margin: '0.35rem 0 0.15rem' }}>
-            {distributions.length}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Tracked on ledger
-          </div>
+        <div className="supply-pipeline" style={{ margin: 0 }}>
+          {PIPELINE_STAGES.map((stage, idx) => (
+            <div key={stage} className="pipeline-step active">
+              <div className="micro-label" style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>
+                PHASE 0{idx + 1}
+              </div>
+              <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--cyan)', marginTop: '0.2rem' }}>
+                {stage}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Filter & Search Toolbar */}
-      <div className="filter-toolbar" style={{ marginBottom: '1.75rem' }}>
-        <div className="filter-group">
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Status:</span>
-          <select
-            className="form-select"
-            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.84rem' }}
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="ALL">All Logistics Statuses ({distributions.length})</option>
-            <option value="In Transit">🚚 In Transit ({inTransitCount})</option>
-            <option value="Delivered">📦 Delivered</option>
-            <option value="Distributed">✅ Distributed to Evacuees</option>
-            <option value="Planned">📋 Planned</option>
-          </select>
+      {/* Telemetry KPI Metrics */}
+      <div className="grid-cols-4">
+        <div className="telemetry-widget">
+          <span className="micro-label">TOTAL SHIPMENTS</span>
+          <div className="telemetry-num cyan">{distributions.length}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Active logistic manifests</div>
         </div>
 
-        <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: '300px' }}>
-          <input
-            type="text"
-            className="form-input"
-            style={{ paddingLeft: '2.2rem', paddingRight: '0.75rem', fontSize: '0.84rem', height: '36px' }}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search item, hub, org..."
-          />
-          <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-            <Icon name="search" size={14} />
-          </span>
+        <div className="telemetry-widget">
+          <span className="micro-label">UNITS IN TRANSIT</span>
+          <div className="telemetry-num amber">{totalUnits.toLocaleString()}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Emergency supplies moving</div>
         </div>
 
-        <div style={{ marginLeft: 'auto', fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-          Showing <strong>{filteredDistributions.length}</strong> of <strong>{distributions.length}</strong> shipments
+        <div className="telemetry-widget">
+          <span className="micro-label">ACTIVE CONVOYS</span>
+          <div className="telemetry-num crimson">{inTransitCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Vehicles currently en route</div>
+        </div>
+
+        <div className="telemetry-widget">
+          <span className="micro-label">DELIVERED CARGO</span>
+          <div className="telemetry-num mint">{deliveredCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Delivered to relief shelters</div>
         </div>
       </div>
 
-      {/* Loading State */}
+      {/* Filters and Search Bar */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1rem 1.5rem',
+          background: 'rgba(9, 14, 25, 0.92)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+        }}
+      >
+        <input
+          type="text"
+          className="form-input"
+          style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
+          placeholder="Search item, destination, convoy ID..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+
+        <select
+          className="form-select"
+          style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="ALL">All Logistics States</option>
+          <option value="In Transit">In Transit</option>
+          <option value="Allocated">Allocated</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Distributed">Distributed</option>
+        </select>
+      </div>
+
+      {/* Loading / Error / Empty States */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-secondary)' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              border: '3px solid rgba(6, 182, 212, 0.2)',
-              borderTopColor: '#06b6d4',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 1rem',
-            }}
-          />
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>Loading Supply Chain Convoys...</div>
+        <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
+          <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
+          <span>Synchronizing supply chain records from MongoDB Atlas...</span>
         </div>
       )}
 
-      {/* Error State */}
       {error && !loading && (
-        <div
-          style={{
-            background: 'rgba(255, 51, 75, 0.15)',
-            border: '1px solid rgba(255, 51, 75, 0.35)',
-            color: '#ff6b7e',
-            padding: '1.25rem',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>⚠️ {error}</div>
-          <button onClick={loadDistributions} className="btn btn-secondary btn-sm" style={{ marginTop: '0.75rem' }}>
-            Retry Loading Log
-          </button>
+        <div style={{ padding: '1rem', background: 'rgba(255, 46, 77, 0.1)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-sm)', color: '#ff8597', textAlign: 'center' }}>
+          {error}
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && !error && filteredDistributions.length === 0 && (
-        <div
-          className="glass-card"
-          style={{
-            textAlign: 'center',
-            padding: '3.5rem 1.5rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🚚</div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            No Cargo Movements Match Filter
-          </h3>
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 1.25rem' }}>
-            Try resetting your status filter to see all planned and delivered relief shipments.
-          </p>
-          <button
-            onClick={() => {
-              setFilterStatus('ALL');
-              setSearchQuery('');
-            }}
-            className="btn btn-secondary btn-sm"
-          >
-            Reset Filters
-          </button>
+        <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📦</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Shipments Found</div>
+          <div style={{ fontSize: '0.82rem' }}>No relief supply consignments match the active query.</div>
         </div>
       )}
 
-      {/* Distributions Grid */}
-      {!loading && !error && filteredDistributions.length > 0 && (
-        <div className="grid-cols-2">
-          {filteredDistributions.map((dist) => {
-            const isDelivered = dist.status === 'Delivered' || dist.status === 'Distributed';
-            const isInTransit = dist.status === 'In Transit';
+      {/* Shipments Supply Chain Progression List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {filteredDistributions.map((dist) => {
+          const activeIdx = getStageIndex(dist.status);
 
-            return (
-              <div
-                key={dist._id}
-                className="glass-card glass-card-hoverable"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderTop: `4px solid ${isDelivered ? '#10b981' : isInTransit ? '#38bdf8' : '#f59e0b'}`,
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <div>
-                    <span className="badge badge-blockchain" style={{ fontSize: '0.7rem', marginBottom: '0.35rem', fontFamily: 'var(--font-mono)' }}>
-                      {dist.distributionId}
+          return (
+            <div
+              key={dist._id}
+              className="spatial-panel spatial-panel-hoverable"
+              style={{
+                padding: '1.5rem',
+                background: 'rgba(11, 17, 30, 0.88)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.2rem' }}>
+                    <span className="badge badge-info">{dist.status || 'In Transit'}</span>
+                    <span className="micro-label" style={{ color: 'var(--text-muted)' }}>
+                      ID: {dist.distributionId || dist._id}
                     </span>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>{dist.resourceName}</h3>
                   </div>
-                  <span
-                    className="badge"
-                    style={{
-                      background: isDelivered ? 'rgba(16, 185, 129, 0.2)' : 'rgba(6, 182, 212, 0.2)',
-                      color: isDelivered ? '#34d399' : '#38bdf8',
-                      border: '1px solid currentColor',
-                    }}
-                  >
-                    {dist.status}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#38bdf8', marginBottom: '0.75rem' }}>
-                  {Number(dist.quantity).toLocaleString()} {dist.unit || 'units'}
-                </div>
-
-                <div
-                  style={{
-                    background: 'rgba(11, 18, 34, 0.85)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '0.85rem 1rem',
-                    fontSize: '0.84rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.45rem',
-                    color: 'var(--text-secondary)',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  <div><strong>Origin:</strong> {dist.source}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Icon name="map-pin" size={14} color="#818cf8" />
-                    <span><strong>Destination:</strong> {dist.destination}</span>
+                  <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#ffffff' }}>
+                    {dist.resourceName}
                   </div>
-                  <div><strong>Taskforce:</strong> {dist.responsibleOrganization}</div>
                 </div>
 
-                <div
-                  style={{
-                    marginTop: 'auto',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '0.85rem',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-                    TXN: <strong style={{ fontFamily: 'var(--font-mono)', color: '#818cf8' }}>{dist.blockchainTransactionId || 'TXN-881204'}</strong>
-                  </span>
-                  <button
-                    onClick={() => setSelectedJourney(dist)}
-                    className="btn btn-primary btn-sm"
-                  >
-                    <Icon name="compass" size={14} />
-                    <span>View 5-Step Journey</span>
-                  </button>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--cyan)' }}>
+                    {dist.quantity} {dist.unit || 'units'}
+                  </div>
+                  <div className="micro-label" style={{ color: 'var(--text-muted)' }}>
+                    {dist.responsibleOrganization || 'Relief Logistics Wing'}
+                  </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* Resource Journey Modal */}
-      <ResourceJourneyModal
-        isOpen={!!selectedJourney}
-        onClose={() => setSelectedJourney(null)}
-        resourceData={selectedJourney}
-      />
+              {/* Step Progress Bar */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gap: '0.5rem',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                {PIPELINE_STAGES.map((st, sIdx) => {
+                  const isDone = sIdx < activeIdx;
+                  const isCur = sIdx === activeIdx;
+
+                  return (
+                    <div
+                      key={st}
+                      style={{
+                        height: '6px',
+                        borderRadius: '3px',
+                        background: isCur ? 'var(--cyan)' : isDone ? 'var(--mint)' : 'rgba(255, 255, 255, 0.08)',
+                        boxShadow: isCur ? 'var(--glow-cyan)' : 'none',
+                        transition: 'all 0.3s ease',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Waypoints & Details */}
+              <div
+                style={{
+                  background: 'rgba(7, 11, 19, 0.75)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.85rem 1rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '1rem',
+                  fontSize: '0.82rem',
+                }}
+              >
+                <div>
+                  <span style={{ color: 'var(--text-muted)' }}>ORIGIN: </span>
+                  <strong style={{ color: '#ffffff' }}>{dist.source || 'Central Depot'}</strong>
+                  <span style={{ margin: '0 0.5rem', color: 'var(--cyan)' }}>➔</span>
+                  <span style={{ color: 'var(--text-muted)' }}>DESTINATION: </span>
+                  <strong style={{ color: 'var(--cyan)' }}>{dist.destination || 'Disaster Shelter'}</strong>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedJourney(dist)}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Full Journey Timeline →
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Resource Journey Timeline Modal */}
+      {selectedJourney && (
+        <ResourceJourneyModal
+          item={selectedJourney}
+          onClose={() => setSelectedJourney(null)}
+        />
+      )}
     </div>
   );
 };

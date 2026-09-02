@@ -32,19 +32,22 @@ const ForgotPasswordPage = () => {
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 70px)',
+        minHeight: 'calc(100vh - 68px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1.5rem',
+        background: 'var(--bg-space)',
       }}
     >
       <div
-        className="glass-card"
+        className="spatial-panel"
         style={{
           maxWidth: '460px',
           width: '100%',
           padding: '2.5rem 2.25rem',
+          border: '1px solid var(--border-highlight)',
+          boxShadow: 'var(--glow-cyan)',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
@@ -52,88 +55,58 @@ const ForgotPasswordPage = () => {
             style={{
               width: '52px',
               height: '52px',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #f59e0b, #ff334b)',
+              borderRadius: 'var(--radius-sm)',
+              background: 'linear-gradient(135deg, var(--amber), var(--crimson))',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: '0.85rem',
-              boxShadow: '0 0 20px rgba(245, 158, 11, 0.45)',
+              boxShadow: 'var(--glow-amber)',
             }}
           >
-            <Icon name="key" size={26} color="#ffffff" />
+            <Icon name="key" size={24} color="#ffffff" />
           </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            Reset Password
+          <div className="micro-label" style={{ color: 'var(--amber)', marginBottom: '0.25rem' }}>
+            CREDENTIAL RECOVERY
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
+            Recover Operator Key
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
-            Enter your email to receive a secure password reset link
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
+            Provide your registered email to receive a password reset token
           </p>
         </div>
 
         {error && (
-          <div
-            style={{
-              background: 'rgba(255, 51, 75, 0.15)',
-              border: '1px solid rgba(255, 51, 75, 0.35)',
-              color: '#ff6b7e',
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.85rem',
-              marginBottom: '1.25rem',
-            }}
-          >
+          <div style={{ background: 'rgba(255, 46, 77, 0.15)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-xs)', padding: '0.75rem 1rem', color: '#ff8597', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
             ⚠️ {error}
           </div>
         )}
 
         {submitted ? (
-          <div>
-            <div
-              style={{
-                background: 'rgba(16, 185, 129, 0.15)',
-                border: '1px solid rgba(16, 185, 129, 0.4)',
-                color: '#6ee7b7',
-                padding: '1rem 1.15rem',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '0.88rem',
-                marginBottom: '1.5rem',
-                lineHeight: 1.5,
-              }}
-            >
-              ✅ {message}
+          <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📨</div>
+            <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem', marginBottom: '0.35rem' }}>
+              Reset Link Dispatched
             </div>
-
-            <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-              Please check your inbox (and spam folder) for an email from DisasterChain Security with instructions to reset your password. The link expires in 15 minutes.
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+              {message}
             </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setSubmitted(false)}
-                className="btn btn-secondary"
-                style={{ width: '100%' }}
-              >
-                Send to a different email
-              </button>
-
-              <Link to="/login" className="btn btn-outline" style={{ textAlign: 'center' }}>
-                Back to Sign In
-              </Link>
-            </div>
+            <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
+              Return to Sign In
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Account Email Address</label>
+              <label className="form-label">Registered Email Address</label>
               <input
                 type="email"
                 required
                 className="form-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. student@disasterchain.org"
+                placeholder="operator@disasterchain.org"
               />
             </div>
 
@@ -141,19 +114,19 @@ const ForgotPasswordPage = () => {
               type="submit"
               disabled={loading}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
+              style={{ width: '100%', marginTop: '0.5rem' }}
             >
-              <Icon name="mail" size={16} />
-              <span>{loading ? 'Sending Link...' : 'Send Password Reset Link'}</span>
+              {loading ? 'Dispatching...' : 'Dispatch Reset Token →'}
             </button>
-
-            <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.86rem' }}>
-              <Link to="/login" style={{ color: 'var(--accent-indigo)', fontWeight: 700 }}>
-                ← Back to Sign In
-              </Link>
-            </div>
           </form>
         )}
+
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+          Remembered credentials?{' '}
+          <Link to="/login" style={{ color: 'var(--cyan)', fontWeight: 700 }}>
+            Sign In
+          </Link>
+        </div>
       </div>
     </div>
   );

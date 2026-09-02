@@ -13,14 +13,8 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Inline Quick SOS Form State
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [detectingGps, setDetectingGps] = useState(false);
-  const [gpsStatus, setGpsStatus] = useState('');
-  const [submittedReceipt, setSubmittedReceipt] = useState(null);
-
+  // Beacon activation state
+  const [beaconState, setBeaconState] = useState('READY'); // 'READY' | 'LOCATING' | 'CONFIRM' | 'DISPATCHED'
   const [formData, setFormData] = useState({
     name: user?.name || '',
     emergencyType: 'Medical Emergency',
@@ -32,6 +26,8 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
     severity: 'High',
     contact: '',
   });
+  const [formError, setFormError] = useState('');
+  const [dispatchedReceipt, setDispatchedReceipt] = useState(null);
 
   const loadSos = async () => {
     setLoading(true);
@@ -40,7 +36,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
       const data = await fetchSosRequests();
       setSosList(data || []);
     } catch (err) {
-      console.error('Error fetching SOS signals from backend:', err);
+      console.error('Error fetching SOS signals:', err);
       setError('Unable to fetch live SOS distress signals from server.');
     } finally {
       setLoading(false);
@@ -53,59 +49,48 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
 
   useEffect(() => {
     if (user?.name && !formData.name) {
-      setFormData((prev) => ({
-        ...prev,
-        name: user.name,
-      }));
+      setFormData((prev) => ({ ...prev, name: user.name }));
     }
   }, [user]);
 
-  // GPS Auto-Detection for inline form
-  const handleDetectLocation = () => {
-    setDetectingGps(true);
-    setGpsStatus('');
-
+  const handleAcquireGps = () => {
+    setBeaconState('LOCATING');
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = parseFloat(position.coords.latitude.toFixed(6));
-          const lng = parseFloat(position.coords.longitude.toFixed(6));
-          const coordsStr = `Lat: ${lat}, Long: ${lng} (GPS Verified \u00B1${Math.round(position.coords.accuracy || 10)}m)`;
-
+        (pos) => {
+          const lat = parseFloat(pos.coords.latitude.toFixed(6));
+          const lng = parseFloat(pos.coords.longitude.toFixed(6));
+          const acc = Math.round(pos.coords.accuracy || 10);
           setFormData((prev) => ({
             ...prev,
-            location: coordsStr,
             latitude: lat,
             longitude: lng,
+            location: `GPS Lat: ${lat}, Long: ${lng} (±${acc}m accuracy)`,
           }));
-          setDetectingGps(false);
-          setGpsStatus('detected');
+          setBeaconState('READY');
         },
         () => {
-          setDetectingGps(false);
-          setGpsStatus('denied');
+          setBeaconState('READY');
         },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+        { enableHighAccuracy: true, timeout: 8000 }
       );
     } else {
-      setDetectingGps(false);
-      setGpsStatus('error');
+      setBeaconState('READY');
     }
   };
 
-  // Handle direct SOS form submission
-  const handleInlineSubmit = async (e) => {
+  const handleSubmitBeacon = async (e) => {
     e.preventDefault();
     setFormError('');
 
-    if (!formData.name.trim()) return setFormError('Please enter your name.');
-    if (!formData.description.trim() || formData.description.trim().length < 5) {
-      return setFormError('Please provide a detailed distress description (min 5 characters).');
+    if (!formData.name.trim()) return setFormError('Name or caller identifier required.');
+    if (!formData.description.trim() || formData.description.length < 5) {
+      return setFormError('Please detail the emergency distress situation (min 5 chars).');
     }
-    if (!formData.location.trim()) return setFormError('Please provide location or detect GPS.');
-    if (!formData.contact.trim()) return setFormError('Please provide contact phone number.');
+    if (!formData.location.trim()) return setFormError('Please acquire GPS or provide location.');
+    if (!formData.contact.trim()) return setFormError('Phone or radio contact required.');
 
-    setFormSubmitting(true);
+    setBeaconState('LOCATING');
 
     try {
       const payload = {
@@ -115,438 +100,384 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
         location: formData.location.trim(),
         latitude: Number(formData.latitude) || 28.6139,
         longitude: Number(formData.longitude) || 77.2090,
-        peopleAffected: Math.max(1, parseInt(formData.peopleAffected) || 1),
+        peopleAffected: Number(formData.peopleAffected) || 1,
         severity: formData.severity,
         contact: formData.contact.trim(),
       };
 
-      const res = await createSosRequest(payload);
-      const newSos = res.data || res;
-
-      // Prepend newly created SOS into active list
-      setSosList((prev) => [newSos, ...prev]);
-      setSubmittedReceipt(newSos);
-
-      // Reset form
-      setFormData({
-        name: user?.name || '',
-        emergencyType: 'Medical Emergency',
-        description: '',
-        location: '',
-        latitude: 28.6139,
-        longitude: 77.2090,
-        peopleAffected: 1,
-        severity: 'High',
-        contact: '',
-      });
+      const result = await createSosRequest(payload);
+      if (result) {
+        setDispatchedReceipt(result);
+        setBeaconState('DISPATCHED');
+        loadSos();
+      } else {
+        throw new Error('Server returned empty response.');
+      }
     } catch (err) {
-      console.error('Error creating SOS signal:', err);
-      setFormError(err.response?.data?.message || err.message || 'Failed to submit SOS distress signal.');
-    } finally {
-      setFormSubmitting(false);
+      setBeaconState('READY');
+      setFormError(err.message || 'Distress broadcast failed. Check network.');
     }
   };
 
-  // Filter and search computation
+  // Metrics
+  const criticalCount = useMemo(() => sosList.filter((s) => s.severity === 'Critical').length, [sosList]);
+  const pendingCount = useMemo(() => sosList.filter((s) => !s.status || s.status === 'Pending').length, [sosList]);
+  const activeCount = useMemo(() => sosList.filter((s) => s.status !== 'Resolved' && s.status !== 'Cancelled').length, [sosList]);
+  const resolvedCount = useMemo(() => sosList.filter((s) => s.status === 'Resolved').length, [sosList]);
+
+  // Filtered list
   const filteredList = useMemo(() => {
     return sosList.filter((item) => {
-      const matchesSeverity = filterSeverity === 'ALL' || item.severity === filterSeverity;
-      const matchesStatus = filterStatus === 'ALL' || item.status === filterStatus;
+      const matchSeverity = filterSeverity === 'ALL' || item.severity?.toLowerCase() === filterSeverity.toLowerCase();
+      const matchStatus = filterStatus === 'ALL' || (item.status || 'Pending').toLowerCase() === filterStatus.toLowerCase();
+      const matchSearch =
+        !searchQuery ||
+        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.emergencyType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.requestId?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      if (!matchesSeverity || !matchesStatus) return false;
-
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesId = item.requestId?.toLowerCase().includes(q);
-        const matchesName = item.name?.toLowerCase().includes(q);
-        const matchesType = item.emergencyType?.toLowerCase().includes(q);
-        const matchesDesc = item.description?.toLowerCase().includes(q);
-        const matchesLoc = item.location?.toLowerCase().includes(q);
-        if (!matchesId && !matchesName && !matchesType && !matchesDesc && !matchesLoc) {
-          return false;
-        }
-      }
-
-      return true;
+      return matchSeverity && matchStatus && matchSearch;
     });
   }, [sosList, filterSeverity, filterStatus, searchQuery]);
 
-  // Statistics
-  const activeCount = sosList.filter((s) => s.status !== 'Resolved' && s.status !== 'Cancelled').length;
-  const criticalCount = sosList.filter((s) => s.severity === 'Critical' && s.status !== 'Resolved').length;
-  const highCount = sosList.filter((s) => s.severity === 'High' && s.status !== 'Resolved').length;
-  const resolvedCount = sosList.filter((s) => s.status === 'Resolved').length;
-
   return (
-    <div>
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <div className="badge badge-critical" style={{ marginBottom: '0.4rem' }}>
-            <span className="pulse-indicator" style={{ width: '7px', height: '7px' }}></span>
-            <span>LIVE RESCUE DISPATCH QUEUE</span>
-          </div>
-          <h1 className="page-header-title">
-            <Icon name="sos" size={26} color="#ff334b" />
-            <span>Emergency SOS Distress Signals</span>
-          </h1>
-          <p className="page-header-subtitle">
-            Real-time distress broadcasts, medical emergency triage & casualty rescue coordination
-          </p>
-        </div>
-
-        <div className="page-header-actions">
-          <button
-            onClick={() => {
-              if (onOpenSos) onOpenSos();
-              else setIsFormOpen(true);
-            }}
-            className="btn btn-sos"
-            id="sos-page-broadcast-btn"
-          >
-            <Icon name="sos" size={17} color="#ffffff" />
-            <span>Broadcast Emergency SOS</span>
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Overview Summary Bar */}
-      <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
-        <div className="glass-card" style={{ borderLeft: '4px solid #ff334b' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Active Distress Signals
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff', margin: '0.35rem 0 0.15rem' }}>
-            {activeCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Awaiting rescue / In progress
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #ff4d63' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Critical Priority
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ff4d63', margin: '0.35rem 0 0.15rem' }}>
-            {criticalCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Immediate life-safety threat
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #f97316' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            High Priority
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fb923c', margin: '0.35rem 0 0.15rem' }}>
-            {highCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Urgent medical / Fire needs
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #10b981' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Resolved Cases
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399', margin: '0.35rem 0 0.15rem' }}>
-            {resolvedCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Successfully rescued & safe
-          </div>
-        </div>
-      </div>
-
-      {/* Confirmation Receipt Banner if submitted on this page */}
-      {submittedReceipt && (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Top Banner with Floating Emergency Beacon */}
+      <div
+        className="spatial-panel spatial-panel-critical"
+        style={{
+          padding: '1.75rem 2rem',
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          gap: '2rem',
+          alignItems: 'center',
+        }}
+      >
+        {/* Giant Interactive Pulsing Beacon Ring */}
         <div
-          className="glass-card"
+          onClick={handleAcquireGps}
+          title="Click to Trigger Satellite GPS Lock"
           style={{
-            borderColor: 'rgba(255, 51, 75, 0.5)',
-            background: 'linear-gradient(135deg, rgba(255, 51, 75, 0.15), rgba(15, 24, 44, 0.95))',
-            marginBottom: '1.75rem',
+            width: '90px',
+            height: '90px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, #ff2e4d 0%, #991b1b 100%)',
+            border: '4px solid rgba(255, 46, 77, 0.4)',
+            boxShadow: 'var(--glow-crimson)',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            animation: 'pulse-ring 2.2s infinite',
+            userSelect: 'none',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '50%',
-                background: 'rgba(255, 51, 75, 0.2)',
-                border: '2px solid #ff334b',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ff4d63',
-                flexShrink: 0,
-              }}
-            >
-              <Icon name="sos" size={24} color="#ff334b" />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                <strong style={{ fontSize: '1.05rem', color: '#ffffff' }}>SOS Broadcast Confirmed</strong>
-                <span className="badge badge-critical" style={{ fontFamily: 'var(--font-mono)' }}>
-                  ID: {submittedReceipt.requestId}
-                </span>
-              </div>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                Type: <strong>{submittedReceipt.emergencyType}</strong> &bull; Location: <strong>{submittedReceipt.location}</strong> &bull; Status: <strong style={{ color: '#fbbf24' }}>{submittedReceipt.status}</strong>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setSubmittedReceipt(null)}
-            className="btn btn-secondary btn-sm"
-          >
-            Dismiss Receipt
-          </button>
-        </div>
-      )}
-
-      {/* Filter & Search Toolbar */}
-      <div className="filter-toolbar" style={{ marginBottom: '1.5rem' }}>
-        <div className="filter-group">
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Severity:</span>
-          <select
-            className="form-select"
-            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.84rem' }}
-            value={filterSeverity}
-            onChange={(e) => setFilterSeverity(e.target.value)}
-          >
-            <option value="ALL">All Severities</option>
-            <option value="Critical">🔴 Critical</option>
-            <option value="High">🟠 High</option>
-            <option value="Medium">🟡 Medium</option>
-            <option value="Low">🟢 Low</option>
-          </select>
-        </div>
-
-        <div className="filter-group">
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Status:</span>
-          <select
-            className="form-select"
-            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.84rem' }}
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="Pending">Pending Dispatch</option>
-            <option value="Assigned">Assigned</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
-
-        <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: '300px' }}>
-          <input
-            type="text"
-            className="form-input"
-            style={{ paddingLeft: '2.2rem', paddingRight: '0.75rem', fontSize: '0.84rem', height: '36px' }}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by ID, name, or location..."
-          />
-          <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-            <Icon name="search" size={14} />
+          <Icon name="alert-circle" size={36} color="#ffffff" />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', fontWeight: 800, color: '#ffffff', marginTop: 2 }}>
+            SOS BEACON
           </span>
         </div>
 
-        <div style={{ marginLeft: 'auto', fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-          Showing <strong>{filteredList.length}</strong> of <strong>{sosList.length}</strong> distress signals
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
+            <span className="badge badge-critical">LIVE DISTRESS GRID</span>
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+              STATE: {beaconState}
+            </span>
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.85rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
+            Emergency SOS Dispatch Console
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', maxWidth: '780px' }}>
+            Direct satellite and terrestrial distress telemetry for life-threatening situations, trapped individuals, and urgent disaster triage.
+          </p>
         </div>
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-secondary)' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              border: '3px solid rgba(255, 51, 75, 0.2)',
-              borderTopColor: '#ff334b',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 1rem',
-            }}
-          />
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>Loading Live SOS Distress Signals...</div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Connecting to MongoDB real-time emergency stream</div>
-        </div>
-      )}
+      <style>{`
+        @media (max-width: 768px) {
+          div[style*="gridTemplateColumns: auto 1fr"] {
+            grid-template-columns: 1fr !important;
+            text-align: center;
+            justify-items: center;
+          }
+        }
+      `}</style>
 
-      {/* Error State */}
-      {error && !loading && (
-        <div
-          style={{
-            background: 'rgba(255, 51, 75, 0.15)',
-            border: '1px solid rgba(255, 51, 75, 0.35)',
-            color: '#ff6b7e',
-            padding: '1.25rem',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>⚠️ {error}</div>
-          <button onClick={loadSos} className="btn btn-secondary btn-sm" style={{ marginTop: '0.75rem' }}>
-            Retry Loading Signals
-          </button>
+      {/* Telemetry Metric Cards */}
+      <div className="grid-cols-4">
+        <div className="telemetry-widget">
+          <span className="micro-label">ACTIVE DISTRESS</span>
+          <div className="telemetry-num crimson">{activeCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Signals pending assistance</div>
         </div>
-      )}
 
-      {/* Empty State */}
-      {!loading && !error && filteredList.length === 0 && (
-        <div
-          className="glass-card"
-          style={{
-            textAlign: 'center',
-            padding: '3.5rem 1.5rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🚨</div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            No Distress Signals Match Filters
-          </h3>
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 1.25rem' }}>
-            {searchQuery || filterSeverity !== 'ALL' || filterStatus !== 'ALL'
-              ? 'Try adjusting your severity or status filters to see other active emergencies.'
-              : 'There are currently no active SOS distress signals in the database.'}
-          </p>
+        <div className="telemetry-widget">
+          <span className="micro-label">CRITICAL PRIORITY</span>
+          <div className="telemetry-num amber">{criticalCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Immediate life-safety triage</div>
+        </div>
+
+        <div className="telemetry-widget">
+          <span className="micro-label">TRIAGE PENDING</span>
+          <div className="telemetry-num cyan">{pendingCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Awaiting responder dispatch</div>
+        </div>
+
+        <div className="telemetry-widget">
+          <span className="micro-label">RESOLVED RESCUES</span>
+          <div className="telemetry-num mint">{resolvedCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Successfully evacuated</div>
+        </div>
+      </div>
+
+      {/* Fast Dispatch Form Drawer */}
+      <div className="spatial-panel" style={{ background: 'rgba(9, 14, 25, 0.92)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>DIRECT SATELLITE DISPATCH</span>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>Transmit Emergency Distress Signal</h3>
+          </div>
+
           <button
-            onClick={() => {
-              setFilterSeverity('ALL');
-              setFilterStatus('ALL');
-              setSearchQuery('');
-            }}
+            type="button"
+            onClick={handleAcquireGps}
             className="btn btn-secondary btn-sm"
           >
-            Reset Filters
+            🛰️ {beaconState === 'LOCATING' ? 'Acquiring GPS...' : 'Acquire GPS Position'}
           </button>
         </div>
-      )}
 
-      {/* SOS List Grid */}
-      {!loading && !error && filteredList.length > 0 && (
-        <div className="grid-cols-2">
-          {filteredList.map((sos) => {
-            const isCritical = sos.severity === 'Critical';
-            const isPending = sos.status === 'Pending';
-            const isInProgress = sos.status === 'In Progress';
-            const isResolved = sos.status === 'Resolved';
+        {formError && (
+          <div style={{ padding: '0.65rem 1rem', background: 'rgba(255, 46, 77, 0.15)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-xs)', color: '#ff8597', fontSize: '0.8rem', marginBottom: '1rem' }}>
+            ⚠️ {formError}
+          </div>
+        )}
 
-            return (
-              <div
-                key={sos._id}
-                className={`glass-card glass-card-hoverable ${isCritical ? 'glass-card-critical' : ''}`}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  position: 'relative',
-                }}
+        {beaconState === 'DISPATCHED' && dispatchedReceipt ? (
+          <div style={{ padding: '1.25rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--border-mint)', borderRadius: 'var(--radius-sm)', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>✅</div>
+            <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem', marginBottom: '0.25rem' }}>
+              DISTRESS BEACON BROADCAST CONFIRMED
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--cyan)', marginBottom: '0.75rem' }}>
+              SIGNAL ID: {dispatchedReceipt.requestId || dispatchedReceipt._id}
+            </div>
+            <button
+              onClick={() => { setBeaconState('READY'); setDispatchedReceipt(null); }}
+              className="btn btn-primary btn-sm"
+            >
+              Reset Dispatch Terminal
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmitBeacon}>
+            <div className="grid-cols-3">
+              <div className="form-group">
+                <label className="form-label">Caller Name</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Full name or team identifier"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Emergency Category</label>
+                <select
+                  className="form-select"
+                  value={formData.emergencyType}
+                  onChange={(e) => setFormData({ ...formData, emergencyType: e.target.value })}
+                >
+                  <option value="Medical Emergency">Medical Emergency</option>
+                  <option value="Severe Trauma / Bleeding">Severe Trauma / Bleeding</option>
+                  <option value="Fire Hazard / Trapped">Fire Hazard / Trapped</option>
+                  <option value="Structural Collapse">Structural Collapse</option>
+                  <option value="Water Inundation / Flood">Water Inundation / Flood</option>
+                  <option value="Hazardous Gas / Chemical">Hazardous Gas / Chemical</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Severity Level</label>
+                <select
+                  className="form-select"
+                  value={formData.severity}
+                  onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
+                >
+                  <option value="Critical">🔴 Critical (Life Threat)</option>
+                  <option value="High">🟠 High (Urgent)</option>
+                  <option value="Medium">🟡 Medium (Moderate)</option>
+                  <option value="Low">🟢 Low (Advisory)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid-cols-2">
+              <div className="form-group">
+                <label className="form-label">Location / Verified Coordinates</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="e.g. Science Block Wing B Floor 2 or GPS coordinates"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Contact Telephone / Radio</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  value={formData.contact}
+                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                  placeholder="e.g. +91 98765 43210 or VHF 14"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Distress Description</label>
+              <textarea
+                required
+                rows={2}
+                className="form-textarea"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Injuries, trapped individuals, water level, or urgent supplies needed..."
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="submit"
+                disabled={beaconState === 'LOCATING'}
+                className="btn btn-emergency"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.25rem' }}>
-                      <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#ffffff', fontFamily: 'var(--font-mono)' }}>
-                        {sos.requestId || 'SOS'}
-                      </span>
-                      <span className={`badge badge-${sos.severity?.toLowerCase()}`}>
-                        {sos.severity}
-                      </span>
-                      {isCritical && isPending && (
-                        <span className="pulse-indicator" title="Urgent Dispatch Required"></span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ff6b7e' }}>
-                      {sos.emergencyType}
-                    </div>
-                  </div>
+                {beaconState === 'LOCATING' ? 'Transmitting...' : '🚨 Transmit Distress Beacon'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
-                  <span
-                    className="badge"
-                    style={{
-                      background: isResolved
-                        ? 'rgba(16, 185, 129, 0.2)'
-                        : isInProgress
-                        ? 'rgba(99, 102, 241, 0.2)'
-                        : 'rgba(245, 158, 11, 0.2)',
-                      color: isResolved ? '#34d399' : isInProgress ? '#818cf8' : '#fbbf24',
-                      border: '1px solid currentColor',
-                    }}
-                  >
-                    {sos.status}
-                  </span>
-                </div>
+      {/* Live SOS Distress Records Feed */}
+      <div className="spatial-panel" style={{ background: 'rgba(9, 14, 25, 0.94)' }}>
+        {/* Feed Header & Filters */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div>
+            <span className="micro-label" style={{ color: 'var(--crimson)' }}>DATABASE FEED</span>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>Active Emergency Distress Registry</h3>
+          </div>
 
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '0.85rem', lineHeight: 1.5 }}>
-                  {sos.description}
-                </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              className="form-input"
+              style={{ width: '200px', padding: '0.4rem 0.75rem', fontSize: '0.78rem' }}
+              placeholder="Search caller, ID, place..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
 
-                <div
-                  style={{
-                    background: 'rgba(11, 18, 34, 0.85)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '0.85rem 1rem',
-                    fontSize: '0.82rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.45rem',
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.4rem' }}>
-                    <Icon name="map-pin" size={14} color="#818cf8" style={{ marginTop: '2px', flexShrink: 0 }} />
-                    <span>
-                      <strong style={{ color: 'var(--text-primary)' }}>Location: </strong>
-                      {sos.location}
-                    </span>
-                  </div>
+            <select
+              className="form-select"
+              style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.78rem' }}
+              value={filterSeverity}
+              onChange={(e) => setFilterSeverity(e.target.value)}
+            >
+              <option value="ALL">All Severities</option>
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}>
-                    <span>👥 <strong>People affected:</strong> {sos.peopleAffected || 1}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <Icon name="phone" size={13} color="#38bdf8" />
-                      <strong>Contact: </strong>
-                      <a href={`tel:${sos.contact}`} style={{ color: '#38bdf8' }}>{sos.contact}</a>
-                    </span>
-                  </div>
-                </div>
+            <select
+              className="form-select"
+              style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.78rem' }}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Assigned">Assigned</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+        </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: 'auto',
-                    paddingTop: '0.85rem',
-                    fontSize: '0.75rem',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  <span>Reported by: <strong style={{ color: 'var(--text-secondary)' }}>{sos.name || 'Anonymous'}</strong></span>
-                  <span>{new Date(sos.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>
+        {/* Loading / Error / Empty States */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
+            <div className="live-beacon-pulse" style={{ width: 20, height: 20, margin: '0 auto 1rem' }} />
+            <span>Loading live SOS distress signals from MongoDB Atlas...</span>
+          </div>
+        )}
+
+        {error && !loading && (
+          <div style={{ padding: '1rem', background: 'rgba(255, 46, 77, 0.1)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-sm)', color: '#ff8597', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && filteredList.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🛡️</div>
+            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>No Active SOS Distress Signals Found</div>
+            <div style={{ fontSize: '0.8rem' }}>No emergency distress calls match the active query parameters.</div>
+          </div>
+        )}
+
+        {/* Signals Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+          {filteredList.map((item) => (
+            <div
+              key={item._id}
+              className="spatial-panel spatial-panel-hoverable"
+              style={{
+                padding: '1.15rem',
+                borderLeft: `3px solid ${item.severity === 'Critical' ? 'var(--crimson)' : 'var(--amber)'}`,
+                background: 'rgba(15, 23, 42, 0.75)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className={`badge ${item.severity === 'Critical' ? 'badge-critical' : 'badge-warning'}`}>
+                  {item.severity}
+                </span>
+                <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+                  {item.status || 'Pending'}
+                </span>
+              </div>
+
+              <div style={{ fontWeight: 700, fontSize: '0.98rem', color: '#ffffff', marginBottom: '0.35rem' }}>
+                {item.emergencyType}
+              </div>
+
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', lineHeight: 1.4 }}>
+                {item.description}
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <div>📍 Location: <span style={{ color: 'var(--text-primary)' }}>{item.location}</span></div>
+                <div>👤 Caller: <span style={{ color: 'var(--text-primary)' }}>{item.name}</span> ({item.contact})</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--cyan-dim)' }}>
+                  ID: {item.requestId || item._id}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 };

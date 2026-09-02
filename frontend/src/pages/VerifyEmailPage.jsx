@@ -34,7 +34,7 @@ const VerifyEmailPage = () => {
         if (res.success) {
           setVerified(true);
         } else {
-          setError(res.message || 'Verification link is invalid or has expired.');
+          setError(res.message || 'Verification token is invalid or has expired.');
         }
       }
     };
@@ -60,143 +60,128 @@ const VerifyEmailPage = () => {
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 70px)',
+        minHeight: 'calc(100vh - 68px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1.5rem',
+        background: 'var(--bg-space)',
       }}
     >
       <div
-        className="glass-card"
+        className="spatial-panel"
         style={{
-          maxWidth: '500px',
+          maxWidth: '480px',
           width: '100%',
           padding: '2.5rem 2.25rem',
           textAlign: 'center',
-          borderColor: verified ? 'rgba(16, 185, 129, 0.4)' : error ? 'rgba(255, 51, 75, 0.4)' : 'var(--border-subtle)',
+          border: '1px solid var(--border-highlight)',
+          boxShadow: 'var(--glow-cyan)',
         }}
       >
         {loading ? (
           <div>
-            <div
-              style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                border: '3px solid rgba(99, 102, 241, 0.2)',
-                borderTopColor: 'var(--accent-indigo)',
-                animation: 'spin 1s linear infinite',
-                margin: '0 auto 1.5rem',
-              }}
-            />
-            <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
-              Verifying Email Address...
+            <div className="live-beacon-pulse" style={{ width: 32, height: 32, margin: '0 auto 1.5rem' }} />
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
+              Validating Dispatch Token...
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem' }}>
-              Validating cryptographic security token with DisasterChain
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+              Communicating with security authority to verify your cryptographic signature.
             </p>
           </div>
         ) : verified ? (
           <div>
             <div
               style={{
-                width: '68px',
-                height: '68px',
+                width: '64px',
+                height: '64px',
                 borderRadius: '50%',
                 background: 'rgba(16, 185, 129, 0.15)',
-                border: '2px solid #10b981',
+                border: '2px solid var(--mint)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '1.25rem',
-                color: '#10b981',
+                color: 'var(--mint)',
+                boxShadow: '0 0 24px rgba(16, 185, 129, 0.3)',
               }}
             >
-              <Icon name="shield-check" size={34} color="#10b981" />
+              <Icon name="shield-check" size={32} />
             </div>
 
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#34d399', marginBottom: '0.5rem' }}>
-              Email Verified Successfully!
+            <div className="micro-label" style={{ color: 'var(--mint)', marginBottom: '0.3rem' }}>
+              CLEARANCE CONFIRMED
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+              Identity Successfully Verified
             </h2>
-
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
-              Your DisasterChain account is now active and verified. You can broadcast distress signals, view safe shelter capacities, and access the transparency ledger.
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '1.75rem' }}>
+              Your operator credentials have been authenticated. You now possess active clearance on DisasterChain.
             </p>
 
-            <Link to="/dashboard" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }}>
-              Go to Emergency Dashboard →
+            <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
+              Proceed to Sign In →
             </Link>
           </div>
         ) : (
           <div>
             <div
               style={{
-                width: '68px',
-                height: '68px',
+                width: '64px',
+                height: '64px',
                 borderRadius: '50%',
-                background: 'rgba(255, 51, 75, 0.15)',
-                border: '2px solid #ff334b',
+                background: 'rgba(255, 46, 77, 0.12)',
+                border: '2px solid var(--crimson)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '1.25rem',
-                color: '#ff4d63',
+                color: 'var(--crimson)',
               }}
             >
-              <Icon name="warning" size={32} color="#ff334b" />
+              <Icon name="alert-circle" size={32} />
             </div>
 
-            <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ff6b7e', marginBottom: '0.5rem' }}>
-              {error ? 'Verification Link Expired' : 'No Verification Token Found'}
+            <div className="micro-label" style={{ color: 'var(--crimson)', marginBottom: '0.3rem' }}>
+              VERIFICATION REJECTED
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
+              Token Invalid or Expired
             </h2>
-
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-              {error || 'Please provide a valid token link from your confirmation email, or enter your email address below to receive a fresh verification link.'}
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+              {error || 'This verification token is no longer recognized by the cryptographic security grid.'}
             </p>
 
             {resendMessage && (
-              <div
-                style={{
-                  background: 'rgba(99, 102, 241, 0.15)',
-                  border: '1px solid rgba(99, 102, 241, 0.4)',
-                  color: '#a5b4fc',
-                  padding: '0.75rem 1rem',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: '0.85rem',
-                  marginBottom: '1.25rem',
-                }}
-              >
-                ℹ️ {resendMessage}
+              <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid var(--border-mint)', color: 'var(--mint)', padding: '0.65rem', borderRadius: 'var(--radius-xs)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                ✓ {resendMessage}
               </div>
             )}
 
-            <form onSubmit={handleResend} style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+            <form onSubmit={handleResend} style={{ textAlign: 'left', marginBottom: '1.25rem' }}>
               <div className="form-group">
-                <label className="form-label">Enter Account Email to Resend</label>
+                <label className="form-label">Request Fresh Verification Dispatch</label>
                 <input
                   type="email"
                   required
                   className="form-input"
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
-                  placeholder="e.g. student@disasterchain.org"
+                  placeholder="operator@disasterchain.org"
                 />
               </div>
-
               <button
                 type="submit"
                 disabled={resending}
-                className="btn btn-secondary"
-                style={{ width: '100%', padding: '0.7rem' }}
+                className="btn btn-secondary btn-sm"
+                style={{ width: '100%' }}
               >
-                <Icon name="mail" size={15} />
-                <span>{resending ? 'Sending...' : 'Resend Verification Link'}</span>
+                {resending ? 'Dispatching...' : 'Resend Verification Token'}
               </button>
             </form>
 
-            <Link to="/login" style={{ fontSize: '0.85rem', color: 'var(--accent-indigo)', fontWeight: 700 }}>
-              ← Return to Sign In
+            <Link to="/login" style={{ color: 'var(--cyan)', fontSize: '0.82rem' }}>
+              Return to Sign In
             </Link>
           </div>
         )}

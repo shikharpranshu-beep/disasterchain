@@ -9,6 +9,7 @@ import {
   fetchIncidents,
 } from '../services/api';
 import Icon from './Icons';
+import CrisisGlobe3D from './CrisisGlobe3D';
 
 // Realistic base center for campus/metropolitan region (Delhi NCR coordinate baseline)
 const DEFAULT_CENTER = [28.6139, 77.2090];
@@ -207,6 +208,7 @@ const DisasterMap = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isLegendExpanded, setIsLegendExpanded] = useState(true);
   const [recenterFlag, setRecenterFlag] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(false);
 
   // Load real data from backend
   useEffect(() => {
@@ -564,6 +566,22 @@ const DisasterMap = ({
 
             <button
               type="button"
+              onClick={() => setIs3DMode((prev) => !prev)}
+              className="btn btn-secondary btn-sm"
+              style={{
+                padding: '0.35rem 0.65rem',
+                fontSize: '0.78rem',
+                borderColor: is3DMode ? 'var(--cyan)' : 'var(--border-subtle)',
+                color: is3DMode ? 'var(--cyan)' : 'var(--text-secondary)',
+                boxShadow: is3DMode ? 'var(--glow-cyan)' : 'none',
+              }}
+              title="Toggle 3D Crisis Globe Overview"
+            >
+              <span>{is3DMode ? '🌐 2D Map' : '🌍 3D Globe'}</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handleRecenter}
               className="btn btn-secondary btn-sm"
               style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
@@ -576,7 +594,14 @@ const DisasterMap = ({
         </div>
       )}
 
-      {/* Leaflet Map Container */}
+      {/* 3D Crisis Globe Overview or 2D Leaflet Container */}
+      {is3DMode ? (
+        <CrisisGlobe3D
+          sosRequests={sosList}
+          affectedAreas={affectedAreas}
+          shelters={shelters}
+        />
+      ) : (
       <div style={{ width: '100%', height, position: 'relative' }}>
         {loading && (
           <div
@@ -752,6 +777,7 @@ const DisasterMap = ({
           })}
         </MapContainer>
       </div>
+      )}
 
       {/* Expandable Map Legend */}
       {showLegend && (

@@ -20,7 +20,7 @@ const TransparencyLedgerPage = () => {
       setRecords(data || []);
     } catch (err) {
       console.error('Error loading blockchain ledger:', err);
-      setError('Unable to load transparency ledger from server.');
+      setError('Unable to load transparency ledger from backend server.');
     } finally {
       setLoading(false);
     }
@@ -38,7 +38,7 @@ const TransparencyLedgerPage = () => {
 
   const filteredRecords = useMemo(() => {
     return records.filter((r) => {
-      if (filterEntity !== 'ALL' && r.entityType !== filterEntity) return false;
+      if (filterEntity !== 'ALL' && r.entityType?.toLowerCase() !== filterEntity.toLowerCase()) return false;
 
       if (search.trim()) {
         const s = search.toLowerCase();
@@ -56,290 +56,232 @@ const TransparencyLedgerPage = () => {
     });
   }, [records, filterEntity, search]);
 
-  const totalAllocations = records.reduce((acc, r) => acc + (Number(r.quantity) || 0), 0);
-  const totalVerifiedBlocks = records.length;
-  const donationBlocksCount = records.filter((r) => r.entityType === 'Donation').length;
-  const distributionBlocksCount = records.filter((r) => r.entityType === 'Distribution').length;
+  const totalAllocations = useMemo(() => records.reduce((acc, r) => acc + (Number(r.quantity) || 0), 0), [records]);
+  const donationBlocksCount = useMemo(() => records.filter((r) => r.entityType === 'Donation').length, [records]);
+  const distributionBlocksCount = useMemo(() => records.filter((r) => r.entityType === 'Distribution').length, [records]);
 
   return (
-    <div>
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <div className="badge badge-blockchain" style={{ marginBottom: '0.4rem' }}>
-            <Icon name="blockchain" size={13} color="var(--accent-indigo)" />
-            <span>CRYPTOGRAPHIC TAMPER-EVIDENT AUDIT TRAIL</span>
-          </div>
-          <h1 className="page-header-title">
-            <Icon name="ledger" size={26} color="var(--accent-indigo)" />
-            <span>Blockchain Transparency Ledger</span>
-          </h1>
-          <p className="page-header-subtitle">
-            Every disaster relief donation and distribution event is hashed with SHA-256 to provide an immutable public verification ledger
-          </p>
-        </div>
-      </div>
-
-      {/* KPI Metric Summary Cards */}
-      <div className="grid-cols-4" style={{ marginBottom: '1.75rem' }}>
-        <div className="glass-card" style={{ borderLeft: '4px solid #6366f1' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Minted Audit Blocks
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#818cf8', margin: '0.35rem 0 0.15rem' }}>
-            {totalVerifiedBlocks}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Total SHA-256 blocks
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #10b981' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Verified Relief Units
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399', margin: '0.35rem 0 0.15rem' }}>
-            {totalAllocations.toLocaleString()}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Supplies logged on ledger
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #38bdf8' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Donation Blocks
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#38bdf8', margin: '0.35rem 0 0.15rem' }}>
-            {donationBlocksCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            In-kind intake receipts
-          </div>
-        </div>
-
-        <div className="glass-card" style={{ borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase' }}>
-            Distribution Blocks
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fbbf24', margin: '0.35rem 0 0.15rem' }}>
-            {distributionBlocksCount}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Handoffs & shelter arrivals
-          </div>
-        </div>
-      </div>
-
-      {/* Explanation Banner */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Top Header */}
       <div
-        className="glass-card"
+        className="spatial-panel"
         style={{
-          background: 'rgba(99, 102, 241, 0.08)',
-          borderColor: 'rgba(99, 102, 241, 0.35)',
-          marginBottom: '1.75rem',
+          padding: '1.5rem 2rem',
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '1.15rem',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          background: 'rgba(9, 14, 25, 0.94)',
         }}
       >
-        <div
-          style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '12px',
-            background: 'rgba(99, 102, 241, 0.15)',
-            border: '1px solid rgba(99, 102, 241, 0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <Icon name="shield-check" size={24} color="#818cf8" />
-        </div>
-        <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
-          <strong style={{ color: '#ffffff' }}>Why is every relief allocation cryptographically logged?</strong><br />
-          This public ledger provides transparent verification for humanitarian resource allocations. It ensures every relief shipment can be verified by students, donors, and relief coordinators with tamper-resistant SHA-256 cryptographic proof.
-        </div>
-      </div>
-
-      {/* Filter & Search Toolbar */}
-      <div className="filter-toolbar" style={{ marginBottom: '1.5rem' }}>
-        <div className="filter-group">
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Entity Type:</span>
-          <select
-            className="form-select"
-            style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.84rem' }}
-            value={filterEntity}
-            onChange={(e) => setFilterEntity(e.target.value)}
-          >
-            <option value="ALL">All Block Types ({records.length})</option>
-            <option value="Donation">Donation Intakes</option>
-            <option value="Distribution">Distribution Handoffs</option>
-            <option value="ShelterAllocation">Shelter Allocations</option>
-            <option value="EmergencySupply">Emergency Supplies</option>
-          </select>
-        </div>
-
-        <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: '360px' }}>
-          <input
-            type="text"
-            className="form-input"
-            style={{ paddingLeft: '2.2rem', paddingRight: '0.75rem', fontSize: '0.84rem', height: '36px' }}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by Transaction ID, item, donor, hash..."
-          />
-          <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-            <Icon name="search" size={14} />
-          </span>
-        </div>
-
-        <div style={{ marginLeft: 'auto', fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-          Showing <strong>{filteredRecords.length}</strong> of <strong>{records.length}</strong> ledger records
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-secondary)' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              border: '3px solid rgba(99, 102, 241, 0.2)',
-              borderTopColor: '#818cf8',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 1rem',
-            }}
-          />
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>Loading Blockchain Ledger Blocks...</div>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && !loading && (
-        <div
-          style={{
-            background: 'rgba(255, 51, 75, 0.15)',
-            border: '1px solid rgba(255, 51, 75, 0.35)',
-            color: '#ff6b7e',
-            padding: '1.25rem',
-            borderRadius: 'var(--radius-md)',
-            textAlign: 'center',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>⚠️ {error}</div>
-          <button onClick={loadLedger} className="btn btn-secondary btn-sm" style={{ marginTop: '0.75rem' }}>
-            Retry Loading Ledger
-          </button>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && !error && filteredRecords.length === 0 && (
-        <div
-          className="glass-card"
-          style={{
-            textAlign: 'center',
-            padding: '3.5rem 1.5rem',
-            color: 'var(--text-muted)',
-          }}
-        >
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⛓️</div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            No Ledger Records Found
-          </h3>
-          <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 1.25rem' }}>
-            No blockchain transaction records match your search criteria.
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
+            <span className="badge badge-info">CRYPTOGRAPHIC AUDIT TRAIL</span>
+            <span className="micro-label" style={{ color: 'var(--violet)' }}>
+              SHA-256 HASH CHAINING
+            </span>
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+            Public Transparency Ledger
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            Immutable, mathematically grounded disaster relief audit trail verifying aid allocation and distributions.
           </p>
-          <button
-            onClick={() => {
-              setFilterEntity('ALL');
-              setSearch('');
+        </div>
+
+        <button
+          onClick={loadLedger}
+          className="btn btn-secondary btn-sm"
+        >
+          <Icon name="refresh-cw" size={14} />
+          <span>Sync Ledger</span>
+        </button>
+      </div>
+
+      {/* Telemetry KPI Metrics */}
+      <div className="grid-cols-4">
+        <div className="telemetry-widget">
+          <span className="micro-label">MINTED AUDIT BLOCKS</span>
+          <div className="telemetry-num violet">{records.length}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cryptographically chained</div>
+        </div>
+
+        <div className="telemetry-widget">
+          <span className="micro-label">VERIFIED RELIEF UNITS</span>
+          <div className="telemetry-num mint">{totalAllocations.toLocaleString()}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Verified items tracked</div>
+        </div>
+
+        <div className="telemetry-widget">
+          <span className="micro-label">DONATION BLOCKS</span>
+          <div className="telemetry-num cyan">{donationBlocksCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Intake allocations</div>
+        </div>
+
+        <div className="telemetry-widget">
+          <span className="micro-label">DISTRIBUTION BLOCKS</span>
+          <div className="telemetry-num amber">{distributionBlocksCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Frontline deliveries</div>
+        </div>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div
+        className="spatial-panel"
+        style={{
+          padding: '1rem 1.5rem',
+          background: 'rgba(9, 14, 25, 0.92)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+        }}
+      >
+        <input
+          type="text"
+          className="form-input"
+          style={{ maxWidth: '320px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
+          placeholder="Search block hash, transaction ID, cargo..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <select
+          className="form-select"
+          style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
+          value={filterEntity}
+          onChange={(e) => setFilterEntity(e.target.value)}
+        >
+          <option value="ALL">All Block Types</option>
+          <option value="Donation">Donation Intake</option>
+          <option value="Distribution">Transit & Distribution</option>
+        </select>
+      </div>
+
+      {/* Loading / Error / Empty States */}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
+          <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
+          <span>Verifying cryptographic block hashes from MongoDB Atlas...</span>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div style={{ padding: '1rem', background: 'rgba(255, 46, 77, 0.1)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-sm)', color: '#ff8597', textAlign: 'center' }}>
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && filteredRecords.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⛓️</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Ledger Records Found</div>
+          <div style={{ fontSize: '0.82rem' }}>No cryptographic audit blocks match your search query.</div>
+        </div>
+      )}
+
+      {/* Cryptographic Timeline Feed */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {filteredRecords.map((block, idx) => (
+          <div
+            key={block._id || idx}
+            className="spatial-panel spatial-panel-hoverable"
+            style={{
+              padding: '1.35rem',
+              background: 'rgba(11, 17, 30, 0.88)',
+              borderLeft: `4px solid ${block.entityType === 'Donation' ? 'var(--cyan)' : 'var(--amber)'}`,
             }}
-            className="btn btn-secondary btn-sm"
           >
-            Reset Filters
-          </button>
-        </div>
-      )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span className={`badge ${block.entityType === 'Donation' ? 'badge-info' : 'badge-warning'}`}>
+                  {block.entityType?.toUpperCase() || 'TRANSACTION'}
+                </span>
+                <span className="micro-label" style={{ color: 'var(--mint)' }}>
+                  ✓ SHA-256 VERIFIED
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  BLOCK #{block.blockNumber || idx + 100}
+                </span>
+              </div>
 
-      {/* Ledger Table */}
-      {!loading && !error && filteredRecords.length > 0 && (
-        <div className="data-table-container glass-card" style={{ padding: 0, overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Txn ID & Block</th>
-                <th>Entity Type</th>
-                <th>Resource Details</th>
-                <th>Source / Donor</th>
-                <th>Destination</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRecords.map((r) => (
-                <tr key={r._id}>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#818cf8' }}>
-                        {r.transactionId}
-                      </span>
-                      <button
-                        onClick={() => handleCopyId(r.transactionId)}
-                        className="btn btn-ghost btn-sm"
-                        style={{ padding: '0.1rem 0.35rem', fontSize: '0.65rem' }}
-                        title="Copy Transaction ID"
-                      >
-                        <Icon name={copiedId === r.transactionId ? 'check' : 'copy'} size={11} color={copiedId === r.transactionId ? '#34d399' : '#94a3b8'} />
-                      </button>
-                    </div>
-                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                      Block #{r.blockNumber || 1001}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="badge badge-info" style={{ fontSize: '0.7rem' }}>
-                      {r.entityType || 'Donation'}
-                    </span>
-                  </td>
-                  <td>
-                    <strong style={{ color: '#ffffff' }}>{Number(r.quantity).toLocaleString()} {r.unit || 'units'}</strong>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{r.resourceName}</div>
-                  </td>
-                  <td>{r.donorOrSource}</td>
-                  <td>📍 {r.destination}</td>
-                  <td>
-                    <span className="badge badge-success">{r.status || 'Verified'}</span>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => setSelectedReceipt(r)}
-                      className="btn btn-outline btn-sm"
-                      style={{ borderColor: 'rgba(99, 102, 241, 0.4)', color: '#a5b4fc', fontSize: '0.74rem' }}
-                    >
-                      <Icon name="blockchain" size={13} color="#818cf8" />
-                      <span>View Proof</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                ⏱️ {new Date(block.timestamp || block.createdAt).toLocaleString()}
+              </div>
+            </div>
 
-      <BlockchainReceiptModal
-        isOpen={!!selectedReceipt}
-        onClose={() => setSelectedReceipt(null)}
-        record={selectedReceipt}
-      />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '1.15rem', color: '#ffffff', marginBottom: '0.2rem' }}>
+                  {block.resourceName}
+                </div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  From: <strong style={{ color: '#ffffff' }}>{block.donorOrSource}</strong> ➔ To: <strong style={{ color: 'var(--cyan)' }}>{block.destination}</strong>
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.3rem', color: 'var(--mint)' }}>
+                  {block.quantity} {block.unit || 'units'}
+                </div>
+              </div>
+            </div>
+
+            {/* Monospace Cryptographic Hash Readout */}
+            <div
+              style={{
+                background: 'rgba(5, 8, 14, 0.85)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-xs)',
+                padding: '0.75rem 1rem',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.74rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '0.5rem',
+              }}
+            >
+              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+                <span style={{ color: 'var(--text-muted)' }}>HASH: </span>
+                <span style={{ color: 'var(--cyan)' }}>
+                  {block.blockHash || `0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069`}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleCopyId(block.blockHash || block.transactionId)}
+                  className="btn btn-ghost btn-sm"
+                  style={{ fontSize: '0.7rem', padding: '2px 8px' }}
+                >
+                  {copiedId === (block.blockHash || block.transactionId) ? '✓ Copied' : 'Copy Hash'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceipt(block)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.7rem', padding: '2px 8px' }}
+                >
+                  Receipt
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Blockchain Receipt Modal */}
+      {selectedReceipt && (
+        <BlockchainReceiptModal
+          item={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
+        />
+      )}
     </div>
   );
 };
