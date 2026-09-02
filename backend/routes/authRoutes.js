@@ -9,6 +9,7 @@ const {
   resetPassword,
   getMe,
   updateDetails,
+  updatePreferences,
   logout,
   getUsers,
   updateUserRole,
@@ -31,6 +32,7 @@ router.post('/logout', logout);
 // Protected user endpoints
 router.get('/me', protect, getMe);
 router.put('/updatedetails', protect, updateDetails);
+router.put('/preferences', protect, updatePreferences);
 
 // Admin endpoints
 router.get('/users', protect, authorizeAdmin, getUsers);

@@ -9,6 +9,7 @@ const {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendPasswordChangedConfirmation,
+  sendWelcomeEmail,
   getEmailDeliveryStatus,
 } = require('../services/emailService');
 
@@ -233,6 +234,13 @@ exports.verifyEmail = async (req, res) => {
       user.verificationToken = undefined;
       user.verificationTokenExpires = undefined;
       await user.save();
+
+      // Send welcome email upon successful verification (non-blocking)
+      sendWelcomeEmail({
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      }).catch((err) => console.error('Welcome email dispatch notice:', err.message));
 
       const jwtToken = generateToken(user._id, user.role, user.email, user.name);
 
@@ -746,6 +754,66 @@ exports.updateDetails = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error while updating profile details.',
+    });
+  }
+};
+
+// @desc    Update user notification preferences
+// @route   PUT /api/auth/preferences
+// @access  Private
+exports.updatePreferences = async (req, res) => {
+  try {
+    const { criticalAlerts, incidentUpdates, resourceUpdates, distributionUpdates } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized.',
+      });
+    }
+
+    if (isDbConnected()) {
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found.',
+        });
+      }
+
+      user.notificationPreferences = {
+        criticalAlerts: typeof criticalAlerts === 'boolean' ? criticalAlerts : (user.notificationPreferences?.criticalAlerts ?? true),
+        incidentUpdates: typeof incidentUpdates === 'boolean' ? incidentUpdates : (user.notificationPreferences?.incidentUpdates ?? true),
+        resourceUpdates: typeof resourceUpdates === 'boolean' ? resourceUpdates : (user.notificationPreferences?.resourceUpdates ?? true),
+        distributionUpdates: typeof distributionUpdates === 'boolean' ? distributionUpdates : (user.notificationPreferences?.distributionUpdates ?? true),
+        securityEmails: true, // Security emails cannot be disabled
+      };
+
+      await user.save();
+
+      return res.json({
+        success: true,
+        message: 'Notification preferences updated successfully.',
+        data: user.notificationPreferences,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Notification preferences updated successfully.',
+      data: {
+        criticalAlerts: criticalAlerts ?? true,
+        incidentUpdates: incidentUpdates ?? true,
+        resourceUpdates: resourceUpdates ?? true,
+        distributionUpdates: distributionUpdates ?? true,
+        securityEmails: true,
+      },
+    });
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error updating notification preferences.',
     });
   }
 };

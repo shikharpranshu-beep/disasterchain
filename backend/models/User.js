@@ -47,6 +47,28 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: {
     type: Date,
   },
+  notificationPreferences: {
+    criticalAlerts: {
+      type: Boolean,
+      default: true,
+    },
+    incidentUpdates: {
+      type: Boolean,
+      default: true,
+    },
+    resourceUpdates: {
+      type: Boolean,
+      default: true,
+    },
+    distributionUpdates: {
+      type: Boolean,
+      default: true,
+    },
+    securityEmails: {
+      type: Boolean,
+      default: true,
+    },
+  },
   createdAt: {
     type: Date,
     default: Date.now,

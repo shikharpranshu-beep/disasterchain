@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const SosRequest = require('../models/SosRequest');
+const User = require('../models/User');
+const { sendSosNotificationEmail } = require('../services/emailService');
 const memoryStore = require('../config/memoryStore');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
@@ -94,6 +96,19 @@ exports.createSosRequest = async (req, res) => {
         contact,
         status: 'Pending',
       });
+
+      // Role-restricted SOS dispatch notification to active responders and admins (non-blocking)
+      if (['Critical', 'High'].includes(sos.severity)) {
+        User.find({ role: { $in: ['responder', 'admin'] } })
+          .limit(10)
+          .then((responders) => {
+            responders.forEach((r) => {
+              sendSosNotificationEmail({ recipient: r.email, sosRequest: sos, user: r })
+                .catch((e) => console.error('SOS notification notice:', e.message));
+            });
+          })
+          .catch((err) => console.error('SOS responder query notice:', err.message));
+      }
 
       return res.status(201).json({
         success: true,

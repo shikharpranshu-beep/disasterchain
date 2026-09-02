@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Alert = require('../models/Alert');
+const User = require('../models/User');
+const { sendAlertEmail } = require('../services/emailService');
 const memoryStore = require('../config/memoryStore');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
@@ -52,6 +54,23 @@ exports.createAlert = async (req, res) => {
 
     if (isDbConnected()) {
       const alert = await Alert.create(alertData);
+
+      // Notify users who have criticalAlerts preference enabled (non-blocking)
+      User.find({
+        $or: [
+          { role: { $in: ['responder', 'admin'] } },
+          { 'notificationPreferences.criticalAlerts': true },
+        ],
+      })
+        .limit(25)
+        .then((users) => {
+          users.forEach((u) => {
+            sendAlertEmail({ recipient: u.email, alert, user: u })
+              .catch((err) => console.error('Alert broadcast notice:', err.message));
+          });
+        })
+        .catch((err) => console.error('Alert recipient query notice:', err.message));
+
       return res.status(201).json({ success: true, message: 'Emergency alert broadcasted', data: alert });
     }
 

@@ -168,6 +168,11 @@ export const updateUserProfile = async (name) => {
   return res.data.data;
 };
 
+export const updateNotificationPreferences = async (preferences) => {
+  const res = await api.put('/auth/preferences', preferences);
+  return res.data.data;
+};
+
 export const fetchAdminUsers = async () => {
   const res = await api.get('/auth/users');
   return res.data.data || [];
