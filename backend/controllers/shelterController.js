@@ -44,23 +44,41 @@ exports.createShelter = async (req, res) => {
   try {
     const { name, address, latitude, longitude, capacity, occupancy, facilities, status, phone } = req.body;
 
-    if (!name || !address || capacity === undefined || !phone) {
+    if (!name || typeof name !== 'string' || name.trim().length < 3) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide shelter name, address, capacity, and contact phone',
+        message: 'Please provide a valid shelter name (at least 3 characters).',
+      });
+    }
+
+    const trimmedName = name.trim();
+    const lowerName = trimmedName.toLowerCase();
+    if (lowerName.startsWith('shelter by ') || lowerName === 'test shelter' || lowerName === 'new shelter') {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a specific shelter facility name instead of an automated placeholder.',
+      });
+    }
+
+    if (!address || capacity === undefined || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide shelter address, capacity, and contact phone.',
       });
     }
 
     const shelterData = {
-      name,
-      address,
+      name: trimmedName,
+      address: address.trim(),
       latitude: Number(latitude) || 28.6139,
       longitude: Number(longitude) || 77.2090,
       capacity: Number(capacity),
       occupancy: Number(occupancy) || 0,
-      facilities: facilities || ['Food', 'Drinking Water', 'Medical Support'],
+      facilities: Array.isArray(facilities) && facilities.length > 0
+        ? facilities
+        : ['Food', 'Drinking Water', 'Medical Support'],
       status: status || 'Open',
-      phone,
+      phone: String(phone).trim(),
     };
 
     if (isDbConnected()) {
