@@ -6,14 +6,14 @@ const {
   updateShelter,
   deleteShelter,
 } = require('../controllers/shelterController');
-const { protect, authorizeAdmin } = require('../middleware/auth');
+const { protect, authorize, authorizeAdmin } = require('../middleware/auth');
 
 router.route('/')
   .get(getShelters)
-  .post(protect, authorizeAdmin, createShelter);
+  .post(protect, authorize('admin', 'responder'), createShelter);
 
 router.route('/:id')
-  .put(protect, authorizeAdmin, updateShelter)
+  .put(protect, authorize('admin', 'responder'), updateShelter)
   .delete(protect, authorizeAdmin, deleteShelter);
 
 module.exports = router;

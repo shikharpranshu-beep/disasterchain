@@ -6,14 +6,14 @@ const {
   updateResource,
   deleteResource,
 } = require('../controllers/resourceController');
-const { protect, authorizeAdmin } = require('../middleware/auth');
+const { protect, authorize, authorizeAdmin } = require('../middleware/auth');
 
 router.route('/')
   .get(getResources)
-  .post(protect, authorizeAdmin, createResource);
+  .post(protect, authorize('admin', 'responder', 'ngo'), createResource);
 
 router.route('/:id')
-  .put(protect, authorizeAdmin, updateResource)
+  .put(protect, authorize('admin', 'responder', 'ngo'), updateResource)
   .delete(protect, authorizeAdmin, deleteResource);
 
 module.exports = router;

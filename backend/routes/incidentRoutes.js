@@ -7,7 +7,7 @@ const {
   updateIncidentStatus,
   deleteIncident,
 } = require('../controllers/incidentController');
-const { protect, authorizeAdmin } = require('../middleware/auth');
+const { protect, authorize, authorizeAdmin } = require('../middleware/auth');
 
 router.route('/')
   .get(getIncidents)
@@ -18,6 +18,6 @@ router.route('/:id')
   .delete(protect, authorizeAdmin, deleteIncident);
 
 router.route('/:id/status')
-  .put(protect, authorizeAdmin, updateIncidentStatus);
+  .put(protect, authorize('admin', 'responder'), updateIncidentStatus);
 
 module.exports = router;

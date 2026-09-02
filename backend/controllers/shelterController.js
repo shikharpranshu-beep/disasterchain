@@ -52,11 +52,10 @@ exports.createShelter = async (req, res) => {
     }
 
     const shelterData = {
-      _id: `sh-${Date.now()}`,
       name,
       address,
-      latitude: latitude || 28.6139,
-      longitude: longitude || 77.2090,
+      latitude: Number(latitude) || 28.6139,
+      longitude: Number(longitude) || 77.2090,
       capacity: Number(capacity),
       occupancy: Number(occupancy) || 0,
       facilities: facilities || ['Food', 'Drinking Water', 'Medical Support'],
@@ -73,13 +72,15 @@ exports.createShelter = async (req, res) => {
       });
     }
 
-    memoryStore.shelters.unshift(shelterData);
+    const memoryShelter = { _id: `sh-${Date.now()}`, ...shelterData };
+    memoryStore.shelters.unshift(memoryShelter);
     return res.status(201).json({
       success: true,
       message: 'Shelter created successfully (In-Memory)',
-      data: shelterData,
+      data: memoryShelter,
     });
   } catch (error) {
+    console.error('Create shelter error:', error);
     res.status(500).json({ success: false, message: error.message || 'Server error creating shelter' });
   }
 };

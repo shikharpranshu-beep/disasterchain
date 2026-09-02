@@ -30,15 +30,22 @@ exports.getResources = async (req, res) => {
 // @desc    Create resource
 exports.createResource = async (req, res) => {
   try {
-    const resourceData = { _id: `res-${Date.now()}`, ...req.body, status: 'Operational' };
+    const resourceData = {
+      ...req.body,
+      status: req.body.status || 'Operational',
+      latitude: Number(req.body.latitude) || 28.6139,
+      longitude: Number(req.body.longitude) || 77.2090,
+    };
     if (isDbConnected()) {
       const resource = await Resource.create(resourceData);
       return res.status(201).json({ success: true, data: resource });
     }
-    memoryStore.resources.unshift(resourceData);
-    return res.status(201).json({ success: true, data: resourceData });
+    const memoryRes = { _id: `res-${Date.now()}`, ...resourceData };
+    memoryStore.resources.unshift(memoryRes);
+    return res.status(201).json({ success: true, data: memoryRes });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error' });
+    console.error('Create resource error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Error' });
   }
 };
 

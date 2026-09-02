@@ -6,7 +6,7 @@ const {
   createSosRequest,
   updateSosStatus,
 } = require('../controllers/sosController');
-const { protect, authorizeAdmin } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 router.route('/')
   .get(getSosRequests)
@@ -16,6 +16,6 @@ router.route('/:id')
   .get(getSosRequestById);
 
 router.route('/:id/status')
-  .put(protect, authorizeAdmin, updateSosStatus);
+  .put(protect, authorize('admin', 'responder'), updateSosStatus);
 
 module.exports = router;

@@ -41,7 +41,6 @@ exports.createAlert = async (req, res) => {
     }
 
     const alertData = {
-      _id: `alt-${Date.now()}`,
       title,
       message,
       type: type || 'General',
@@ -56,10 +55,12 @@ exports.createAlert = async (req, res) => {
       return res.status(201).json({ success: true, message: 'Emergency alert broadcasted', data: alert });
     }
 
-    memoryStore.alerts.unshift(alertData);
-    return res.status(201).json({ success: true, message: 'Emergency alert broadcasted (In-Memory)', data: alertData });
+    const memoryAlert = { _id: `alt-${Date.now()}`, ...alertData };
+    memoryStore.alerts.unshift(memoryAlert);
+    return res.status(201).json({ success: true, message: 'Emergency alert broadcasted (In-Memory)', data: memoryAlert });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error creating alert' });
+    console.error('Create alert error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error creating alert' });
   }
 };
 

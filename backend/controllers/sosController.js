@@ -131,9 +131,9 @@ exports.createSosRequest = async (req, res) => {
   }
 };
 
-// @desc    Update SOS request status (Admin only)
+// @desc    Update SOS request status (Admin & Responder)
 // @route   PUT /api/sos/:id/status
-// @access  Private / Admin
+// @access  Private / Admin / Responder
 exports.updateSosStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -144,14 +144,18 @@ exports.updateSosStatus = async (req, res) => {
     }
 
     if (isDbConnected()) {
-      const sos = await SosRequest.findByIdAndUpdate(req.params.id, { status }, { new: true });
+      const query = mongoose.isValidObjectId(req.params.id)
+        ? { $or: [{ _id: req.params.id }, { requestId: req.params.id }] }
+        : { requestId: req.params.id };
+
+      const sos = await SosRequest.findOneAndUpdate(query, { status }, { new: true });
       if (!sos) {
         return res.status(404).json({ success: false, message: 'SOS request not found' });
       }
       return res.json({ success: true, message: `Status updated to ${status}`, data: sos });
     }
 
-    const idx = memoryStore.sosRequests.findIndex((s) => s._id === req.params.id);
+    const idx = memoryStore.sosRequests.findIndex((s) => s._id === req.params.id || s.requestId === req.params.id);
     if (idx !== -1) {
       memoryStore.sosRequests[idx].status = status;
       return res.json({
@@ -163,6 +167,7 @@ exports.updateSosStatus = async (req, res) => {
 
     res.status(404).json({ success: false, message: 'SOS request not found' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error updating SOS status' });
+    console.error('Update SOS error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error updating SOS status' });
   }
 };

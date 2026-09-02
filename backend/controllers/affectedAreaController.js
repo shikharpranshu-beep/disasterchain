@@ -51,15 +51,14 @@ exports.createAffectedArea = async (req, res) => {
     }
 
     const areaData = {
-      _id: `area-${Date.now()}`,
       name,
       disasterType,
       severity,
       description: description || '',
       affectedPeople: Number(affectedPeople) || 0,
       activeSOS: Number(activeSOS) || 0,
-      latitude: latitude || 28.6139,
-      longitude: longitude || 77.2090,
+      latitude: Number(latitude) || 28.6139,
+      longitude: Number(longitude) || 77.2090,
       status: status || 'Active',
     };
 
@@ -68,10 +67,12 @@ exports.createAffectedArea = async (req, res) => {
       return res.status(201).json({ success: true, message: 'Affected area created', data: area });
     }
 
-    memoryStore.affectedAreas.unshift(areaData);
-    return res.status(201).json({ success: true, message: 'Affected area created (In-Memory)', data: areaData });
+    const memoryArea = { _id: `area-${Date.now()}`, ...areaData };
+    memoryStore.affectedAreas.unshift(memoryArea);
+    return res.status(201).json({ success: true, message: 'Affected area created (In-Memory)', data: memoryArea });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error creating affected area' });
+    console.error('Create affected area error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error creating affected area' });
   }
 };
 

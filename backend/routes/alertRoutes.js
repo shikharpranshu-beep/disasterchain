@@ -6,14 +6,14 @@ const {
   updateAlert,
   deleteAlert,
 } = require('../controllers/alertController');
-const { protect, authorizeAdmin } = require('../middleware/auth');
+const { protect, authorize, authorizeAdmin } = require('../middleware/auth');
 
 router.route('/')
   .get(getAlerts)
-  .post(protect, authorizeAdmin, createAlert);
+  .post(protect, authorize('admin', 'responder'), createAlert);
 
 router.route('/:id')
-  .put(protect, authorizeAdmin, updateAlert)
+  .put(protect, authorize('admin', 'responder'), updateAlert)
   .delete(protect, authorizeAdmin, deleteAlert);
 
 module.exports = router;
