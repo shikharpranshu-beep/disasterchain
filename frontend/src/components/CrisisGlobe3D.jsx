@@ -191,16 +191,23 @@ const CrisisGlobe3D = ({
   alerts = [],
   riskZones = [],
   intelligenceList = [],
-  focusTarget,
-  onOpenShelter,
-  onOpenIncident,
-  onOpenSos,
-  onSelectEntity,
-  onViewMap,
-  onNavigate,
+  focusTarget = null,
+  onOpenShelter = () => {},
+  onOpenIncident = () => {},
+  onOpenSos = () => {},
+  onSelectEntity = () => {},
+  onViewMap = () => {},
+  onNavigate = () => {},
 }) => {
   const containerRef = useRef(null);
-  const activeSosList = sosList.length > 0 ? sosList : sosRequests;
+  const activeSosList = Array.isArray(sosList) && sosList.length > 0 ? sosList : Array.isArray(sosRequests) ? sosRequests : [];
+  const safeShelters = Array.isArray(shelters) ? shelters : [];
+  const safeIncidents = Array.isArray(incidents) ? incidents : [];
+  const safeAreas = Array.isArray(affectedAreas) ? affectedAreas : [];
+  const safeAlerts = Array.isArray(alerts) ? alerts : [];
+  const safeRiskZones = Array.isArray(riskZones) ? riskZones : [];
+
+  const [hasWebGlError, setHasWebGlError] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [selectedType, setSelectedType] = useState('city');
   const [hoveredEntity, setHoveredEntity] = useState(null);
@@ -256,12 +263,12 @@ const CrisisGlobe3D = ({
       lon,
       radiusKm: 180,
       sosList: activeSosList,
-      incidents,
-      shelters,
-      alerts,
-      riskZones,
+      incidents: safeIncidents,
+      shelters: safeShelters,
+      alerts: safeAlerts,
+      riskZones: safeRiskZones,
     });
-  }, [selectedEntity, activeSosList, incidents, shelters, alerts, riskZones]);
+  }, [selectedEntity, activeSosList, safeIncidents, safeShelters, safeAlerts, safeRiskZones]);
 
   // Handle focusTarget prop changes from parent
   useEffect(() => {
@@ -270,7 +277,7 @@ const CrisisGlobe3D = ({
       const lon = focusTarget.longitude ?? focusTarget.lon;
       flyToLocation(lat, lon, 3.4, focusTarget, focusTarget.type?.toLowerCase() || 'city');
     }
-  }, [focusTarget, flyToLocation]);
+  }, [focusTarget]);
 
   // Smooth camera flight function to specific latitude/longitude
   const flyToLocation = useCallback((lat, lon, zoom = 3.6, entity = null, type = 'city') => {
@@ -327,7 +334,7 @@ const CrisisGlobe3D = ({
   };
 
   const handleFocusUserLocation = () => {
-    if (!navigator.geolocation) {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
       return;
     }
@@ -360,8 +367,10 @@ const CrisisGlobe3D = ({
       }
     };
 
-    window.addEventListener('disasterchain:globe-focus', handleGlobalFocus);
-    return () => window.removeEventListener('disasterchain:globe-focus', handleGlobalFocus);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('disasterchain:globe-focus', handleGlobalFocus);
+      return () => window.removeEventListener('disasterchain:globe-focus', handleGlobalFocus);
+    }
   }, [flyToLocation]);
 
   // Main Three.js Scene Setup & Render Loop
@@ -369,20 +378,32 @@ const CrisisGlobe3D = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const width = container.clientWidth || 800;
-    const height = container.clientHeight || 550;
+    let renderer = null;
+    let scene = null;
+    let camera = null;
+    let globeMesh = null;
+    let cloudsMesh = null;
 
-    // 1. Scene & Camera
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 4.8;
+    try {
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 550;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = false;
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+      // 1. Scene & Camera
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.z = 4.8;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1);
+      renderer.shadowMap.enabled = false;
+      container.innerHTML = '';
+      container.appendChild(renderer.domElement);
+    } catch (err) {
+      console.warn('[CrisisGlobe3D] WebGL initialization failed, rendering 2D fallback:', err);
+      setHasWebGlError(true);
+      return;
+    }
 
     // 2. Realistic Lighting (Day & Night Sun)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
@@ -405,7 +426,7 @@ const CrisisGlobe3D = ({
       roughness: 0.65,
       metalness: 0.15,
     });
-    const globeMesh = new THREE.Mesh(globeGeo, globeMat);
+    globeMesh = new THREE.Mesh(globeGeo, globeMat);
     scene.add(globeMesh);
 
     // 4. Subtle Atmospheric Edge Ring
@@ -428,7 +449,7 @@ const CrisisGlobe3D = ({
       opacity: 0.35,
       blending: THREE.AdditiveBlending,
     });
-    const cloudsMesh = new THREE.Mesh(cloudsGeo, cloudsMat);
+    cloudsMesh = new THREE.Mesh(cloudsGeo, cloudsMat);
     scene.add(cloudsMesh);
 
     // 6. Entity Groups
@@ -1009,7 +1030,7 @@ const CrisisGlobe3D = ({
             cursor: 'pointer',
           }}
         >
-          🚨 SOS ({sosList.length})
+          🚨 SOS ({activeSosList.length})
         </button>
 
         <button
@@ -1026,7 +1047,7 @@ const CrisisGlobe3D = ({
             cursor: 'pointer',
           }}
         >
-          🏛️ SHELTERS ({shelters.length})
+          🏛️ SHELTERS ({safeShelters.length})
         </button>
 
         <button
@@ -1043,7 +1064,7 @@ const CrisisGlobe3D = ({
             cursor: 'pointer',
           }}
         >
-          📋 INCIDENTS ({incidents.length})
+          📋 INCIDENTS ({safeIncidents.length})
         </button>
 
         <button
@@ -1060,7 +1081,7 @@ const CrisisGlobe3D = ({
             cursor: 'pointer',
           }}
         >
-          ⚠️ HAZARDS ({affectedAreas.length})
+          ⚠️ HAZARDS ({safeAreas.length})
         </button>
 
         <button
@@ -1097,7 +1118,7 @@ const CrisisGlobe3D = ({
           border: '1px solid var(--border-subtle)',
         }}
       >
-        LOD: {currentZoomLevel === 1 ? 'GLOBAL VIEW (Capitals)' : currentZoomLevel === 2 ? 'REGIONAL VIEW (Major Hubs)' : 'LOCAL VIEW (Full Sector Telemetry)'}
+        {hasWebGlError ? '2D TACTICAL COMMAND GRID' : `LOD: ${currentZoomLevel === 1 ? 'GLOBAL VIEW (Capitals)' : currentZoomLevel === 2 ? 'REGIONAL VIEW (Major Hubs)' : 'LOCAL VIEW (Full Sector Telemetry)'}`}
       </div>
 
       {/* Selected Location Information HUD Panel */}

@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import MobileEmergencyNav from './components/MobileEmergencyNav';
 import AIAssistant from './components/AIAssistant';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -157,11 +158,13 @@ const AppLayout = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppLayout />
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <AppLayout />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

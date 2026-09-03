@@ -1,6 +1,11 @@
 import React from 'react';
 
-export const Icon = ({ name, size = 20, className = '', color = 'currentColor', ...props }) => {
+export const Icon = ({ name = '', size = 20, className = '', color = 'currentColor', ...props }) => {
+  const normalizedName = String(name || '')
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+    .trim();
+
   const propsCombined = {
     width: size,
     height: size,
@@ -14,7 +19,7 @@ export const Icon = ({ name, size = 20, className = '', color = 'currentColor', 
     ...props,
   };
 
-  switch (name) {
+  switch (normalizedName) {
     case 'shield':
     case 'admin':
       return (
