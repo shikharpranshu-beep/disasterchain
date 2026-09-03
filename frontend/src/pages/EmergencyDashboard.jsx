@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import CrisisGlobe3D from '../components/CrisisGlobe3D';
-import DisasterMap from '../components/DisasterMap';
+import DisasterCommandMap from '../components/DisasterCommandMap';
 import ResourceJourneyModal from '../components/ResourceJourneyModal';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
 import CrisisIntelligenceModal from '../components/CrisisIntelligenceModal';
@@ -50,7 +49,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
   const [intelligenceLoading, setIntelligenceLoading] = useState(true);
   const [intelligenceError, setIntelligenceError] = useState(null);
   const [selectedIntelligence, setSelectedIntelligence] = useState(null);
-  const [globeFocusTarget, setGlobeFocusTarget] = useState(null);
+  const [mapFocusTarget, setMapFocusTarget] = useState(null);
   const [activePriorityFilter, setActivePriorityFilter] = useState('ALL');
 
   // AI-Assisted Risk Heatmap State
@@ -64,9 +63,6 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
     highestRiskScore: 0,
   });
   const [selectedRiskZone, setSelectedRiskZone] = useState(null);
-
-  // Center display mode: '3D' | 'MAP'
-  const [viewCenterMode, setViewCenterMode] = useState('3D');
 
   // Modals
   const [selectedJourney, setSelectedJourney] = useState(null);
@@ -223,13 +219,12 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
   const threatTier = criticalSosCount > 3 ? 'TIER 1 — CRITICAL RESPONSE' : criticalSosCount > 0 ? 'TIER 2 — ELEVATED HAZARD' : 'TIER 3 — NOMINAL MONITORING';
   const threatColor = criticalSosCount > 3 ? 'var(--crimson)' : criticalSosCount > 0 ? 'var(--amber)' : 'var(--mint)';
 
-  const handleViewOnGlobe = (item) => {
+  const handleViewOnMap = (item) => {
     if (!item) return;
     const lat = item.coordinates?.latitude ?? item.latitude;
     const lon = item.coordinates?.longitude ?? item.longitude;
     if (lat == null || lon == null) return;
-    setViewCenterMode('3D');
-    setGlobeFocusTarget({
+    setMapFocusTarget({
       latitude: Number(lat),
       longitude: Number(lon),
       id: item.id || item.shelterId || item._id,
@@ -350,48 +345,6 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
               <span>AI SITUATION BRIEF</span>
             </button>
           )}
-
-          <div
-            style={{
-              display: 'inline-flex',
-              background: 'rgba(15, 23, 42, 0.85)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-xs)',
-              overflow: 'hidden',
-              marginRight: '0.5rem',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setViewCenterMode('3D')}
-              style={{
-                padding: '5px 12px',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                background: viewCenterMode === '3D' ? 'var(--cyan)' : 'transparent',
-                color: viewCenterMode === '3D' ? '#040812' : 'var(--text-secondary)',
-              }}
-            >
-              3D Globe
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewCenterMode('MAP')}
-              style={{
-                padding: '5px 12px',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                background: viewCenterMode === 'MAP' ? 'var(--cyan)' : 'transparent',
-                color: viewCenterMode === 'MAP' ? '#040812' : 'var(--text-secondary)',
-              }}
-            >
-              Tactical Map
-            </button>
-          </div>
 
           <button
             type="button"
@@ -687,12 +640,12 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                   <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.2rem' }}>
                     <button
                       type="button"
-                      onClick={() => handleViewOnGlobe(item)}
+                      onClick={() => handleViewOnMap(item)}
                       className="btn btn-secondary btn-sm"
                       style={{ flex: 1, padding: '3px 6px', fontSize: '0.68rem', justifyContent: 'center' }}
                     >
-                      <Icon name="map-pin" size={12} color="var(--cyan)" />
-                      <span>VIEW ON GLOBE</span>
+                      <Icon name="map-pin" size={12} color="var(--orange-primary)" />
+                      <span>VIEW ON MAP</span>
                     </button>
 
                     <button
@@ -710,41 +663,21 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           </div>
         </div>
 
-        {/* CENTER VISUAL CENTERPIECE: 3D Globe or Leaflet Map */}
-        <div style={{ minHeight: '520px', display: 'flex', flexDirection: 'column' }}>
-          {viewCenterMode === '3D' ? (
-            <CrisisGlobe3D
-              sosRequests={sosList}
-              affectedAreas={affectedAreas}
-              shelters={shelters}
-              incidents={incidents}
-              riskZones={riskZones}
-              intelligenceList={intelligenceList}
-              focusTarget={globeFocusTarget}
-              onViewMap={() => {
-                setViewCenterMode('MAP');
-                window.scrollTo({ top: 180, behavior: 'smooth' });
-              }}
-              onSelectEntity={(entity) => {
-                if (!entity) return;
-                if (entity.type === 'SHELTER') {
-                  setSelectedShelter(entity.item);
-                } else if (entity.type === 'RISK_ZONE') {
-                  setViewCenterMode('MAP');
-                  window.scrollTo({ top: 180, behavior: 'smooth' });
-                } else if (entity.item?.coordinates || entity.item?.latitude) {
-                  handleViewOnGlobe(entity.item);
-                }
-              }}
-            />
-          ) : (
-            <DisasterMap
-              height="500px"
-              showToolbar={true}
-              showLegend={false}
-              onOpenSos={onOpenSos}
-            />
-          )}
+        {/* CENTER VISUAL CENTERPIECE: 2D Disaster Command Map */}
+        <div style={{ minHeight: '560px', display: 'flex', flexDirection: 'column' }}>
+          <DisasterCommandMap
+            sosRequests={sosList}
+            affectedAreas={affectedAreas}
+            shelters={shelters}
+            incidents={incidents}
+            riskZones={riskZones}
+            intelligenceList={intelligenceList}
+            focusTarget={mapFocusTarget}
+            isLoading={loading}
+            onOpenSos={onOpenSos}
+            onOpenIncident={onOpenIncident}
+            onOpenShelter={(sh) => setSelectedShelter(sh)}
+          />
         </div>
 
         {/* RIGHT RAIL: Situation Intelligence & Priority Alerts */}

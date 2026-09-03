@@ -1066,25 +1066,3 @@ button, input, select, textarea {
     max-height: none !important;
   }
 }
-
-/* Cesium Geospatial Command Globe Overrides */
-.cesium-viewer {
-  font-family: var(--font-sans) !important;
-  overflow: hidden !important;
-  background: #0a0705 !important;
-}
-
-.cesium-viewer-bottom {
-  display: flex !important;
-  align-items: center !important;
-  background: rgba(18, 11, 8, 0.85) !important;
-  padding: 2px 8px !important;
-  font-size: 0.65rem !important;
-  border-top: 1px solid var(--border-subtle) !important;
-}
-
-.cesium-credit-textContainer,
-.cesium-credit-expand-link {
-  color: var(--text-muted) !important;
-  font-size: 0.65rem !important;
-}

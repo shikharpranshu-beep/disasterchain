@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import CrisisGlobe3D from '../components/CrisisGlobe3D';
+import DisasterCommandMap from '../components/DisasterCommandMap';
 import Icon from '../components/Icons';
 import { fetchSosRequests, fetchShelters, fetchAffectedAreas } from '../services/api';
 
@@ -69,10 +69,10 @@ const LandingPage = ({ onOpenSos }) => {
         }}
       >
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.85rem', background: 'rgba(0, 240, 255, 0.08)', border: '1px solid var(--border-highlight)', borderRadius: 'var(--radius-xs)', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.85rem', background: 'rgba(255, 107, 44, 0.08)', border: '1px solid var(--border-highlight)', borderRadius: 'var(--radius-xs)', marginBottom: '1.25rem' }}>
             <span className="live-beacon-pulse" />
-            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              NEXT-GEN IMMERSIVE CRISIS OPERATIONS
+            <span className="micro-label" style={{ color: 'var(--orange-primary)' }}>
+              REAL-TIME EMERGENCY CRISIS OPERATIONS
             </span>
           </div>
 
@@ -88,7 +88,7 @@ const LandingPage = ({ onOpenSos }) => {
             }}
           >
             Mission-Critical Response.<br />
-            <span style={{ background: 'linear-gradient(135deg, var(--cyan) 0%, var(--violet) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span style={{ background: 'linear-gradient(135deg, var(--orange-primary) 0%, #FF8A3D 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Cryptographic Integrity.
             </span>
           </h1>
@@ -102,7 +102,7 @@ const LandingPage = ({ onOpenSos }) => {
               maxWidth: '560px',
             }}
           >
-            DisasterChain connects real-time GPS distress signaling, live shelter occupancy rings, interactive 3D crisis intelligence, and immutable SHA-256 relief supply tracking into a unified civil defense network.
+            DisasterChain connects real-time GPS distress signaling, live shelter occupancy rings, real-time crisis command intelligence, and immutable SHA-256 relief supply tracking into a unified civil defense network.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
@@ -126,12 +126,13 @@ const LandingPage = ({ onOpenSos }) => {
           </div>
         </div>
 
-        {/* Hero 3D Crisis Globe Feature Display */}
-        <div style={{ height: '440px', width: '100%', position: 'relative' }}>
-          <CrisisGlobe3D
+        {/* Hero 2D Crisis Command Map Display */}
+        <div style={{ height: '480px', width: '100%', position: 'relative' }}>
+          <DisasterCommandMap
             sosRequests={sosList}
             affectedAreas={affectedAreas}
             shelters={shelters}
+            onOpenSos={onOpenSos}
           />
         </div>
       </section>
@@ -155,10 +156,10 @@ const LandingPage = ({ onOpenSos }) => {
               color: 'var(--crimson)',
             },
             {
-              title: '3D Geospatial Intel',
-              desc: 'Interactive WebGL planetary grid visualizing distress spikes, impact perimeters, and safe haven clusters in real-time.',
-              icon: '🌍',
-              color: 'var(--cyan)',
+              title: 'Live Geospatial Intel',
+              desc: 'Interactive 2D operational command grid visualizing distress spikes, impact perimeters, and safe haven clusters in real-time.',
+              icon: '🗺️',
+              color: 'var(--orange-primary)',
             },
             {
               title: '5-Stage Supply Chain',

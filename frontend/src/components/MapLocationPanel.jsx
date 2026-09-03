@@ -2,10 +2,10 @@ import React from 'react';
 import Icon from './Icons';
 
 /**
- * Reusable Globe Location & Emergency Inspection Panel
- * Displays detailed geographic metadata + live DisasterChain telemetry for any selected entity.
+ * Reusable Map Location & Emergency Intelligence Inspection Panel
+ * Displays detailed geographic metadata + live DisasterChain telemetry for any selected entity on the 2D Command Map.
  */
-const GlobeLocationPanel = ({
+const MapLocationPanel = ({
   entity,
   type, // 'city' | 'country' | 'shelter' | 'incident' | 'sos' | 'riskZone' | 'area'
   telemetry,
@@ -43,7 +43,7 @@ const GlobeLocationPanel = ({
         border: '1px solid var(--border-medium)',
         borderRadius: 'var(--radius-md)',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 107, 44, 0.15)',
-        zIndex: 100,
+        zIndex: 1000,
         padding: '1.25rem',
         animation: 'modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
@@ -65,14 +65,14 @@ const GlobeLocationPanel = ({
                 border: '1px solid rgba(255, 107, 44, 0.3)',
               }}
             >
-              {type === 'country' ? '🌐 Sovereign Territory' : type === 'city' ? '🏙️ Geographic Urban Hub' : '🚨 Tactical Entity'}
+              {type === 'country' ? '🌐 Sovereign Territory' : type === 'city' ? '🏙️ Geographic Urban Hub' : type === 'shelter' ? '🏛️ Safe Shelter Facility' : type === 'sos' ? '🚨 Distress SOS Signal' : '⚠️ Tactical Field Entity'}
             </span>
           </div>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem', color: '#ffffff', marginTop: '4px' }}>
             {entity.name || entity.title || 'Location Intelligence'}
           </div>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-            {entity.country || entity.region || entity.subtitle || 'Global Command Grid'}
+            {entity.country || entity.region || entity.subtitle || entity.address || 'Operational Command Grid'}
           </div>
         </div>
         <button
@@ -242,9 +242,21 @@ const GlobeLocationPanel = ({
             <span>OPEN SOS COMMAND AUDIT</span>
           </button>
         )}
+
+        {type === 'incident' && onOpenIncident && (
+          <button
+            type="button"
+            onClick={() => onOpenIncident(entity)}
+            className="btn btn-secondary btn-sm"
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
+            <Icon name="incident" size={14} />
+            <span>VIEW INCIDENT REPORT</span>
+          </button>
+        )}
       </div>
     </div>
   );
 };
 
-export default GlobeLocationPanel;
+export default MapLocationPanel;

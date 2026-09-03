@@ -10,7 +10,6 @@ import {
   fetchRiskHeatmap,
 } from '../services/api';
 import Icon from './Icons';
-import CrisisGlobe3D from './CrisisGlobe3D';
 
 // Realistic base center for campus/metropolitan region (Delhi NCR coordinate baseline)
 const DEFAULT_CENTER = [28.6139, 77.2090];
