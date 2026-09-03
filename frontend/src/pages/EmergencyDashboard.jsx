@@ -313,6 +313,35 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             </div>
           )}
 
+          {isResponderOrAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(
+                  new CustomEvent('disasterchain:ai-assistant-open', {
+                    detail: { query: 'Give me an operational situation brief' },
+                  })
+                );
+              }}
+              className="btn btn-secondary btn-sm"
+              style={{
+                borderColor: 'var(--orange-primary)',
+                color: 'var(--orange-primary)',
+                background: 'rgba(255, 107, 44, 0.1)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: 800,
+                fontSize: '0.75rem',
+                marginRight: '0.5rem',
+              }}
+              title="Generate AI operational situation briefing"
+            >
+              <Icon name="bot" size={15} color="var(--orange-primary)" />
+              <span>AI SITUATION BRIEF</span>
+            </button>
+          )}
+
           <div
             style={{
               display: 'inline-flex',

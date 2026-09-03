@@ -1019,3 +1019,50 @@ button, input, select, textarea {
 @keyframes spinRadar {
   to { transform: rotate(360deg); }
 }
+
+/* ==========================================================================
+   DISASTERCHAIN AI EMERGENCY ASSISTANT
+   ========================================================================== */
+
+.ai-assistant-launcher {
+  animation: aiLauncherFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes aiLauncherFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+.ai-assistant-panel {
+  animation: aiPanelSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes aiPanelSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-assistant-launcher {
+    bottom: 80px !important;
+    right: 16px !important;
+    padding: 0.55rem 0.95rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .ai-assistant-panel {
+    bottom: 76px !important;
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    height: calc(100vh - 96px) !important;
+    max-height: none !important;
+  }
+}

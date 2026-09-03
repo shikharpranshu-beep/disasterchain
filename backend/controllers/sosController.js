@@ -74,7 +74,19 @@ exports.getSosRequestById = async (req, res) => {
 // @access  Public
 exports.createSosRequest = async (req, res) => {
   try {
-    const { name, emergencyType, description, location, latitude, longitude, peopleAffected, severity, contact } = req.body;
+    const {
+      name,
+      emergencyType,
+      description,
+      location,
+      latitude,
+      longitude,
+      peopleAffected,
+      severity,
+      contact,
+      requestId,
+      clientRequestId,
+    } = req.body;
 
     if (!name || !emergencyType || !description || !location || !contact) {
       return res.status(400).json({
@@ -83,8 +95,22 @@ exports.createSosRequest = async (req, res) => {
       });
     }
 
+    const dedupeId = requestId || clientRequestId;
+
     if (isDbConnected()) {
-      const sos = await SosRequest.create({
+      if (dedupeId) {
+        const existing = await SosRequest.findOne({ requestId: dedupeId });
+        if (existing) {
+          return res.status(200).json({
+            success: true,
+            message: 'Existing SOS request acknowledged (deduplicated)',
+            deduplicated: true,
+            data: existing,
+          });
+        }
+      }
+
+      const sosData = {
         name,
         emergencyType,
         description,
@@ -95,7 +121,10 @@ exports.createSosRequest = async (req, res) => {
         severity: severity || 'High',
         contact,
         status: 'Pending',
-      });
+      };
+      if (dedupeId) sosData.requestId = dedupeId;
+
+      const sos = await SosRequest.create(sosData);
 
       // Role-restricted SOS dispatch notification to active responders and admins (non-blocking)
       if (['Critical', 'High'].includes(sos.severity)) {
@@ -118,10 +147,21 @@ exports.createSosRequest = async (req, res) => {
     }
 
     // In-memory fallback
-    const requestId = `SOS-${Math.floor(1000 + Math.random() * 9000)}`;
+    const memoryRequestId = dedupeId || `SOS-${Math.floor(1000 + Math.random() * 9000)}`;
+    if (dedupeId) {
+      const existingMem = memoryStore.sosRequests.find((s) => s.requestId === dedupeId);
+      if (existingMem) {
+        return res.status(200).json({
+          success: true,
+          message: 'Existing SOS request acknowledged (deduplicated)',
+          deduplicated: true,
+          data: existingMem,
+        });
+      }
+    }
     const sosData = {
       _id: `sos-${Date.now()}`,
-      requestId,
+      requestId: memoryRequestId,
       name,
       emergencyType,
       description,

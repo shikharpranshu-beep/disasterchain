@@ -26,4 +26,17 @@ const generalLimiter = rateLimit({
   },
 });
 
-module.exports = { authLimiter, generalLimiter };
+// Dedicated AI Assistant rate limiter (prevents automated flooding / DoS)
+const aiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // Limit each IP to 30 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === 'test',
+  message: {
+    success: false,
+    message: 'Too many assistant requests. Please wait a moment before sending another message.',
+  },
+});
+
+module.exports = { authLimiter, generalLimiter, aiLimiter };

@@ -71,6 +71,8 @@ app.use('/api/donations', require('./routes/donationRoutes'));
 app.use('/api/distributions', require('./routes/distributionRoutes'));
 app.use('/api/preparedness', require('./routes/preparednessRoutes'));
 app.use('/api/blockchain', require('./routes/blockchainRoutes'));
+app.use('/api/intelligence', require('./routes/crisisIntelligenceRoutes'));
+app.use('/api/ai', require('./routes/aiAssistantRoutes'));
 app.use('/api/seed', require('./routes/seedRoutes'));
 
 // 404 Route Handler

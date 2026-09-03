@@ -17,6 +17,12 @@ const sosRequestSchema = new mongoose.Schema({
     required: true,
     enum: [
       'Medical Emergency',
+      'Severe Trauma / Bleeding',
+      'Fire Hazard / Trapped',
+      'Structural Collapse',
+      'Water Inundation / Flood',
+      'Hazardous Gas / Chemical',
+      'Other Crisis',
       'Fire',
       'Flood',
       'Building Damage',

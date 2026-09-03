@@ -10,6 +10,7 @@ import IncidentModal from './components/IncidentModal';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import MobileEmergencyNav from './components/MobileEmergencyNav';
+import AIAssistant from './components/AIAssistant';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -132,6 +133,11 @@ const AppLayout = () => {
         onOpenSos={() => setIsSosOpen(true)}
         onOpenIncident={() => setIsIncidentOpen(true)}
       />
+
+      {/* DISASTERCHAIN AI Emergency Assistant */}
+      {!isPublicStandalone && (
+        <AIAssistant onOpenSos={() => setIsSosOpen(true)} />
+      )}
 
       {/* Global Modals */}
       <SosModal
