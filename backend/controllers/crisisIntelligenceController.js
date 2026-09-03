@@ -102,16 +102,24 @@ exports.getActiveCrisisIntelligence = async (req, res) => {
 
     // Evaluate SOS Requests
     for (const sos of activeSosList) {
-      const evaluation = evaluateEmergencyPriority(sos, 'sos', context);
-      const sanitized = sanitizeIntelligenceForRole(sos, 'sos', evaluation, userRole);
-      prioritizedFeed.push(sanitized);
+      try {
+        const evaluation = evaluateEmergencyPriority(sos, 'sos', context);
+        const sanitized = sanitizeIntelligenceForRole(sos, 'sos', evaluation, userRole);
+        if (sanitized) prioritizedFeed.push(sanitized);
+      } catch (evalErr) {
+        console.warn('Crisis intelligence: skipped malformed SOS record:', evalErr.message);
+      }
     }
 
     // Evaluate Incidents
     for (const incident of activeIncidents) {
-      const evaluation = evaluateEmergencyPriority(incident, 'incident', context);
-      const sanitized = sanitizeIntelligenceForRole(incident, 'incident', evaluation, userRole);
-      prioritizedFeed.push(sanitized);
+      try {
+        const evaluation = evaluateEmergencyPriority(incident, 'incident', context);
+        const sanitized = sanitizeIntelligenceForRole(incident, 'incident', evaluation, userRole);
+        if (sanitized) prioritizedFeed.push(sanitized);
+      } catch (evalErr) {
+        console.warn('Crisis intelligence: skipped malformed incident record:', evalErr.message);
+      }
     }
 
     // Filter by priorityLevel if specified

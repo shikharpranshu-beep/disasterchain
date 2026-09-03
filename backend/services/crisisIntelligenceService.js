@@ -504,6 +504,7 @@ function sanitizeIntelligenceForRole(entity, entityType, intelligence, role) {
     emergencyType: baseRecord.emergencyType,
     severity: baseRecord.severity,
     status: baseRecord.status,
+    peopleAffected: baseRecord.peopleAffected,
     priorityScore: baseRecord.priorityScore,
     priorityLevel: baseRecord.priorityLevel,
     reasons: baseRecord.reasons,
@@ -511,6 +512,8 @@ function sanitizeIntelligenceForRole(entity, entityType, intelligence, role) {
     recommendedActions: baseRecord.recommendedActions.filter(
       (action) => !action.includes('Ph:') && !action.includes('HAZMAT isolation team')
     ),
+    recommendedShelter: baseRecord.recommendedShelter,
+    riskContext: baseRecord.riskContext,
     location: baseRecord.location,
     coordinates: baseRecord.coordinates,
     createdAt: baseRecord.createdAt,

@@ -27,6 +27,7 @@ app.use(
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
+  'https://disasterchain.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -42,6 +43,7 @@ app.use(
     credentials: true,
   })
 );
+app.options('*', cors());
 
 app.use(express.json());
 

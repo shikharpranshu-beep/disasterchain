@@ -93,11 +93,18 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           fetchDistributions(),
           fetchBlockchainTransactions({ limit: 6 }),
           fetchCrisisIntelligence().catch((err) => {
-            console.error('Crisis intelligence fetch error:', err);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[CRISIS_INTELLIGENCE_FETCH]', err.response?.status, err.message);
+            }
+            if (err.response?.status === 401) {
+              return { success: false, unauthenticated: true };
+            }
             return null;
           }),
           fetchRiskHeatmap().catch((err) => {
-            console.error('Risk heatmap fetch error:', err);
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('[RISK_HEATMAP_FETCH]', err.response?.status, err.message);
+            }
             return null;
           }),
         ]);
@@ -119,8 +126,10 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
               setIntelligenceSummary(intelRes.summary);
             }
             setIntelligenceError(null);
+          } else if (intelRes?.unauthenticated) {
+            setIntelligenceError('Sign in to activate prioritized Crisis Intelligence feed.');
           } else if (intelRes === null) {
-            setIntelligenceError('Unable to load crisis intelligence.');
+            setIntelligenceError('Crisis intelligence temporarily unavailable.');
           }
 
           if (heatmapRes && heatmapRes.success) {
@@ -131,7 +140,9 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           }
         }
       } catch (err) {
-        console.error('Error loading dashboard data from backend:', err);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[DASHBOARD_DATA_FETCH]', err.message);
+        }
       } finally {
         if (isMounted && !silent) {
           setLoading(false);
@@ -142,18 +153,16 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
 
     loadDashboardData();
 
+    // Auto-refresh interval (every 30s)
     const interval = setInterval(() => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
-        return;
-      }
       loadDashboardData(true);
-    }, 25000);
+    }, 30000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [refreshKey]);
+  }, [refreshKey, user]);
 
   // Sort: CRITICAL -> HIGH -> MEDIUM -> LOW, then highest score first
   const sortedIntelligence = useMemo(() => {
@@ -511,15 +520,19 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
 
             {/* Error State */}
             {intelligenceError && !intelligenceLoading && (
-              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--crimson)' }}>
-                <Icon name="warning" size={26} color="var(--crimson)" />
-                <div style={{ fontWeight: 700, fontSize: '0.84rem', marginTop: '0.5rem' }}>
-                  Unable to load crisis intelligence.
+              <div style={{ textAlign: 'center', padding: '1.75rem 1rem', color: 'var(--amber)' }}>
+                <Icon name="warning" size={24} color="var(--amber)" />
+                <div style={{ fontWeight: 700, fontSize: '0.84rem', marginTop: '0.5rem', color: '#ffffff' }}>
+                  {intelligenceError}
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                  Live emergency services and tactical maps remain operational.
                 </div>
                 <button
+                  type="button"
                   onClick={() => window.location.reload()}
-                  className="btn btn-ghost btn-sm"
-                  style={{ marginTop: '0.5rem', fontSize: '0.72rem' }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ marginTop: '0.65rem', fontSize: '0.72rem', borderColor: 'var(--amber)', color: 'var(--amber)' }}
                 >
                   Retry Analysis
                 </button>

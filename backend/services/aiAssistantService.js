@@ -156,15 +156,15 @@ function analyzeIntent(message) {
   let primaryIntent = 'general';
   if (/\b(brief|situation|summary|overview|status report|sitrep)\b/i.test(text)) {
     primaryIntent = 'situation_brief';
-  } else if (/\b(shelter|bed|safe haven|refuge|evac center|where to sleep)\b/i.test(text)) {
+  } else if (/\b(shelters?|beds?|safe havens?|refuges?|evac centers?|where to sleep)\b/i.test(text)) {
     primaryIntent = 'shelter';
-  } else if (/\b(risk|hazard|danger|threat|heat map|vulnerab)/i.test(text)) {
+  } else if (/\b(risks?|hazards?|dangers?|threats?|heat maps?|vulnerab)/i.test(text)) {
     primaryIntent = 'risk';
-  } else if (/\b(alert|warning|advisory|siren|evacuat)/i.test(text)) {
+  } else if (/\b(alerts?|warnings?|advisories|advisory|sirens?|evacuations?)\b/i.test(text)) {
     primaryIntent = 'alert';
-  } else if (/\b(incident|report|fire|flood|accident|collapsed|leak)\b/i.test(text) && !/what should|how to/i.test(text)) {
+  } else if (/\b(incidents?|reports?|fires?|floods?|accidents?|collapsed|leaks?)\b/i.test(text) && !/what should|how to/i.test(text)) {
     primaryIntent = 'incident';
-  } else if (/\b(resource|suppl|water|food|medical kit|rations?|blanket)\b/i.test(text)) {
+  } else if (/\b(resources?|supplies|supply|water|food|medical kit|rations?|blankets?)\b/i.test(text)) {
     primaryIntent = 'resource';
   } else if (/\b(what should|how do|how to|prepare|emergency kit|protocol|safety tip|earthquake|cyclone|landslide|heatwave)\b/i.test(text)) {
     primaryIntent = 'preparedness';
