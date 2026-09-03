@@ -57,18 +57,21 @@ const LandingPage = ({ onOpenSos }) => {
 
       {/* Hero Section */}
       <section
+        className="landing-hero-section"
         style={{
-          padding: '4rem 1.5rem 3rem',
-          maxWidth: '1280px',
+          padding: '3.5rem 1.5rem 2.5rem',
+          maxWidth: '1360px',
           margin: '0 auto',
           width: '100%',
+          minHeight: '620px',
           display: 'grid',
-          gridTemplateColumns: '1.1fr 0.9fr',
+          gridTemplateColumns: 'minmax(0, 0.9fr) minmax(500px, 1.1fr)',
           gap: '2.5rem',
           alignItems: 'center',
+          boxSizing: 'border-box',
         }}
       >
-        <div>
+        <div style={{ zIndex: 2 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.85rem', background: 'rgba(255, 107, 44, 0.08)', border: '1px solid var(--border-highlight)', borderRadius: 'var(--radius-xs)', marginBottom: '1.25rem' }}>
             <span className="live-beacon-pulse" />
             <span className="micro-label" style={{ color: 'var(--orange-primary)' }}>
@@ -127,8 +130,20 @@ const LandingPage = ({ onOpenSos }) => {
         </div>
 
         {/* Hero 2D Crisis Command Map Display */}
-        <div style={{ height: '480px', width: '100%', position: 'relative' }}>
+        <div
+          className="landing-hero-map-wrapper"
+          style={{
+            height: '560px',
+            maxHeight: '620px',
+            width: '100%',
+            position: 'relative',
+            borderRadius: 'var(--radius-md)',
+            overflow: 'hidden',
+            boxSizing: 'border-box',
+          }}
+        >
           <DisasterCommandMap
+            height="100%"
             sosRequests={sosList}
             affectedAreas={affectedAreas}
             shelters={shelters}
@@ -138,15 +153,27 @@ const LandingPage = ({ onOpenSos }) => {
       </section>
 
       <style>{`
-        @media (max-width: 960px) {
-          section[style*="gridTemplateColumns: 1.1fr 0.9fr"] {
+        @media (max-width: 1080px) {
+          .landing-hero-section {
             grid-template-columns: 1fr !important;
+            gap: 2.5rem !important;
+            min-height: auto !important;
+          }
+          .landing-hero-map-wrapper {
+            height: 480px !important;
+            min-height: 440px !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .landing-hero-map-wrapper {
+            height: 400px !important;
+            min-height: 380px !important;
           }
         }
       `}</style>
 
       {/* 4 Core Pillars */}
-      <section style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '0 1.5rem 3rem' }}>
+      <section style={{ maxWidth: '1360px', margin: '3.5rem auto 3rem', width: '100%', padding: '0 1.5rem 3rem' }}>
         <div className="grid-cols-4">
           {[
             {

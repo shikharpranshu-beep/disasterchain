@@ -127,6 +127,9 @@ const DisasterCommandMapContent = ({
   riskZones = [],
   intelligenceList = [],
   focusTarget = null,
+  height = '100%',
+  className = '',
+  style = {},
   isLoading = false,
   error = null,
   onRetry = () => {},
@@ -324,16 +327,19 @@ const DisasterCommandMapContent = ({
 
   return (
     <div
+      className={className}
       style={{
         position: 'relative',
         width: '100%',
-        height: '560px',
-        minHeight: '480px',
+        height: height || '100%',
+        minHeight: '420px',
         background: '#120B08',
         borderRadius: 'var(--radius-md)',
         overflow: 'hidden',
         border: '1px solid var(--border-medium)',
         boxShadow: '0 25px 50px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0, 0, 0, 0.6)',
+        boxSizing: 'border-box',
+        ...style,
       }}
     >
       {/* MAP HEADER / LIVE INTELLIGENCE BANNER */}
