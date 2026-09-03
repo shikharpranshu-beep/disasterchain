@@ -1,62 +1,76 @@
 /* ==========================================================================
-   DISASTERCHAIN — IMMERSIVE CRISIS NETWORK
-   Aerospace Mission Control & Geospatial Intelligence Design System
+   DISASTERCHAIN — WARM CRISIS COMMAND
+   Emergency Operations Center & Geospatial Intelligence Design System
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import 'leaflet/dist/leaflet.css';
 
 :root {
-  /* Surface & Background Palette (Graphite / Near-Black / Deep Slate) */
-  --bg-deep: #05080e;
-  --bg-primary: #070b13;
-  --bg-secondary: #0b111e;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #141f36;
-  --bg-panel: rgba(11, 17, 30, 0.88);
-  --bg-panel-hover: rgba(16, 26, 46, 0.94);
-  --bg-glass: rgba(9, 14, 25, 0.82);
-  --bg-input: rgba(6, 10, 18, 0.88);
-  --bg-modal: #090e1a;
+  /* Surface & Background Palette (Deep Charcoal / Warm Brown-Black) */
+  --bg-deep: #120B08;
+  --bg-primary: #120B08;
+  --bg-secondary: #1C110D;
+  --bg-tertiary: #26150F;
+  --bg-surface: #26150F;
+  --bg-surface-elevated: #2D1912;
+  --surface-glass: rgba(38, 21, 15, 0.82);
+  --surface-raised: #2D1912;
+  --bg-panel: rgba(28, 17, 13, 0.92);
+  --bg-panel-hover: rgba(38, 21, 15, 0.96);
+  --bg-glass: rgba(38, 21, 15, 0.82);
+  --bg-input: rgba(18, 11, 8, 0.94);
+  --bg-modal: #1C110D;
 
-  /* Borders & Tactical Dividers */
-  --border-subtle: rgba(0, 240, 255, 0.1);
-  --border-medium: rgba(0, 240, 255, 0.22);
-  --border-highlight: rgba(0, 240, 255, 0.55);
-  --border-red: rgba(255, 46, 77, 0.45);
+  /* Borders & Tactical Dividers (Warm Ember / Orange Strokes) */
+  --border-subtle: rgba(255, 138, 61, 0.14);
+  --border-medium: rgba(255, 138, 61, 0.28);
+  --border-strong: rgba(255, 107, 44, 0.48);
+  --border-highlight: rgba(255, 107, 44, 0.48);
+  --border-red: rgba(229, 57, 53, 0.45);
   --border-amber: rgba(245, 158, 11, 0.4);
-  --border-mint: rgba(16, 185, 129, 0.4);
+  --border-mint: rgba(132, 204, 22, 0.4);
 
-  /* Primary High-Tech Accents */
-  --cyan: #00f0ff;
-  --cyan-dim: #0ea5e9;
-  --cyan-glow: rgba(0, 240, 255, 0.35);
-  --cyan-bg: rgba(0, 240, 255, 0.08);
+  /* Primary High-Tech Warm Accents (Molten Orange) */
+  --primary: #FF6B2C;
+  --primary-bright: #FF8A3D;
+  --cyan: #FF6B2C;
+  --cyan-dim: #F97316;
+  --cyan-glow: rgba(255, 107, 44, 0.35);
+  --cyan-bg: rgba(255, 107, 44, 0.08);
 
-  /* Secondary Accent (Violet) */
-  --violet: #818cf8;
-  --violet-glow: rgba(129, 140, 248, 0.3);
-  --violet-bg: rgba(129, 140, 248, 0.08);
+  /* Secondary Accent (Warm Amber / Golden) */
+  --violet: #F59E0B;
+  --violet-glow: rgba(245, 158, 11, 0.3);
+  --violet-bg: rgba(245, 158, 11, 0.08);
 
-  /* Emergency Severity Signals */
-  --crimson: #ff2e4d;
-  --crimson-glow: rgba(255, 46, 77, 0.45);
-  --crimson-bg: rgba(255, 46, 77, 0.12);
+  /* Emergency Severity Signals (Semantic Warm Palette) */
+  --critical: #E53935;
+  --critical-bright: #FF4D45;
+  --crimson: #E53935;
+  --crimson-glow: rgba(229, 57, 53, 0.45);
+  --crimson-bg: rgba(229, 57, 53, 0.12);
 
-  --amber: #f59e0b;
+  --high: #F97316;
+  --medium: #F59E0B;
+  --warning: #FFD166;
+
+  --amber: #F59E0B;
   --amber-glow: rgba(245, 158, 11, 0.4);
   --amber-bg: rgba(245, 158, 11, 0.12);
 
-  --mint: #10b981;
-  --mint-glow: rgba(16, 185, 129, 0.35);
-  --mint-bg: rgba(16, 185, 129, 0.12);
+  --safe: #84CC16;
+  --success: #65A30D;
+  --mint: #84CC16;
+  --mint-glow: rgba(132, 204, 22, 0.35);
+  --mint-bg: rgba(132, 204, 22, 0.12);
 
-  /* Typography Scale */
+  /* Typography Scale (Warm High-Contrast) */
   --text-pure: #ffffff;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-dim: #475569;
+  --text-primary: #FFF7ED;
+  --text-secondary: #E7D6C8;
+  --text-muted: #B9A495;
+  --text-dim: #7C685B;
 
   /* Font Families */
   --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -73,10 +87,11 @@
 
   /* Spatial Lighting & Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.85);
-  --glow-cyan: 0 0 24px rgba(0, 240, 255, 0.28);
-  --glow-crimson: 0 0 28px rgba(255, 46, 77, 0.42);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.75);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.88);
+  --glow-orange: 0 0 24px rgba(255, 107, 44, 0.32);
+  --glow-cyan: 0 0 24px rgba(255, 107, 44, 0.32);
+  --glow-crimson: 0 0 28px rgba(229, 57, 53, 0.42);
   --glow-amber: 0 0 24px rgba(245, 158, 11, 0.3);
 }
 
@@ -104,10 +119,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image:
-    radial-gradient(circle at 10% 12%, rgba(0, 240, 255, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 90% 15%, rgba(255, 46, 77, 0.035) 0%, transparent 40%),
-    radial-gradient(circle at 50% 85%, rgba(129, 140, 248, 0.03) 0%, transparent 50%),
-    linear-gradient(180deg, #05080e 0%, #070b13 100%);
+    radial-gradient(circle at 10% 12%, rgba(255, 107, 44, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 90% 15%, rgba(229, 57, 53, 0.045) 0%, transparent 40%),
+    radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.04) 0%, transparent 50%),
+    linear-gradient(180deg, #120B08 0%, #1C110D 100%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
@@ -125,7 +140,7 @@ button, input, select, textarea {
 
 /* Accessibility Focus States */
 :focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -138,11 +153,11 @@ button, input, select, textarea {
   background: var(--bg-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #2D1912;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--cyan-dim);
+  background: var(--primary);
 }
 
 /* Tactical Micro-Labels */
@@ -201,7 +216,7 @@ button, input, select, textarea {
 
 .app-navbar {
   height: 68px;
-  background: rgba(7, 11, 19, 0.92);
+  background: rgba(28, 17, 13, 0.94);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border-subtle);
@@ -232,13 +247,13 @@ button, input, select, textarea {
 .hud-logo-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(129, 140, 248, 0.15));
+  background: linear-gradient(135deg, rgba(255, 107, 44, 0.25), rgba(245, 158, 11, 0.15));
   border: 1px solid var(--border-highlight);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--glow-cyan);
+  box-shadow: var(--glow-orange);
 }
 
 .hud-logo-title {
@@ -257,9 +272,9 @@ button, input, select, textarea {
   font-size: 0.65rem;
   font-weight: 700;
   padding: 2px 6px;
-  background: rgba(0, 240, 255, 0.12);
-  border: 1px solid rgba(0, 240, 255, 0.3);
-  color: var(--cyan);
+  background: rgba(255, 107, 44, 0.12);
+  border: 1px solid rgba(255, 107, 44, 0.3);
+  color: var(--primary);
   border-radius: var(--radius-xs);
   letter-spacing: 0.05em;
 }
@@ -282,7 +297,7 @@ button, input, select, textarea {
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.75rem;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(38, 21, 15, 0.85);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
@@ -316,7 +331,7 @@ button, input, select, textarea {
 
 .command-rail {
   width: 250px;
-  background: rgba(7, 11, 19, 0.96);
+  background: rgba(28, 17, 13, 0.96);
   backdrop-filter: blur(18px);
   border-right: 1px solid var(--border-subtle);
   display: flex;
@@ -353,23 +368,23 @@ button, input, select, textarea {
 }
 
 .rail-nav-item:hover {
-  background: rgba(0, 240, 255, 0.05);
+  background: rgba(255, 107, 44, 0.08);
   color: var(--text-pure);
-  border-left: 2px solid rgba(0, 240, 255, 0.5);
+  border-left: 2px solid rgba(255, 107, 44, 0.5);
   padding-left: calc(0.85rem - 2px);
 }
 
 .rail-nav-item.active {
-  background: linear-gradient(90deg, rgba(0, 240, 255, 0.14) 0%, rgba(0, 240, 255, 0.02) 100%);
-  color: var(--cyan);
+  background: linear-gradient(90deg, rgba(255, 107, 44, 0.16) 0%, rgba(255, 107, 44, 0.02) 100%);
+  color: var(--primary);
   font-weight: 600;
-  border-left: 3px solid var(--cyan);
+  border-left: 3px solid var(--primary);
   padding-left: calc(0.85rem - 3px);
-  box-shadow: inset 0 0 16px rgba(0, 240, 255, 0.06);
+  box-shadow: inset 0 0 16px rgba(255, 107, 44, 0.08);
 }
 
 .rail-nav-item.active .nav-icon-wrap {
-  color: var(--cyan);
+  color: var(--primary);
   filter: drop-shadow(0 0 6px var(--cyan-glow));
 }
 
@@ -404,7 +419,7 @@ button, input, select, textarea {
     left: 0;
     right: 0;
     height: 64px;
-    background: rgba(7, 11, 19, 0.96);
+    background: rgba(28, 17, 13, 0.96);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid var(--border-medium);
@@ -430,7 +445,7 @@ button, input, select, textarea {
   }
 
   .mobile-nav-item.active {
-    color: var(--cyan);
+    color: var(--primary);
   }
 
   .mobile-nav-beacon {
@@ -443,7 +458,7 @@ button, input, select, textarea {
     justify-content: center;
     color: white;
     margin-top: -24px;
-    border: 3px solid #070b13;
+    border: 3px solid #1C110D;
     box-shadow: 0 0 20px var(--crimson-glow);
     animation: pulse-ring 2s infinite;
   }
@@ -473,7 +488,7 @@ button, input, select, textarea {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.25), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 44, 0.35), transparent);
 }
 
 .spatial-panel:hover {
@@ -482,23 +497,23 @@ button, input, select, textarea {
 
 .spatial-panel-hoverable:hover {
   border-color: var(--border-highlight);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.8), var(--glow-cyan);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.8), var(--glow-orange);
   transform: translateY(-2px);
 }
 
 /* Critical Alert Panel Border */
 .spatial-panel-critical {
   border-color: var(--border-red);
-  background: linear-gradient(180deg, rgba(255, 46, 77, 0.08) 0%, rgba(11, 17, 30, 0.94) 100%);
+  background: linear-gradient(180deg, rgba(229, 57, 53, 0.1) 0%, rgba(28, 17, 13, 0.95) 100%);
 }
 
 .spatial-panel-critical::before {
-  background: linear-gradient(90deg, transparent, rgba(255, 46, 77, 0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(229, 57, 53, 0.7), transparent);
 }
 
 /* Compact Telemetry Metric Widget */
 .telemetry-widget {
-  background: rgba(11, 17, 30, 0.75);
+  background: rgba(28, 17, 13, 0.82);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1.15rem 1.25rem;
@@ -511,7 +526,7 @@ button, input, select, textarea {
 
 .telemetry-widget:hover {
   border-color: var(--border-medium);
-  background: rgba(16, 26, 46, 0.85);
+  background: rgba(38, 21, 15, 0.92);
 }
 
 .telemetry-num {
@@ -524,13 +539,13 @@ button, input, select, textarea {
 }
 
 .telemetry-num.cyan {
-  color: var(--cyan);
-  text-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  color: var(--primary);
+  text-shadow: 0 0 16px rgba(255, 107, 44, 0.35);
 }
 
 .telemetry-num.crimson {
   color: var(--crimson);
-  text-shadow: 0 0 16px rgba(255, 46, 77, 0.45);
+  text-shadow: 0 0 16px rgba(229, 57, 53, 0.45);
 }
 
 .telemetry-num.amber {
@@ -540,7 +555,7 @@ button, input, select, textarea {
 
 .telemetry-num.mint {
   color: var(--mint);
-  text-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  text-shadow: 0 0 16px rgba(132, 204, 22, 0.35);
 }
 
 /* ==========================================================================
@@ -570,23 +585,23 @@ button, input, select, textarea {
   pointer-events: none;
 }
 
-/* Primary Cyan Action */
+/* Primary Molten Orange Action */
 .btn-primary {
-  background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
-  color: #040812;
+  background: linear-gradient(135deg, #FF6B2C 0%, #EA580C 100%);
+  color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 16px rgba(255, 107, 44, 0.35);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #38bdf8 0%, #0369a1 100%);
-  box-shadow: 0 0 24px rgba(0, 240, 255, 0.55);
+  background: linear-gradient(135deg, #FF8A3D 0%, #C2410C 100%);
+  box-shadow: 0 0 24px rgba(255, 107, 44, 0.55);
   transform: translateY(-1px);
 }
 
 /* Emergency Crimson Beacon */
 .btn-emergency {
-  background: linear-gradient(135deg, #ff2e4d 0%, #be123c 100%);
+  background: linear-gradient(135deg, #E53935 0%, #B91C1C 100%);
   color: #ffffff;
   font-weight: 700;
   box-shadow: 0 0 20px var(--crimson-glow);
@@ -594,20 +609,20 @@ button, input, select, textarea {
 }
 
 .btn-emergency:hover {
-  background: linear-gradient(135deg, #fb7185 0%, #9f1239 100%);
+  background: linear-gradient(135deg, #FF4D45 0%, #991B1B 100%);
   box-shadow: 0 0 30px var(--crimson-glow);
   transform: translateY(-1px);
 }
 
-/* Secondary Charcoal */
+/* Secondary Warm Charcoal */
 .btn-secondary {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(38, 21, 15, 0.85);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
 }
 
 .btn-secondary:hover {
-  background: rgba(30, 41, 59, 0.95);
+  background: rgba(56, 32, 24, 0.95);
   border-color: var(--border-medium);
   color: var(--text-pure);
 }
@@ -678,20 +693,20 @@ button, input, select, textarea {
 .badge-success {
   background: var(--mint-bg);
   border: 1px solid var(--border-mint);
-  color: #34d399;
+  color: #84CC16;
 }
 .badge-success .badge-dot { background: var(--mint); box-shadow: 0 0 6px var(--mint); }
 
 .badge-info {
   background: var(--cyan-bg);
   border: 1px solid var(--border-subtle);
-  color: var(--cyan);
+  color: var(--primary);
 }
-.badge-info .badge-dot { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.badge-info .badge-dot { background: var(--primary); box-shadow: 0 0 6px var(--primary); }
 
 .badge-violet {
   background: var(--violet-bg);
-  border: 1px solid rgba(129, 140, 248, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.3);
   color: var(--violet);
 }
 .badge-violet .badge-dot { background: var(--violet); box-shadow: 0 0 6px var(--violet); }
@@ -727,8 +742,8 @@ button, input, select, textarea {
 }
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.22);
+  border-color: var(--primary);
+  box-shadow: 0 0 14px rgba(255, 107, 44, 0.28);
   outline: none;
 }
 
@@ -764,7 +779,7 @@ button, input, select, textarea {
 }
 
 .pipeline-step {
-  background: rgba(11, 17, 30, 0.8);
+  background: rgba(28, 17, 13, 0.85);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1rem;
@@ -773,14 +788,14 @@ button, input, select, textarea {
 }
 
 .pipeline-step.active {
-  border-color: var(--cyan);
-  background: rgba(0, 240, 255, 0.08);
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+  border-color: var(--primary);
+  background: rgba(255, 107, 44, 0.1);
+  box-shadow: 0 0 16px rgba(255, 107, 44, 0.2);
 }
 
 .pipeline-step.completed {
   border-color: var(--mint);
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(132, 204, 22, 0.08);
 }
 
 /* Cryptographic Audit Ledger Timeline */
@@ -799,7 +814,7 @@ button, input, select, textarea {
   bottom: 1rem;
   left: 0.75rem;
   width: 2px;
-  background: linear-gradient(180deg, var(--cyan) 0%, rgba(129, 140, 248, 0.3) 100%);
+  background: linear-gradient(180deg, var(--primary) 0%, rgba(245, 158, 11, 0.3) 100%);
 }
 
 .ledger-node {
@@ -813,7 +828,7 @@ button, input, select, textarea {
 
 .ledger-node:hover {
   border-color: var(--border-highlight);
-  box-shadow: var(--glow-cyan);
+  box-shadow: var(--glow-orange);
 }
 
 .ledger-node::before {
@@ -824,17 +839,17 @@ button, input, select, textarea {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan);
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
 }
 
 /* Hash String Display */
 .hash-pill {
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: var(--cyan-dim);
-  background: rgba(0, 240, 255, 0.08);
-  border: 1px solid rgba(0, 240, 255, 0.2);
+  color: var(--primary-bright);
+  background: rgba(255, 107, 44, 0.08);
+  border: 1px solid rgba(255, 107, 44, 0.2);
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-xs);
   word-break: break-all;
@@ -871,20 +886,20 @@ button, input, select, textarea {
   .grid-cols-4, .grid-cols-2 { grid-template-columns: 1fr; }
 }
 
-/* Leaflet Custom Overrides */
+/* Leaflet Custom Overrides — Warm Tactical Appearance */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background: #05080e !important;
+  background: #120B08 !important;
 }
 
 .leaflet-tile {
-  filter: brightness(0.85) invert(1) contrast(1.7) hue-rotate(190deg) saturate(0.4) !important;
+  filter: brightness(0.82) invert(1) contrast(1.6) sepia(0.2) hue-rotate(15deg) saturate(0.65) !important;
 }
 
 .leaflet-popup-content-wrapper {
-  background: rgba(9, 14, 25, 0.94) !important;
-  color: #f8fafc !important;
+  background: rgba(28, 17, 13, 0.95) !important;
+  color: var(--text-primary) !important;
   border: 1px solid var(--border-medium) !important;
   border-radius: var(--radius-md) !important;
   backdrop-filter: blur(12px) !important;
@@ -892,5 +907,56 @@ button, input, select, textarea {
 }
 
 .leaflet-popup-tip {
-  background: rgba(9, 14, 25, 0.94) !important;
+  background: rgba(28, 17, 13, 0.95) !important;
+}
+
+/* Crisis Intelligence & Telemetry Pulse */
+.live-beacon-pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary);
+  animation: beaconPulse 2s infinite ease-in-out;
+}
+
+.live-beacon-pulse.critical {
+  background: var(--crimson);
+  box-shadow: 0 0 10px var(--crimson);
+  animation: beaconPulseCritical 1.2s infinite ease-in-out;
+}
+
+.live-beacon-pulse.warning {
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber);
+  animation: beaconPulseWarning 1.8s infinite ease-in-out;
+}
+
+@keyframes beaconPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.35); }
+}
+
+@keyframes beaconPulseCritical {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px var(--crimson); }
+  50% { opacity: 0.35; transform: scale(1.45); box-shadow: 0 0 4px var(--crimson); }
+}
+
+@keyframes beaconPulseWarning {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+.radar-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 107, 44, 0.2);
+  border-top-color: var(--primary);
+  animation: spinRadar 0.8s linear infinite;
+}
+
+@keyframes spinRadar {
+  to { transform: rotate(360deg); }
 }

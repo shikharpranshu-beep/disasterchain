@@ -517,8 +517,8 @@ const DisasterMap = ({
               style={{
                 fontSize: '0.78rem',
                 padding: '0.35rem 0.75rem',
-                borderColor: activeFilter === 'RESOURCES' ? 'var(--accent-cyan)' : 'var(--border-subtle)',
-                color: activeFilter === 'RESOURCES' ? '#38bdf8' : 'var(--text-secondary)',
+                borderColor: activeFilter === 'RESOURCES' ? '#F59E0B' : 'var(--border-subtle)',
+                color: activeFilter === 'RESOURCES' ? '#F59E0B' : 'var(--text-secondary)',
               }}
             >
               <span>🏥 Facilities</span>
@@ -551,13 +551,13 @@ const DisasterMap = ({
               style={{
                 fontSize: '0.78rem',
                 padding: '0.35rem 0.75rem',
-                borderColor: activeFilter === 'RISK' ? '#ff0044' : 'var(--border-subtle)',
-                color: activeFilter === 'RISK' ? '#ff0044' : 'var(--text-secondary)',
+                borderColor: activeFilter === 'RISK' ? '#E53935' : 'var(--border-subtle)',
+                color: activeFilter === 'RISK' ? '#E53935' : 'var(--text-secondary)',
                 fontWeight: 700,
               }}
             >
               <span>⚡ Risk Zones</span>
-              <span className="badge badge-critical" style={{ fontSize: '0.65rem', background: 'rgba(255, 0, 68, 0.2)' }}>
+              <span className="badge badge-critical" style={{ fontSize: '0.65rem', background: 'rgba(229, 57, 53, 0.2)' }}>
                 {riskZones.length}
               </span>
             </button>
@@ -682,12 +682,12 @@ const DisasterMap = ({
               const isCritical = zone.riskLevel === 'CRITICAL';
               const isHigh = zone.riskLevel === 'HIGH';
               const color = isCritical
-                ? '#ff0044'
+                ? '#E53935'
                 : isHigh
-                ? '#f97316'
+                ? '#F97316'
                 : zone.riskLevel === 'MEDIUM'
-                ? '#f59e0b'
-                : '#38bdf8';
+                ? '#F59E0B'
+                : '#FFD166';
 
               return (
                 <Circle
@@ -728,9 +728,9 @@ const DisasterMap = ({
                       </h4>
 
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', lineHeight: 1.4 }}>
-                        <div>• Active SOS Signals: <strong style={{ color: '#ff4d6d' }}>{zone.activeSOSCount}</strong></div>
-                        <div>• Active Incidents: <strong style={{ color: '#f97316' }}>{zone.activeIncidentCount}</strong></div>
-                        <div>• Nearby Shelter Strain: <strong style={{ color: zone.nearbyShelterStrain === 'High' ? '#ff0044' : '#10b981' }}>{zone.nearbyShelterStrain}</strong></div>
+                        <div>• Active SOS Signals: <strong style={{ color: '#E53935' }}>{zone.activeSOSCount}</strong></div>
+                        <div>• Active Incidents: <strong style={{ color: '#F97316' }}>{zone.activeIncidentCount}</strong></div>
+                        <div>• Nearby Shelter Strain: <strong style={{ color: zone.nearbyShelterStrain === 'High' ? '#E53935' : '#84CC16' }}>{zone.nearbyShelterStrain}</strong></div>
                       </div>
 
                       {zone.reasons && zone.reasons[0] && (

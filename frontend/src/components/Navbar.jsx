@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Icon from './Icons';
+import OfflineSyncBadge from './OfflineSyncBadge';
 
 const Navbar = ({ onOpenSos }) => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -32,7 +33,7 @@ const Navbar = ({ onOpenSos }) => {
       {/* Brand HUD Logo */}
       <Link to="/" className="hud-logo">
         <div className="hud-logo-icon">
-          <Icon name="shield-check" size={20} color="var(--cyan)" />
+          <Icon name="shield-check" size={20} color="var(--primary)" />
         </div>
         <div>
           <div className="hud-logo-title">
@@ -43,13 +44,14 @@ const Navbar = ({ onOpenSos }) => {
       </Link>
 
       {/* Center Telemetry Readout */}
-      <div className="hud-telemetry">
+      <div className="hud-telemetry" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div className="telemetry-chip">
           <span className="live-beacon-pulse" />
-          <span style={{ color: 'var(--cyan)' }}>OPERATIONAL</span>
+          <span style={{ color: 'var(--primary)' }}>OPERATIONAL</span>
           <span style={{ opacity: 0.5 }}>|</span>
           <span>{timeStr || 'SYNCING...'}</span>
         </div>
+        <OfflineSyncBadge />
       </div>
 
       {/* Right Controls */}
@@ -72,7 +74,7 @@ const Navbar = ({ onOpenSos }) => {
           className="btn btn-secondary btn-sm"
           title="Offline & Survivability Mode"
         >
-          <Icon name="wifi-off" size={15} color="var(--cyan)" />
+          <Icon name="wifi-off" size={15} color="var(--primary)" />
           <span style={{ fontSize: '0.78rem' }}>Offline Mode</span>
         </Link>
 

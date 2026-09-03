@@ -296,18 +296,35 @@ const CrisisGlobe3D = ({
   sosRequests = [],
   affectedAreas = [],
   shelters = [],
+  incidents = [],
+  riskZones = [],
+  intelligenceList = [],
+  focusTarget = null,
   onSelectEntity,
+  onViewMap,
 }) => {
   const mountRef = useRef(null);
   const [webGlSupported, setWebGlSupported] = useState(true);
   const [activeViewMode, setActiveViewMode] = useState('3D'); // '3D' | '2D'
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [isRotating, setIsRotating] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'sos' | 'areas' | 'shelters'
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'risk' | 'sos' | 'areas' | 'shelters' | 'incidents'
 
   // Ref to hold rotation animator function to allow external focus
   const focusIndiaRef = useRef(null);
   const resetZoomRef = useRef(null);
+  const focusCoordinateRef = useRef(null);
+
+  // Map active intelligence records by ID / mongoId for rapid priority visual lookup
+  const intelMap = useMemo(() => {
+    const map = new Map();
+    (intelligenceList || []).forEach((item) => {
+      if (item.id) map.set(item.id, item);
+      if (item.mongoId) map.set(item.mongoId.toString(), item);
+      if (item.location) map.set(item.location, item);
+    });
+    return map;
+  }, [intelligenceList]);
 
   // Filter items with valid coordinates
   const validSos = useMemo(() => {
@@ -327,6 +344,18 @@ const CrisisGlobe3D = ({
       (sh) => typeof sh?.latitude === 'number' && typeof sh?.longitude === 'number' && !isNaN(sh.latitude) && !isNaN(sh.longitude)
     );
   }, [shelters]);
+
+  const validRiskZones = useMemo(() => {
+    return (riskZones || []).filter(
+      (z) => typeof z?.latitude === 'number' && typeof z?.longitude === 'number' && !isNaN(z.latitude) && !isNaN(z.longitude)
+    );
+  }, [riskZones]);
+
+  const validIncidents = useMemo(() => {
+    return (incidents || []).filter(
+      (inc) => typeof inc?.latitude === 'number' && typeof inc?.longitude === 'number' && !isNaN(inc.latitude) && !isNaN(inc.longitude)
+    );
+  }, [incidents]);
 
   useEffect(() => {
     if (activeViewMode !== '3D') return;
@@ -385,12 +414,12 @@ const CrisisGlobe3D = ({
     const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
     globeGroup.add(cloudMesh);
 
-    // 3. Cyan Atmospheric Outer Halo Glow
+    // 3. Warm Amber Atmospheric Outer Halo Glow
     const haloGeo = new THREE.SphereGeometry(GLOBE_RADIUS + 4.5, 36, 36);
     const haloMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
+      color: 0xff8a3d,
       transparent: true,
-      opacity: 0.09,
+      opacity: 0.08,
       side: THREE.BackSide,
     });
     const haloMesh = new THREE.Mesh(haloGeo, haloMat);
@@ -407,7 +436,7 @@ const CrisisGlobe3D = ({
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     const starMat = new THREE.PointsMaterial({
-      color: 0x64748b,
+      color: 0x7c685b,
       size: 1.4,
       transparent: true,
       opacity: 0.5,
@@ -416,14 +445,14 @@ const CrisisGlobe3D = ({
     scene.add(starPoints);
 
     // 5. Orbital Directional & Ambient Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    const ambientLight = new THREE.AmbientLight(0xfff7ed, 0.85);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.4);
     sunLight.position.set(150, 100, 120);
     scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x00f0ff, 0.75);
+    const rimLight = new THREE.DirectionalLight(0xff8a3d, 0.75);
     rimLight.position.set(-150, -60, -100);
     scene.add(rimLight);
 
@@ -446,17 +475,59 @@ const CrisisGlobe3D = ({
       validSos.forEach((sos) => {
         const pos = latLongToVector3(sos.latitude, sos.longitude, GLOBE_RADIUS);
 
+        // Check active crisis intelligence priority for this emergency
+        const intel = intelMap.get(sos.requestId) || intelMap.get(sos._id);
+        const priority = intel?.priorityLevel || (sos.severity === 'Critical' ? 'CRITICAL' : 'HIGH');
+
+        const isTarget = focusTarget && (
+          focusTarget.id === sos.requestId ||
+          focusTarget.id === sos._id ||
+          (Math.abs(focusTarget.latitude - sos.latitude) < 0.0001 && Math.abs(focusTarget.longitude - sos.longitude) < 0.0001)
+        );
+
+        let beaconColor = 0xe53935;
+        let headColor = 0xff4d45;
+        let pulseSpeed = 4.5;
+        let ringScaleMax = 0.35;
+        let headRadius = 1.6;
+
+        if (priority === 'CRITICAL') {
+          beaconColor = 0xe53935;
+          headColor = 0xff4d45;
+          pulseSpeed = 6.0;
+          ringScaleMax = 0.55;
+          headRadius = 2.0;
+        } else if (priority === 'HIGH') {
+          beaconColor = 0xf97316;
+          headColor = 0xea580c;
+          pulseSpeed = 4.5;
+          ringScaleMax = 0.35;
+          headRadius = 1.7;
+        } else if (priority === 'MEDIUM') {
+          beaconColor = 0xf59e0b;
+          headColor = 0xd97706;
+          pulseSpeed = 3.2;
+          ringScaleMax = 0.25;
+          headRadius = 1.4;
+        } else if (priority === 'LOW') {
+          beaconColor = 0xffd166;
+          headColor = 0xfbbf24;
+          pulseSpeed = 2.0;
+          ringScaleMax = 0.15;
+          headRadius = 1.2;
+        }
+
         // Radiant Light Column Needle
         const needleGeo = new THREE.CylinderGeometry(0.35, 1.4, 7.5, 8);
         needleGeo.rotateX(Math.PI / 2);
-        const needleMat = new THREE.MeshBasicMaterial({ color: 0xff1744 });
+        const needleMat = new THREE.MeshBasicMaterial({ color: beaconColor });
         const needleMesh = new THREE.Mesh(needleGeo, needleMat);
         needleMesh.position.copy(pos);
         needleMesh.lookAt(0, 0, 0);
 
         // Beacon Head Glowing Sphere
-        const headGeo = new THREE.SphereGeometry(1.6, 12, 12);
-        const headMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
+        const headGeo = new THREE.SphereGeometry(headRadius, 12, 12);
+        const headMat = new THREE.MeshBasicMaterial({ color: headColor });
         const headPos = latLongToVector3(sos.latitude, sos.longitude, GLOBE_RADIUS + 7.5);
         const headMesh = new THREE.Mesh(headGeo, headMat);
         headMesh.position.copy(headPos);
@@ -464,17 +535,48 @@ const CrisisGlobe3D = ({
         // Ground Ripple Rings
         const ringGeo = new THREE.RingGeometry(1.4, 3.2, 20);
         const ringMat = new THREE.MeshBasicMaterial({
-          color: 0xff1744,
+          color: beaconColor,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.75,
+          opacity: isTarget ? 0.95 : 0.75,
         });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
         ringMesh.position.copy(pos);
         ringMesh.lookAt(0, 0, 0);
 
-        needleMesh.userData = { type: 'SOS', item: sos, ring: ringMesh, head: headMesh };
-        headMesh.userData = { type: 'SOS', item: sos, ring: ringMesh, head: headMesh };
+        // If target focused, add extra highlight aura
+        if (isTarget) {
+          const targetGeo = new THREE.RingGeometry(3.6, 4.8, 24);
+          const targetMat = new THREE.MeshBasicMaterial({
+            color: 0xff6b2c,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.9,
+          });
+          const targetMesh = new THREE.Mesh(targetGeo, targetMat);
+          targetMesh.position.copy(pos);
+          targetMesh.lookAt(0, 0, 0);
+          markersGroup.add(targetMesh);
+        }
+
+        needleMesh.userData = {
+          type: 'SOS',
+          item: sos,
+          intel,
+          ring: ringMesh,
+          head: headMesh,
+          pulseSpeed,
+          ringScaleMax,
+        };
+        headMesh.userData = {
+          type: 'SOS',
+          item: sos,
+          intel,
+          ring: ringMesh,
+          head: headMesh,
+          pulseSpeed,
+          ringScaleMax,
+        };
 
         interactiveMeshes.push(needleMesh, headMesh);
         markersGroup.add(needleMesh);
@@ -501,12 +603,12 @@ const CrisisGlobe3D = ({
       });
     }
 
-    // Helper: Add Shelter 🔵 Diamond Crystal Beacons
+    // Helper: Add Shelter 🟢 Diamond Crystal Beacons (Olive/Lime Safe Color)
     if (activeFilter === 'all' || activeFilter === 'shelters') {
       validShelters.forEach((sh) => {
         const pos = latLongToVector3(sh.latitude, sh.longitude, GLOBE_RADIUS + 2.5);
         const octGeo = new THREE.OctahedronGeometry(2.4);
-        const octMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+        const octMat = new THREE.MeshBasicMaterial({ color: 0x84cc16 });
         const octMesh = new THREE.Mesh(octGeo, octMat);
         octMesh.position.copy(pos);
 
@@ -514,10 +616,10 @@ const CrisisGlobe3D = ({
         const basePos = latLongToVector3(sh.latitude, sh.longitude, GLOBE_RADIUS + 0.2);
         const ringGeo = new THREE.RingGeometry(1.2, 2.5, 16);
         const ringMat = new THREE.MeshBasicMaterial({
-          color: 0x00f0ff,
+          color: 0x84cc16,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.5,
+          opacity: 0.55,
         });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
         ringMesh.position.copy(basePos);
@@ -527,6 +629,101 @@ const CrisisGlobe3D = ({
         interactiveMeshes.push(octMesh);
         markersGroup.add(octMesh);
         markersGroup.add(ringMesh);
+      });
+    }
+
+    // Helper: Add AI-Assisted Risk Heatmap Zones (Warm Disaster Gradient)
+    if (activeFilter === 'all' || activeFilter === 'risk') {
+      validRiskZones.forEach((zone) => {
+        const pos = latLongToVector3(zone.latitude, zone.longitude, GLOBE_RADIUS + 0.15);
+
+        let zoneColor = 0xffd166; // LOW
+        let glowColor = 0xfbbf24;
+        let pulseSpeed = 2.0;
+        let baseRadius = Math.max(3.5, Math.min(11, (zone.radiusKm || 2.5) * 1.5));
+
+        if (zone.riskLevel === 'CRITICAL') {
+          zoneColor = 0xe53935;
+          glowColor = 0xff4d45;
+          pulseSpeed = 5.0;
+        } else if (zone.riskLevel === 'HIGH') {
+          zoneColor = 0xf97316;
+          glowColor = 0xea580c;
+          pulseSpeed = 3.8;
+        } else if (zone.riskLevel === 'MEDIUM') {
+          zoneColor = 0xf59e0b;
+          glowColor = 0xd97706;
+          pulseSpeed = 2.8;
+        }
+
+        // Inner transparent risk surface disk
+        const diskGeo = new THREE.CircleGeometry(baseRadius, 32);
+        const diskMat = new THREE.MeshBasicMaterial({
+          color: zoneColor,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: zone.riskLevel === 'CRITICAL' ? 0.38 : 0.22,
+          depthWrite: false,
+        });
+        const diskMesh = new THREE.Mesh(diskGeo, diskMat);
+        diskMesh.position.copy(pos);
+        diskMesh.lookAt(0, 0, 0);
+
+        // Outer glow boundary ring
+        const ringGeo = new THREE.RingGeometry(baseRadius * 0.94, baseRadius * 1.08, 36);
+        const ringMat = new THREE.MeshBasicMaterial({
+          color: glowColor,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.8,
+          depthWrite: false,
+        });
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        ringMesh.position.copy(pos);
+        ringMesh.lookAt(0, 0, 0);
+
+        // Animated pulse wave ring
+        const waveGeo = new THREE.RingGeometry(baseRadius * 0.4, baseRadius * 1.25, 36);
+        const waveMat = new THREE.MeshBasicMaterial({
+          color: zoneColor,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.35,
+          depthWrite: false,
+        });
+        const waveMesh = new THREE.Mesh(waveGeo, waveMat);
+        waveMesh.position.copy(pos);
+        waveMesh.lookAt(0, 0, 0);
+
+        diskMesh.userData = {
+          type: 'RISK_ZONE',
+          item: zone,
+          ring: ringMesh,
+          wave: waveMesh,
+          pulseSpeed,
+        };
+
+        interactiveMeshes.push(diskMesh);
+        markersGroup.add(diskMesh);
+        markersGroup.add(ringMesh);
+        markersGroup.add(waveMesh);
+      });
+    }
+
+    // Helper: Add Incidents (Yellow/Amber Pyramids)
+    if (activeFilter === 'all' || activeFilter === 'incidents') {
+      validIncidents.forEach((inc) => {
+        const pos = latLongToVector3(inc.latitude, inc.longitude, GLOBE_RADIUS + 2.0);
+        const coneGeo = new THREE.ConeGeometry(1.6, 4.0, 6);
+        coneGeo.rotateX(Math.PI / 2);
+        const coneMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+        const coneMesh = new THREE.Mesh(coneGeo, coneMat);
+        coneMesh.position.copy(pos);
+        coneMesh.lookAt(0, 0, 0);
+
+        coneMesh.userData = { type: 'INCIDENT', item: inc };
+        interactiveMeshes.push(coneMesh);
+        markersGroup.add(coneMesh);
       });
     }
 
@@ -624,6 +821,17 @@ const CrisisGlobe3D = ({
       targetCameraZ = 210;
     };
 
+    // Provide Exact Coordinate Focus Hook
+    focusCoordinateRef.current = (lat, lon) => {
+      if (typeof lat === 'number' && typeof lon === 'number') {
+        const targetRotY = -(lon * Math.PI) / 180;
+        const targetRotX = (lat * Math.PI) / 180;
+        globeGroup.rotation.y = targetRotY;
+        globeGroup.rotation.x = Math.max(-1.4, Math.min(1.4, targetRotX));
+        targetCameraZ = 160;
+      }
+    };
+
     // Animation Loop
     let animId;
     const clock = new THREE.Clock();
@@ -646,11 +854,18 @@ const CrisisGlobe3D = ({
       // Pulse SOS ripple rings & shelter crystals
       interactiveMeshes.forEach((mesh) => {
         if (mesh.userData?.type === 'SOS' && mesh.userData?.ring) {
-          const s = 1 + 0.35 * Math.sin(elapsedTime * 4.5);
+          const spd = mesh.userData.pulseSpeed || 4.5;
+          const amp = mesh.userData.ringScaleMax || 0.35;
+          const s = 1 + amp * Math.sin(elapsedTime * spd);
           mesh.userData.ring.scale.set(s, s, s);
-          mesh.userData.ring.material.opacity = 0.5 + 0.3 * Math.sin(elapsedTime * 4.5);
+          mesh.userData.ring.material.opacity = 0.5 + 0.35 * Math.sin(elapsedTime * spd);
         } else if (mesh.userData?.type === 'SHELTER' && mesh.userData?.crystal) {
           mesh.userData.crystal.rotation.y += 0.02;
+        } else if (mesh.userData?.type === 'RISK_ZONE' && mesh.userData?.wave) {
+          const spd = mesh.userData.pulseSpeed || 3.0;
+          const s = 1 + 0.28 * Math.sin(elapsedTime * spd);
+          mesh.userData.wave.scale.set(s, s, s);
+          mesh.userData.wave.material.opacity = 0.22 + 0.18 * Math.sin(elapsedTime * spd);
         }
       });
 
@@ -658,6 +873,11 @@ const CrisisGlobe3D = ({
     };
 
     animate();
+
+    // If initial focusTarget is set, execute immediate alignment
+    if (focusTarget && typeof focusTarget.latitude === 'number' && typeof focusTarget.longitude === 'number') {
+      focusCoordinateRef.current(focusTarget.latitude, focusTarget.longitude);
+    }
 
     // Responsive Resize Handler
     const onResize = () => {
@@ -699,7 +919,16 @@ const CrisisGlobe3D = ({
       starGeo.dispose();
       starMat.dispose();
     };
-  }, [activeViewMode, validSos, validAreas, validShelters, isRotating, activeFilter, onSelectEntity]);
+  }, [activeViewMode, validSos, validAreas, validShelters, validRiskZones, validIncidents, isRotating, activeFilter, onSelectEntity, focusTarget, intelligenceList]);
+
+  // Listener for dynamic coordinate focus on the 3D Globe
+  useEffect(() => {
+    if (focusTarget && typeof focusTarget.latitude === 'number' && typeof focusTarget.longitude === 'number') {
+      if (focusCoordinateRef.current) {
+        focusCoordinateRef.current(focusTarget.latitude, focusTarget.longitude);
+      }
+    }
+  }, [focusTarget]);
 
   const handleFocusIndia = useCallback(() => {
     if (focusIndiaRef.current) focusIndiaRef.current();
@@ -787,9 +1016,9 @@ const CrisisGlobe3D = ({
 
             {/* Shelters List */}
             <div className="spatial-panel" style={{ padding: '1rem' }}>
-              <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--cyan)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--cyan)' }} />
-                🔵 Relief Shelters ({validShelters.length})
+              <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--safe)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--safe)' }} />
+                🟢 Relief Shelters ({validShelters.length})
               </h4>
               {validShelters.map((sh) => (
                 <div
@@ -797,8 +1026,8 @@ const CrisisGlobe3D = ({
                   onClick={() => setSelectedEntity({ type: 'SHELTER', item: sh })}
                   style={{
                     padding: '0.65rem',
-                    background: 'rgba(0, 240, 255, 0.08)',
-                    border: '1px solid rgba(0, 240, 255, 0.2)',
+                    background: 'rgba(132, 204, 22, 0.08)',
+                    border: '1px solid rgba(132, 204, 22, 0.2)',
                     borderRadius: 'var(--radius-xs)',
                     marginBottom: '0.5rem',
                     cursor: 'pointer',
@@ -830,14 +1059,14 @@ const CrisisGlobe3D = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', pointerEvents: 'auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(5, 10, 20, 0.85)', padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(28, 17, 13, 0.88)', padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             <span style={{ fontSize: '1.15rem' }}>🌍</span>
             <span style={{ fontWeight: 800, fontSize: '0.82rem', letterSpacing: '0.05em', color: '#ffffff' }}>
               REAL EARTH GLOBE
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0, 240, 255, 0.12)', border: '1px solid var(--cyan)', padding: '0.35rem 0.65rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--cyan)', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255, 107, 44, 0.12)', border: '1px solid var(--primary)', padding: '0.35rem 0.65rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700 }}>
             <span>🇮🇳</span>
             <span>INDIA REGIONAL FOCUS</span>
           </div>
@@ -850,8 +1079,8 @@ const CrisisGlobe3D = ({
             onClick={handleFocusIndia}
             className="btn btn-sm"
             style={{
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(16, 185, 129, 0.25) 100%)',
-              border: '1px solid rgba(245, 158, 11, 0.6)',
+              background: 'linear-gradient(135deg, rgba(255, 107, 44, 0.3) 0%, rgba(245, 158, 11, 0.3) 100%)',
+              border: '1px solid rgba(255, 107, 44, 0.6)',
               color: '#ffffff',
               fontSize: '0.75rem',
               fontWeight: 800,
@@ -899,6 +1128,8 @@ const CrisisGlobe3D = ({
           display: 'flex',
           gap: '0.4rem',
           zIndex: 10,
+          flexWrap: 'wrap',
+          maxWidth: 'calc(100% - 2rem)',
         }}
       >
         <button
@@ -911,27 +1142,43 @@ const CrisisGlobe3D = ({
         </button>
         <button
           type="button"
+          onClick={() => setActiveFilter('risk')}
+          className={`btn btn-sm ${activeFilter === 'risk' ? 'btn-primary' : 'btn-ghost'}`}
+          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#E53935', fontWeight: 800 }}
+        >
+          ⚡ RISK ZONES ({validRiskZones.length})
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveFilter('sos')}
           className={`btn btn-sm ${activeFilter === 'sos' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#ff4d6d' }}
+          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#FF4D45' }}
         >
           🔴 SOS ({validSos.length})
         </button>
         <button
           type="button"
+          onClick={() => setActiveFilter('shelters')}
+          className={`btn btn-sm ${activeFilter === 'shelters' ? 'btn-primary' : 'btn-ghost'}`}
+          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#84CC16' }}
+        >
+          🟢 Shelters ({validShelters.length})
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveFilter('areas')}
           className={`btn btn-sm ${activeFilter === 'areas' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#fbbf24' }}
+          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#F97316' }}
         >
           🟠 Hazards ({validAreas.length})
         </button>
         <button
           type="button"
-          onClick={() => setActiveFilter('shelters')}
-          className={`btn btn-sm ${activeFilter === 'shelters' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#00f0ff' }}
+          onClick={() => setActiveFilter('incidents')}
+          className={`btn btn-sm ${activeFilter === 'incidents' ? 'btn-primary' : 'btn-ghost'}`}
+          style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', color: '#F59E0B' }}
         >
-          🔵 Shelters ({validShelters.length})
+          🟡 Incidents ({validIncidents.length})
         </button>
       </div>
 
@@ -942,9 +1189,9 @@ const CrisisGlobe3D = ({
             position: 'absolute',
             bottom: '1rem',
             left: '1rem',
-            maxWidth: '380px',
+            maxWidth: '390px',
             width: 'calc(100% - 2rem)',
-            background: 'rgba(8, 14, 26, 0.96)',
+            background: 'rgba(28, 17, 13, 0.96)',
             border: '1px solid var(--border-highlight)',
             borderRadius: 'var(--radius-md)',
             padding: '1.15rem',
@@ -959,24 +1206,35 @@ const CrisisGlobe3D = ({
               style={{
                 fontSize: '0.7rem',
                 background:
-                  selectedEntity.type === 'SOS'
-                    ? 'rgba(239, 68, 68, 0.2)'
+                  selectedEntity.type === 'RISK_ZONE'
+                    ? selectedEntity.item.riskLevel === 'CRITICAL'
+                      ? 'rgba(229, 57, 53, 0.25)'
+                      : 'rgba(249, 115, 22, 0.25)'
+                    : selectedEntity.type === 'SOS'
+                    ? 'rgba(229, 57, 53, 0.2)'
                     : selectedEntity.type === 'SHELTER'
-                    ? 'rgba(0, 240, 255, 0.2)'
+                    ? 'rgba(132, 204, 22, 0.2)'
                     : 'rgba(245, 158, 11, 0.2)',
                 color:
-                  selectedEntity.type === 'SOS'
+                  selectedEntity.type === 'RISK_ZONE'
+                    ? selectedEntity.item.riskLevel === 'CRITICAL'
+                      ? '#E53935'
+                      : '#F97316'
+                    : selectedEntity.type === 'SOS'
                     ? 'var(--crimson)'
                     : selectedEntity.type === 'SHELTER'
-                    ? 'var(--cyan)'
+                    ? 'var(--safe)'
                     : 'var(--amber)',
                 border: '1px solid currentColor',
+                fontWeight: 800,
               }}
             >
-              {selectedEntity.type === 'SOS'
+              {selectedEntity.type === 'RISK_ZONE'
+                ? `⚡ ${selectedEntity.item.riskLevel} RISK ZONE [${selectedEntity.item.riskScore}/100]`
+                : selectedEntity.type === 'SOS'
                 ? '🔴 LIVE SOS DISTRESS'
                 : selectedEntity.type === 'SHELTER'
-                ? '🔵 EMERGENCY SHELTER'
+                ? '🟢 EMERGENCY SHELTER'
                 : '🟠 CRISIS THREAT ZONE'}
             </span>
             <button
@@ -987,43 +1245,133 @@ const CrisisGlobe3D = ({
             </button>
           </div>
 
-          <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.05rem', marginBottom: '0.35rem' }}>
-            {selectedEntity.item?.name || selectedEntity.item?.emergencyType || 'Geospatial Object'}
-          </div>
+          {selectedEntity.type === 'RISK_ZONE' ? (
+            <div>
+              <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.05rem', marginBottom: '0.35rem' }}>
+                {selectedEntity.item.dominantHazard} HAZARD CONVERGENCE
+              </div>
 
-          <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.65rem', lineHeight: 1.4 }}>
-            📍 {selectedEntity.item?.address || selectedEntity.item?.location || `Lat: ${selectedEntity.item?.latitude?.toFixed(4)}, Lon: ${selectedEntity.item?.longitude?.toFixed(4)}`}
-          </div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginBottom: '0.65rem' }}>
+                📍 Sector Centroid: Lat {selectedEntity.item.latitude.toFixed(4)}, Lon {selectedEntity.item.longitude.toFixed(4)} (~{selectedEntity.item.radiusKm} km radius)
+              </div>
 
-          {selectedEntity.item?.emergencyType && (
-            <div style={{ fontSize: '0.78rem', color: '#ff6b81', marginBottom: '0.25rem' }}>
-              <strong>Emergency Type:</strong> {selectedEntity.item.emergencyType}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '0.4rem',
+                  marginBottom: '0.75rem',
+                  fontSize: '0.72rem',
+                  fontFamily: 'var(--font-mono)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ background: 'rgba(229, 57, 53, 0.12)', padding: '0.35rem', borderRadius: 4, border: '1px solid rgba(229, 57, 53, 0.25)' }}>
+                  <div style={{ color: '#FF4D45', fontWeight: 800 }}>{selectedEntity.item.activeSOSCount}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>ACTIVE SOS</div>
+                </div>
+                <div style={{ background: 'rgba(249, 115, 22, 0.12)', padding: '0.35rem', borderRadius: 4, border: '1px solid rgba(249, 115, 22, 0.25)' }}>
+                  <div style={{ color: '#F97316', fontWeight: 800 }}>{selectedEntity.item.activeIncidentCount}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>INCIDENTS</div>
+                </div>
+                <div style={{ background: 'rgba(132, 204, 22, 0.12)', padding: '0.35rem', borderRadius: 4, border: '1px solid rgba(132, 204, 22, 0.25)' }}>
+                  <div style={{ color: '#84CC16', fontWeight: 800 }}>{selectedEntity.item.nearbyShelterStrain}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>SHELTER LOAD</div>
+                </div>
+              </div>
+
+              {selectedEntity.item.reasons && selectedEntity.item.reasons.length > 0 && (
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', lineHeight: 1.4 }}>
+                  <div style={{ fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.2rem' }}>KEY RISK FACTORS:</div>
+                  {selectedEntity.item.reasons.slice(0, 2).map((r, i) => (
+                    <div key={i}>• {r}</div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem', marginTop: '0.6rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSelectEntity) onSelectEntity(selectedEntity);
+                  }}
+                  className="btn btn-primary btn-sm"
+                  style={{ fontSize: '0.68rem', padding: '0.35rem' }}
+                >
+                  VIEW INCIDENTS
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onViewMap) {
+                      onViewMap(selectedEntity.item);
+                    } else {
+                      setActiveViewMode('2D');
+                    }
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '0.68rem', padding: '0.35rem' }}
+                >
+                  VIEW ON MAP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedEntity.item.nearestShelter && focusCoordinateRef.current) {
+                      focusCoordinateRef.current(
+                        selectedEntity.item.nearestShelter.latitude || selectedEntity.item.latitude,
+                        selectedEntity.item.nearestShelter.longitude || selectedEntity.item.longitude
+                      );
+                    }
+                  }}
+                  className="btn btn-ghost btn-sm"
+                  style={{ fontSize: '0.68rem', padding: '0.35rem', border: '1px solid var(--border-subtle)' }}
+                >
+                  VIEW SHELTER
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.05rem', marginBottom: '0.35rem' }}>
+                {selectedEntity.item?.name || selectedEntity.item?.emergencyType || 'Geospatial Object'}
+              </div>
+
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.65rem', lineHeight: 1.4 }}>
+                📍 {selectedEntity.item?.address || selectedEntity.item?.location || `Lat: ${selectedEntity.item?.latitude?.toFixed(4)}, Lon: ${selectedEntity.item?.longitude?.toFixed(4)}`}
+              </div>
+
+              {selectedEntity.item?.emergencyType && (
+                <div style={{ fontSize: '0.78rem', color: '#ff6b81', marginBottom: '0.25rem' }}>
+                  <strong>Emergency Type:</strong> {selectedEntity.item.emergencyType}
+                </div>
+              )}
+
+              {selectedEntity.item?.capacity && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--safe)', marginBottom: '0.25rem' }}>
+                  <strong>Beds Available:</strong> {selectedEntity.item.capacity - (selectedEntity.item.occupancy || 0)} / {selectedEntity.item.capacity} total
+                </div>
+              )}
+
+              {selectedEntity.item?.severity && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--amber)', marginBottom: '0.25rem' }}>
+                  <strong>Severity:</strong> {selectedEntity.item.severity}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
+                <button
+                  onClick={() => {
+                    if (onSelectEntity) onSelectEntity(selectedEntity);
+                  }}
+                  className="btn btn-primary btn-sm"
+                  style={{ fontSize: '0.75rem', width: '100%' }}
+                >
+                  Open Crisis Record
+                </button>
+              </div>
             </div>
           )}
-
-          {selectedEntity.item?.capacity && (
-            <div style={{ fontSize: '0.78rem', color: 'var(--cyan)', marginBottom: '0.25rem' }}>
-              <strong>Beds Available:</strong> {selectedEntity.item.capacity - (selectedEntity.item.occupancy || 0)} / {selectedEntity.item.capacity} total
-            </div>
-          )}
-
-          {selectedEntity.item?.severity && (
-            <div style={{ fontSize: '0.78rem', color: 'var(--amber)', marginBottom: '0.25rem' }}>
-              <strong>Severity:</strong> {selectedEntity.item.severity}
-            </div>
-          )}
-
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
-            <button
-              onClick={() => {
-                if (onSelectEntity) onSelectEntity(selectedEntity);
-              }}
-              className="btn btn-primary btn-sm"
-              style={{ fontSize: '0.75rem', width: '100%' }}
-            >
-              Open Crisis Record
-            </button>
-          </div>
         </div>
       )}
 
@@ -1036,7 +1384,7 @@ const CrisisGlobe3D = ({
           display: 'flex',
           alignItems: 'center',
           gap: '1rem',
-          background: 'rgba(6, 11, 20, 0.88)',
+          background: 'rgba(28, 17, 13, 0.9)',
           padding: '0.4rem 0.85rem',
           borderRadius: 'var(--radius-sm)',
           border: '1px solid var(--border-subtle)',
@@ -1046,14 +1394,14 @@ const CrisisGlobe3D = ({
           pointerEvents: 'none',
         }}
       >
-        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#ff6b81' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#FF4D45' }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--crimson)' }} /> 🔴 SOS ({validSos.length})
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#fbbf24' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--amber)' }} /> 🟠 Threat ({validAreas.length})
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#F97316' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--high)' }} /> 🟠 Threat ({validAreas.length})
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--cyan)' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--cyan)' }} /> 🔵 Shelter ({validShelters.length})
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--safe)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--safe)' }} /> 🟢 Shelter ({validShelters.length})
         </span>
       </div>
     </div>
