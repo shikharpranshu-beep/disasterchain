@@ -196,4 +196,24 @@ export const logoutUser = async () => {
   }
 };
 
+// ================= CRISIS INTELLIGENCE PRIORITY ENGINE API =================
+export const fetchCrisisIntelligence = async (params = {}) => {
+  const res = await api.get('/intelligence/active', { params });
+  return res.data;
+};
+
+// ================= SMART SHELTER RECOMMENDATION API =================
+export const fetchRecommendedShelter = async ({ latitude, longitude, incidentId } = {}) => {
+  const res = await api.get('/intelligence/recommended-shelter', {
+    params: { latitude, longitude, incidentId },
+  });
+  return res.data;
+};
+
+// ================= CRISIS RISK HEATMAP INTELLIGENCE API =================
+export const fetchRiskHeatmap = async (params = {}) => {
+  const res = await api.get('/intelligence/risk-heatmap', { params });
+  return res.data;
+};
+
 export default api;
