@@ -258,6 +258,7 @@ const EmergencyResourcesPage = () => {
       {/* Detail Modal */}
       {selectedResource && (
         <ResourceDetailModal
+          isOpen={Boolean(selectedResource)}
           resource={selectedResource}
           onClose={() => setSelectedResource(null)}
         />

@@ -273,6 +273,7 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
       {/* Incident Detail Modal */}
       {selectedIncident && (
         <IncidentDetailModal
+          isOpen={Boolean(selectedIncident)}
           incident={selectedIncident}
           onClose={() => setSelectedIncident(null)}
           onStatusUpdated={handleStatusUpdated}

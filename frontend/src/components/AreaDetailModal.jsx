@@ -1,13 +1,14 @@
 import React from 'react';
 import Icon from './Icons';
 
-const AreaDetailModal = ({ isOpen, onClose, area }) => {
-  if (!isOpen || !area) return null;
+const AreaDetailModal = ({ isOpen = true, onClose, area, item }) => {
+  const targetArea = area || item;
+  if ((isOpen !== undefined && !isOpen) || !targetArea) return null;
 
-  const isCritical = area.severity === 'Critical';
-  const isHigh = area.severity === 'High';
-  const lat = area.latitude || 28.6139;
-  const lng = area.longitude || 77.2090;
+  const isCritical = targetArea.severity === 'Critical';
+  const isHigh = targetArea.severity === 'High';
+  const lat = Number(targetArea.latitude ?? targetArea.coordinates?.latitude) || 28.6139;
+  const lng = Number(targetArea.longitude ?? targetArea.coordinates?.longitude) || 77.2090;
 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
@@ -22,16 +23,16 @@ const AreaDetailModal = ({ isOpen, onClose, area }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-              <span className={`badge badge-${area.severity?.toLowerCase()}`}>
-                {area.severity} IMPACT ZONE
+              <span className={`badge badge-${targetArea.severity?.toLowerCase()}`}>
+                {targetArea.severity} IMPACT ZONE
               </span>
-              <span className="badge badge-neutral">STATUS: {area.status || 'Active'}</span>
+              <span className="badge badge-neutral">STATUS: {targetArea.status || 'Active'}</span>
             </div>
             <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.25 }}>
-              {area.name}
+              {targetArea.name}
             </h2>
             <div style={{ fontSize: '0.85rem', color: '#818cf8', fontWeight: 700, marginTop: '0.2rem' }}>
-              Primary Threat: {area.disasterType}
+              Primary Threat: {targetArea.disasterType}
             </div>
           </div>
 
@@ -53,7 +54,7 @@ const AreaDetailModal = ({ isOpen, onClose, area }) => {
             marginBottom: '1.25rem',
           }}
         >
-          {area.description}
+          {targetArea.description}
         </div>
 
         {/* Casualty & Hazard Metrics */}
@@ -68,14 +69,14 @@ const AreaDetailModal = ({ isOpen, onClose, area }) => {
           <div style={{ background: 'rgba(15, 24, 44, 0.85)', padding: '0.85rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
             <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Affected People</div>
             <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', marginTop: '0.2rem' }}>
-              {(area.affectedPeople || 0).toLocaleString()}
+              {(targetArea.affectedPeople || 0).toLocaleString()}
             </div>
           </div>
 
           <div style={{ background: 'rgba(255, 51, 75, 0.1)', padding: '0.85rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 51, 75, 0.3)', textAlign: 'center' }}>
             <div style={{ fontSize: '0.74rem', color: '#ff6b7e', textTransform: 'uppercase' }}>Active SOS Signals</div>
             <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ff4d63', marginTop: '0.2rem' }}>
-              {area.activeSOS || 0}
+              {targetArea.activeSOS || 0}
             </div>
           </div>
 

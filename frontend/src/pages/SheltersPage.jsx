@@ -416,11 +416,11 @@ const SheltersPage = () => {
               {/* Action Buttons */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
                 <a
-                  href={sh.directionsUrl || `https://www.google.com/maps/dir/?api=1&destination=${sh.latitude},${sh.longitude}`}
+                  href={sh.directionsUrl || (sh.latitude && sh.longitude ? `https://www.google.com/maps/dir/?api=1&destination=${sh.latitude},${sh.longitude}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sh.address || sh.name)}`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-secondary btn-sm"
-                  style={{ fontSize: '0.75rem' }}
+                  style={{ fontSize: '0.75rem', textDecoration: 'none' }}
                 >
                   🗺️ Directions
                 </a>
@@ -441,6 +441,7 @@ const SheltersPage = () => {
       {/* Shelter Detail Modal Drawer */}
       {selectedShelter && (
         <ShelterDetailModal
+          isOpen={Boolean(selectedShelter)}
           shelter={selectedShelter}
           onClose={() => setSelectedShelter(null)}
         />

@@ -466,34 +466,44 @@ const CrisisIntelligenceModal = ({ isOpen, onClose, item, onFocusGlobe }) => {
                 <button
                   type="button"
                   onClick={() => {
-                    if (onFocusGlobe && item.recommendedShelter.coordinates) {
+                    const sLat = item.recommendedShelter?.coordinates?.latitude ?? item.recommendedShelter?.latitude;
+                    const sLon = item.recommendedShelter?.coordinates?.longitude ?? item.recommendedShelter?.longitude;
+                    if (onFocusGlobe && sLat != null && sLon != null) {
                       onFocusGlobe({
-                        coordinates: item.recommendedShelter.coordinates,
-                        id: item.recommendedShelter.shelterId,
+                        latitude: Number(sLat),
+                        longitude: Number(sLon),
+                        coordinates: { latitude: Number(sLat), longitude: Number(sLon) },
+                        id: item.recommendedShelter.shelterId || item.recommendedShelter._id || item.recommendedShelter.id,
                         title: item.recommendedShelter.name,
                       });
                       onClose();
                     }
                   }}
                   className="btn btn-secondary btn-sm"
-                  style={{ flex: 1, padding: '4px 8px', fontSize: '0.72rem', borderColor: 'var(--mint)', color: 'var(--mint)', justifyContent: 'center' }}
+                  style={{ flex: 1, padding: '4px 8px', fontSize: '0.72rem', borderColor: 'var(--safe)', color: 'var(--safe)', justifyContent: 'center' }}
                 >
-                  <Icon name="map-pin" size={13} color="var(--mint)" />
+                  <Icon name="map-pin" size={13} color="var(--safe)" />
                   <span>VIEW SHELTER</span>
                 </button>
 
-                {item.recommendedShelter.directionsUrl && (
-                  <a
-                    href={item.recommendedShelter.directionsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary btn-sm"
-                    style={{ flex: 1, padding: '4px 8px', fontSize: '0.72rem', background: 'var(--mint)', color: '#04100c', justifyContent: 'center' }}
-                  >
-                    <Icon name="navigation" size={13} color="#04100c" />
-                    <span>GET DIRECTIONS ↗</span>
-                  </a>
-                )}
+                {(() => {
+                  const sLat = item.recommendedShelter?.coordinates?.latitude ?? item.recommendedShelter?.latitude;
+                  const sLon = item.recommendedShelter?.coordinates?.longitude ?? item.recommendedShelter?.longitude;
+                  const safeDirectionsUrl = item.recommendedShelter?.directionsUrl || (sLat != null && sLon != null ? `https://www.google.com/maps/dir/?api=1&destination=${sLat},${sLon}` : (item.recommendedShelter?.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.recommendedShelter.address)}` : null));
+                  if (!safeDirectionsUrl) return null;
+                  return (
+                    <a
+                      href={safeDirectionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary btn-sm"
+                      style={{ flex: 1, padding: '4px 8px', fontSize: '0.72rem', background: 'var(--safe)', color: '#120B08', justifyContent: 'center', textDecoration: 'none' }}
+                    >
+                      <Icon name="navigation" size={13} color="#120B08" />
+                      <span>GET DIRECTIONS ↗</span>
+                    </a>
+                  );
+                })()}
               </div>
             </div>
           ) : (

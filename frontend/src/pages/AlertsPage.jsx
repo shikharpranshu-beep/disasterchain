@@ -284,6 +284,7 @@ const AlertsPage = () => {
       {/* Alert Detail Modal */}
       {selectedAlert && (
         <AlertDetailModal
+          isOpen={Boolean(selectedAlert)}
           alert={selectedAlert}
           onClose={() => setSelectedAlert(null)}
         />

@@ -1,15 +1,16 @@
 import React from 'react';
 import Icon from './Icons';
 
-const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
-  if (!isOpen || !resourceData) return null;
+const ResourceJourneyModal = ({ isOpen = true, onClose, resourceData, item }) => {
+  const targetData = resourceData || item;
+  if ((isOpen !== undefined && !isOpen) || !targetData) return null;
 
   const steps = [
-    { title: '1. Donated & Registered', desc: `Donated by ${resourceData.donor || 'Relief Donor'}`, date: 'Day 1 - 09:00 AM', status: 'completed' },
-    { title: '2. Cryptographic Block Verification', desc: `Block Hash: ${resourceData.blockchainTransactionId || 'TXN-881204'}`, date: 'Day 1 - 09:15 AM', status: 'completed' },
+    { title: '1. Donated & Registered', desc: `Donated by ${targetData.donor || 'Relief Donor'}`, date: 'Day 1 - 09:00 AM', status: 'completed' },
+    { title: '2. Cryptographic Block Verification', desc: `Block Hash: ${targetData.blockchainTransactionId || 'TXN-881204'}`, date: 'Day 1 - 09:15 AM', status: 'completed' },
     { title: '3. Received at Central Warehouse', desc: 'Inspection & inventory intake at Logistics Hub', date: 'Day 1 - 02:30 PM', status: 'completed' },
-    { title: '4. Dispatched to Shelter / Relief Zone', desc: `In-transit to ${resourceData.destination || 'Campus Shelter'}`, date: 'Day 2 - 08:00 AM', status: resourceData.status === 'In Transit' || resourceData.status === 'Delivered' || resourceData.status === 'Fully Distributed' ? 'completed' : 'active' },
-    { title: '5. Distributed to Victims', desc: `Verified handover of ${resourceData.quantity || '500'} ${resourceData.unit || 'units'}`, date: 'Day 2 - 04:00 PM', status: resourceData.status === 'Fully Distributed' || resourceData.status === 'Distributed' ? 'completed' : 'pending' },
+    { title: '4. Dispatched to Shelter / Relief Zone', desc: `In-transit to ${targetData.destination || 'Campus Shelter'}`, date: 'Day 2 - 08:00 AM', status: targetData.status === 'In Transit' || targetData.status === 'Delivered' || targetData.status === 'Fully Distributed' ? 'completed' : 'active' },
+    { title: '5. Distributed to Victims', desc: `Verified handover of ${targetData.quantity || '500'} ${targetData.unit || 'units'}`, date: 'Day 2 - 04:00 PM', status: targetData.status === 'Fully Distributed' || targetData.status === 'Distributed' ? 'completed' : 'pending' },
   ];
 
   return (
@@ -21,10 +22,10 @@ const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
               ⛓️ RESOURCE JOURNEY TRACKER
             </span>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>
-              {resourceData.resourceName || 'Relief Supplies'}
+              {targetData.resourceName || 'Relief Supplies'}
             </h2>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Tracking ID: <strong style={{ fontFamily: 'var(--font-mono)' }}>{resourceData.donationId || resourceData.distributionId || 'REL-1042'}</strong>
+              Tracking ID: <strong style={{ fontFamily: 'var(--font-mono)' }}>{targetData.donationId || targetData.distributionId || 'REL-1042'}</strong>
             </div>
           </div>
           <button
@@ -109,7 +110,7 @@ const ResourceJourneyModal = ({ isOpen, onClose, resourceData }) => {
             <span style={{ color: '#818cf8', fontWeight: 700 }}>⛓️ Immutable Verification Proof:</span>
           </div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#c7d2fe', wordBreak: 'break-all' }}>
-            {resourceData.blockchainTransactionId || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'}
+            {targetData.blockchainTransactionId || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'}
           </div>
         </div>
 

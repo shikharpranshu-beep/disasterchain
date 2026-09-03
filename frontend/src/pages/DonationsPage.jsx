@@ -462,6 +462,8 @@ const DonationsPage = () => {
       {/* Blockchain Receipt Modal */}
       {selectedReceipt && (
         <BlockchainReceiptModal
+          isOpen={Boolean(selectedReceipt)}
+          record={selectedReceipt}
           item={selectedReceipt}
           onClose={() => setSelectedReceipt(null)}
         />

@@ -1317,11 +1317,15 @@ const CrisisGlobe3D = ({
                 <button
                   type="button"
                   onClick={() => {
-                    if (selectedEntity.item.nearestShelter && focusCoordinateRef.current) {
+                    const shelter = selectedEntity.item.nearestShelter || validShelters[0];
+                    if (shelter && focusCoordinateRef.current) {
                       focusCoordinateRef.current(
-                        selectedEntity.item.nearestShelter.latitude || selectedEntity.item.latitude,
-                        selectedEntity.item.nearestShelter.longitude || selectedEntity.item.longitude
+                        shelter.latitude || selectedEntity.item.latitude,
+                        shelter.longitude || selectedEntity.item.longitude
                       );
+                      setSelectedEntity({ type: 'SHELTER', item: shelter });
+                    } else if (focusCoordinateRef.current) {
+                      focusCoordinateRef.current(selectedEntity.item.latitude, selectedEntity.item.longitude);
                     }
                   }}
                   className="btn btn-ghost btn-sm"

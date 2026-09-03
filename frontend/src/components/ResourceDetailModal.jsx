@@ -1,11 +1,12 @@
 import React from 'react';
 import Icon from './Icons';
 
-const ResourceDetailModal = ({ isOpen, onClose, resource }) => {
-  if (!isOpen || !resource) return null;
+const ResourceDetailModal = ({ isOpen = true, onClose, resource, item }) => {
+  const targetResource = resource || item;
+  if ((isOpen !== undefined && !isOpen) || !targetResource) return null;
 
-  const lat = resource.latitude || 28.6139;
-  const lng = resource.longitude || 77.2090;
+  const lat = Number(targetResource.latitude ?? targetResource.coordinates?.latitude) || 28.6139;
+  const lng = Number(targetResource.longitude ?? targetResource.coordinates?.longitude) || 77.2090;
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   return (
@@ -20,32 +21,32 @@ const ResourceDetailModal = ({ isOpen, onClose, resource }) => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.35rem' }}>
               <span className="badge badge-info" style={{ fontSize: '0.74rem' }}>
-                {resource.type}
+                {targetResource.type}
               </span>
               <span
                 className="badge"
                 style={{
                   background:
-                    resource.status === 'Operational' || resource.status === 'Available'
+                    targetResource.status === 'Operational' || targetResource.status === 'Available'
                       ? 'rgba(16, 185, 129, 0.2)'
-                      : resource.status === 'Limited'
+                      : targetResource.status === 'Limited'
                       ? 'rgba(245, 158, 11, 0.2)'
                       : 'rgba(255, 51, 75, 0.2)',
                   color:
-                    resource.status === 'Operational' || resource.status === 'Available'
+                    targetResource.status === 'Operational' || targetResource.status === 'Available'
                       ? '#34d399'
-                      : resource.status === 'Limited'
+                      : targetResource.status === 'Limited'
                       ? '#fbbf24'
                       : '#ff6b7e',
                   border: '1px solid currentColor',
                   fontSize: '0.74rem',
                 }}
               >
-                {resource.status || 'Operational'}
+                {targetResource.status || 'Operational'}
               </span>
             </div>
             <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.25 }}>
-              {resource.name}
+              {targetResource.name}
             </h2>
           </div>
 
@@ -67,7 +68,7 @@ const ResourceDetailModal = ({ isOpen, onClose, resource }) => {
             marginBottom: '1.25rem',
           }}
         >
-          {resource.description}
+          {targetResource.description}
         </div>
 
         {/* Location & Navigation */}
@@ -87,7 +88,7 @@ const ResourceDetailModal = ({ isOpen, onClose, resource }) => {
         >
           <div>
             <div style={{ fontSize: '0.86rem', color: '#ffffff', fontWeight: 600 }}>
-              {resource.address}
+              {targetResource.address}
             </div>
             <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.15rem' }}>
               GPS: {lat.toFixed(4)}, {lng.toFixed(4)}
@@ -123,12 +124,12 @@ const ResourceDetailModal = ({ isOpen, onClose, resource }) => {
               DIRECT EMERGENCY LINE
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#38bdf8' }}>
-              {resource.phone}
+              {targetResource.phone}
             </div>
           </div>
 
           <a
-            href={`tel:${resource.phone}`}
+            href={`tel:${targetResource.phone}`}
             className="btn btn-primary"
             style={{ padding: '0.6rem 1.25rem' }}
           >

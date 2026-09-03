@@ -3,29 +3,30 @@ import { updateIncidentStatus } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Icon from './Icons';
 
-const IncidentDetailModal = ({ isOpen, onClose, incident, onStatusUpdated }) => {
+const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusUpdated }) => {
+  const targetIncident = incident || item;
   const { user } = useAuth();
   const isAdminOrResponder = user?.role === 'admin' || user?.role === 'responder';
 
   const [updating, setUpdating] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(incident?.status || 'Pending');
+  const [currentStatus, setCurrentStatus] = useState(targetIncident?.status || 'Pending');
   const [updateMsg, setUpdateMsg] = useState('');
 
-  if (!isOpen || !incident) return null;
+  if ((isOpen !== undefined && !isOpen) || !targetIncident) return null;
 
-  const lat = incident.latitude || 28.6139;
-  const lng = incident.longitude || 77.2090;
+  const lat = Number(targetIncident.latitude ?? targetIncident.coordinates?.latitude) || 28.6139;
+  const lng = Number(targetIncident.longitude ?? targetIncident.coordinates?.longitude) || 77.2090;
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
   const handleStatusChange = async (newStatus) => {
     setUpdating(true);
     setUpdateMsg('');
     try {
-      await updateIncidentStatus(incident._id, newStatus);
+      await updateIncidentStatus(targetIncident._id, newStatus);
       setCurrentStatus(newStatus);
       setUpdateMsg(`Status successfully updated to ${newStatus}`);
       if (onStatusUpdated) {
-        onStatusUpdated(incident._id, newStatus);
+        onStatusUpdated(targetIncident._id, newStatus);
       }
     } catch (err) {
       console.error('Error updating incident status:', err);
@@ -47,17 +48,17 @@ const IncidentDetailModal = ({ isOpen, onClose, incident, onStatusUpdated }) => 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.35rem' }}>
               <span className="badge badge-warning" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem' }}>
-                {incident.incidentId || 'INC-LOGGED'}
+                {targetIncident.incidentId || 'INC-LOGGED'}
               </span>
-              <span className={`badge badge-${incident.severity?.toLowerCase()}`}>
-                {incident.severity} SEVERITY
+              <span className={`badge badge-${targetIncident.severity?.toLowerCase()}`}>
+                {targetIncident.severity} SEVERITY
               </span>
               <span className="badge badge-neutral">
                 STATUS: {currentStatus}
               </span>
             </div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.3 }}>
-              {incident.title}
+              {targetIncident.title}
             </h2>
           </div>
 
@@ -69,7 +70,7 @@ const IncidentDetailModal = ({ isOpen, onClose, incident, onStatusUpdated }) => 
         {/* Category & Description */}
         <div style={{ marginBottom: '1.25rem' }}>
           <div style={{ fontSize: '0.84rem', color: '#818cf8', fontWeight: 700, marginBottom: '0.4rem' }}>
-            Category: {incident.type}
+            Category: {targetIncident.type}
           </div>
           <div
             style={{
@@ -82,7 +83,7 @@ const IncidentDetailModal = ({ isOpen, onClose, incident, onStatusUpdated }) => 
               color: 'var(--text-primary)',
             }}
           >
-            {incident.description}
+            {targetIncident.description}
           </div>
         </div>
 
@@ -104,7 +105,7 @@ const IncidentDetailModal = ({ isOpen, onClose, incident, onStatusUpdated }) => 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <Icon name="map-pin" size={16} color="#818cf8" />
             <span style={{ fontSize: '0.86rem', color: '#ffffff' }}>
-              <strong>Location: </strong> {incident.location}
+              <strong>Location: </strong> {targetIncident.location}
             </span>
           </div>
 
@@ -132,12 +133,12 @@ const IncidentDetailModal = ({ isOpen, onClose, incident, onStatusUpdated }) => 
         >
           <div style={{ background: 'rgba(15, 24, 44, 0.7)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             <span style={{ color: 'var(--text-muted)' }}>Reported By: </span>
-            <strong style={{ color: '#ffffff' }}>{incident.reporterName || 'Anonymous Student'}</strong>
+            <strong style={{ color: '#ffffff' }}>{targetIncident.reporterName || 'Anonymous Student'}</strong>
           </div>
           <div style={{ background: 'rgba(15, 24, 44, 0.7)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             <span style={{ color: 'var(--text-muted)' }}>Submitted: </span>
             <strong style={{ color: '#ffffff' }}>
-              {new Date(incident.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+              {new Date(targetIncident.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
             </strong>
           </div>
         </div>

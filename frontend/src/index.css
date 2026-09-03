@@ -489,6 +489,7 @@ button, input, select, textarea {
   right: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 107, 44, 0.35), transparent);
+  pointer-events: none;
 }
 
 .spatial-panel:hover {
@@ -509,6 +510,7 @@ button, input, select, textarea {
 
 .spatial-panel-critical::before {
   background: linear-gradient(90deg, transparent, rgba(229, 57, 53, 0.7), transparent);
+  pointer-events: none;
 }
 
 /* Compact Telemetry Metric Widget */
@@ -577,6 +579,7 @@ button, input, select, textarea {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   user-select: none;
+  text-decoration: none;
 }
 
 .btn:disabled {
@@ -636,6 +639,19 @@ button, input, select, textarea {
 
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.05);
+  color: var(--text-pure);
+}
+
+/* Outline Action */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover {
+  background: rgba(255, 107, 44, 0.08);
+  border-color: var(--primary);
   color: var(--text-pure);
 }
 
@@ -853,6 +869,49 @@ button, input, select, textarea {
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-xs);
   word-break: break-all;
+}
+
+/* ==========================================================================
+   MODAL OVERLAYS & DIALOG CONTAINERS
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(18, 11, 8, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  overflow-y: auto;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content {
+  background: var(--bg-modal);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), var(--glow-orange);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  z-index: 10000;
+  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ==========================================================================

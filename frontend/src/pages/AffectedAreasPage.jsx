@@ -276,6 +276,7 @@ const AffectedAreasPage = () => {
       {/* Area Detail Modal */}
       {selectedArea && (
         <AreaDetailModal
+          isOpen={Boolean(selectedArea)}
           area={selectedArea}
           onClose={() => setSelectedArea(null)}
         />

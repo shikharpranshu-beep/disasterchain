@@ -5,6 +5,7 @@ import DisasterMap from '../components/DisasterMap';
 import ResourceJourneyModal from '../components/ResourceJourneyModal';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
 import CrisisIntelligenceModal from '../components/CrisisIntelligenceModal';
+import ShelterDetailModal from '../components/ShelterDetailModal';
 import Icon from '../components/Icons';
 import {
   fetchSosRequests,
@@ -70,6 +71,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
   // Modals
   const [selectedJourney, setSelectedJourney] = useState(null);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [selectedShelter, setSelectedShelter] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -213,14 +215,18 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
   const threatColor = criticalSosCount > 3 ? 'var(--crimson)' : criticalSosCount > 0 ? 'var(--amber)' : 'var(--mint)';
 
   const handleViewOnGlobe = (item) => {
-    if (!item || !item.coordinates) return;
+    if (!item) return;
+    const lat = item.coordinates?.latitude ?? item.latitude;
+    const lon = item.coordinates?.longitude ?? item.longitude;
+    if (lat == null || lon == null) return;
     setViewCenterMode('3D');
     setGlobeFocusTarget({
-      latitude: item.coordinates.latitude,
-      longitude: item.coordinates.longitude,
-      id: item.id,
+      latitude: Number(lat),
+      longitude: Number(lon),
+      id: item.id || item.shelterId || item._id,
       timestamp: Date.now(),
     });
+    window.scrollTo({ top: 180, behavior: 'smooth' });
   };
 
   return (
@@ -608,6 +614,10 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                   {/* RECOMMENDED SAFE HAVEN BADGE */}
                   {item.recommendedShelter && (
                     <div
+                      onClick={() => {
+                        const shelterMatch = shelters.find(s => s._id === item.recommendedShelter.shelterId || s.name === item.recommendedShelter.name) || item.recommendedShelter;
+                        setSelectedShelter(shelterMatch);
+                      }}
                       style={{
                         fontSize: '0.72rem',
                         color: 'var(--safe)',
@@ -618,7 +628,9 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
+                        cursor: 'pointer',
                       }}
+                      title="Click to view shelter details"
                     >
                       <span style={{ fontWeight: 700 }}>
                         🏛️ Safe Haven: {item.recommendedShelter.name && item.recommendedShelter.name.length > 20 ? item.recommendedShelter.name.slice(0, 20) + '…' : item.recommendedShelter.name}
@@ -667,6 +679,21 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
               riskZones={riskZones}
               intelligenceList={intelligenceList}
               focusTarget={globeFocusTarget}
+              onViewMap={() => {
+                setViewCenterMode('MAP');
+                window.scrollTo({ top: 180, behavior: 'smooth' });
+              }}
+              onSelectEntity={(entity) => {
+                if (!entity) return;
+                if (entity.type === 'SHELTER') {
+                  setSelectedShelter(entity.item);
+                } else if (entity.type === 'RISK_ZONE') {
+                  setViewCenterMode('MAP');
+                  window.scrollTo({ top: 180, behavior: 'smooth' });
+                } else if (entity.item?.coordinates || entity.item?.latitude) {
+                  handleViewOnGlobe(entity.item);
+                }
+              }}
             />
           ) : (
             <DisasterMap
@@ -848,7 +875,19 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                   const occ = sh.capacity > 0 ? Math.round(((sh.occupancy || 0) / sh.capacity) * 100) : 0;
                   const isStrained = occ >= 80 || sh.status === 'Full';
                   return (
-                    <div key={sh._id} style={{ background: 'rgba(255,255,255,0.03)', padding: '0.5rem', borderRadius: 4, borderLeft: `3px solid ${isStrained ? '#E53935' : '#84CC16'}` }}>
+                    <div
+                      key={sh._id}
+                      onClick={() => setSelectedShelter(sh)}
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        padding: '0.5rem',
+                        borderRadius: 4,
+                        borderLeft: `3px solid ${isStrained ? '#E53935' : '#84CC16'}`,
+                        cursor: 'pointer',
+                        transition: 'background 0.2s ease',
+                      }}
+                      title="Click to view shelter details"
+                    >
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
                         <strong style={{ color: '#fff' }}>{sh.name}</strong>
                         <span style={{ color: isStrained ? '#E53935' : '#84CC16', fontWeight: 700 }}>{occ}% ({sh.capacity - (sh.occupancy || 0)} open)</span>
@@ -1203,9 +1242,11 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
         </div>
       </div>
 
-      {/* Modals for Resource Journey, Blockchain Receipt, and Crisis Intelligence */}
+      {/* Modals for Resource Journey, Blockchain Receipt, Crisis Intelligence, and Shelter Detail */}
       {selectedJourney && (
         <ResourceJourneyModal
+          isOpen={Boolean(selectedJourney)}
+          resourceData={selectedJourney}
           item={selectedJourney}
           onClose={() => setSelectedJourney(null)}
         />
@@ -1213,6 +1254,8 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
 
       {selectedReceipt && (
         <BlockchainReceiptModal
+          isOpen={Boolean(selectedReceipt)}
+          record={selectedReceipt}
           item={selectedReceipt}
           onClose={() => setSelectedReceipt(null)}
         />
@@ -1224,6 +1267,15 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           item={selectedIntelligence}
           onClose={() => setSelectedIntelligence(null)}
           onFocusGlobe={handleViewOnGlobe}
+        />
+      )}
+
+      {selectedShelter && (
+        <ShelterDetailModal
+          isOpen={Boolean(selectedShelter)}
+          shelter={selectedShelter}
+          item={selectedShelter}
+          onClose={() => setSelectedShelter(null)}
         />
       )}
     </div>

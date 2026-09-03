@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import Icon from './Icons';
 
-const BlockchainReceiptModal = ({ isOpen, onClose, record }) => {
+const BlockchainReceiptModal = ({ isOpen = true, onClose, record, item }) => {
   const [copied, setCopied] = useState(false);
+  const targetRecord = record || item;
 
-  if (!isOpen || !record) return null;
+  if ((isOpen !== undefined && !isOpen) || !targetRecord) return null;
 
   const handleCopyHash = () => {
-    const hash = record.blockHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069';
+    const hash = targetRecord.blockHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069';
     navigator.clipboard.writeText(hash);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -91,11 +92,11 @@ const BlockchainReceiptModal = ({ isOpen, onClose, record }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>TRANSACTION ID</div>
-              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{record.transactionId || 'TXN-881204'}</div>
+              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{targetRecord.transactionId || 'TXN-881204'}</div>
             </div>
             <div>
               <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', textAlign: 'right' }}>BLOCK NUMBER</div>
-              <div style={{ color: '#818cf8', fontWeight: 700, textAlign: 'right' }}>#{record.blockNumber || 1001}</div>
+              <div style={{ color: '#818cf8', fontWeight: 700, textAlign: 'right' }}>#{targetRecord.blockNumber || 1001}</div>
             </div>
           </div>
 
@@ -113,31 +114,31 @@ const BlockchainReceiptModal = ({ isOpen, onClose, record }) => {
               </button>
             </div>
             <div style={{ color: '#38bdf8', wordBreak: 'break-all', fontSize: '0.78rem', background: 'rgba(0,0,0,0.35)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-              {record.blockHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'}
+              {targetRecord.blockHash || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'}
             </div>
           </div>
 
           <div>
             <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem', textTransform: 'uppercase' }}>PREVIOUS BLOCK HASH</div>
             <div style={{ color: 'var(--text-secondary)', wordBreak: 'break-all', fontSize: '0.74rem' }}>
-              {record.previousBlockHash || '0x0000000000000000000000000000000000000000000000000000000000000000'}
+              {targetRecord.previousBlockHash || '0x0000000000000000000000000000000000000000000000000000000000000000'}
             </div>
           </div>
 
           <div>
             <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '0.2rem', textTransform: 'uppercase' }}>DIGITAL SIGNATURE</div>
             <div style={{ color: '#a78bfa', wordBreak: 'break-all', fontSize: '0.74rem' }}>
-              {record.signature || '0xa41c7b89d6e4f3a2b1c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6'}
+              {targetRecord.signature || '0xa41c7b89d6e4f3a2b1c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6'}
             </div>
           </div>
 
           <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-main)' }}>
             <div>
               <span style={{ color: 'var(--text-muted)' }}>Resource: </span>
-              <strong>{record.quantity} {record.unit || 'units'} &bull; {record.resourceName}</strong>
+              <strong>{targetRecord.quantity} {targetRecord.unit || 'units'} &bull; {targetRecord.resourceName}</strong>
             </div>
             <div>
-              <span className="badge badge-success">{record.status || 'Verified on Blockchain'}</span>
+              <span className="badge badge-success">{targetRecord.status || 'Verified on Blockchain'}</span>
             </div>
           </div>
         </div>

@@ -1,20 +1,21 @@
 import React from 'react';
 import Icon from './Icons';
 
-const ShelterDetailModal = ({ isOpen, onClose, shelter }) => {
-  if (!isOpen || !shelter) return null;
+const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
+  const targetShelter = shelter || item;
+  if ((isOpen !== undefined && !isOpen) || !targetShelter) return null;
 
-  const capacity = Number(shelter.capacity) || 1;
-  const occupancy = Number(shelter.occupancy) || 0;
+  const capacity = Number(targetShelter.capacity) || 1;
+  const occupancy = Number(targetShelter.occupancy) || 0;
   const percent = Math.min(100, Math.round((occupancy / capacity) * 100));
   const isFull = percent >= 100;
-  const isClosed = shelter.status === 'Temporarily Closed';
+  const isClosed = targetShelter.status === 'Temporarily Closed';
   const availableBeds = Math.max(0, capacity - occupancy);
 
-  const lat = shelter.latitude || 28.6139;
-  const lng = shelter.longitude || 77.2090;
+  const lat = Number(targetShelter.latitude ?? targetShelter.coordinates?.latitude) || 28.6139;
+  const lng = Number(targetShelter.longitude ?? targetShelter.coordinates?.longitude) || 77.2090;
 
-  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  const googleMapsUrl = targetShelter.directionsUrl || `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   const osmUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=%3B${lat}%2C${lng}`;
 
   return (
@@ -41,11 +42,11 @@ const ShelterDetailModal = ({ isOpen, onClose, shelter }) => {
                 {isClosed ? 'TEMPORARILY CLOSED' : isFull ? '🔴 CAPACITY FULL' : '🟢 OPEN & AVAILABLE'}
               </span>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                ID: <strong style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>{shelter._id?.substring(0, 8) || 'SH-104'}</strong>
+                ID: <strong style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>{targetShelter._id?.substring(0, 8) || 'SH-104'}</strong>
               </span>
             </div>
             <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.25 }}>
-              {shelter.name}
+              {targetShelter.name}
             </h2>
           </div>
 
@@ -78,7 +79,7 @@ const ShelterDetailModal = ({ isOpen, onClose, shelter }) => {
             <Icon name="map-pin" size={17} color="#818cf8" style={{ marginTop: '2px', flexShrink: 0 }} />
             <div>
               <div style={{ fontSize: '0.88rem', color: '#ffffff', fontWeight: 600 }}>
-                {shelter.address}
+                {targetShelter.address}
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: '0.15rem' }}>
                 Coordinates: {lat.toFixed(4)}, {lng.toFixed(4)}
@@ -113,58 +114,59 @@ const ShelterDetailModal = ({ isOpen, onClose, shelter }) => {
         {/* Occupancy Progress & Bed Gauge */}
         <div
           style={{
-            background: 'rgba(11, 18, 34, 0.95)',
+            background: 'rgba(15, 24, 44, 0.85)',
             border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.25rem',
+            borderRadius: 'var(--radius-md)',
+            padding: '1.15rem',
             marginBottom: '1.25rem',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-              Occupancy Capacity
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              Live Capacity Load
             </span>
-            <span style={{ fontSize: '1.05rem', fontWeight: 800, color: isFull ? '#ff4d63' : '#34d399' }}>
-              {occupancy} / {capacity} Beds ({percent}%)
+            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: isFull ? 'var(--crimson)' : 'var(--mint)' }}>
+              {percent}% Full
             </span>
           </div>
 
-          {/* Progress Bar */}
-          <div style={{ width: '100%', height: '12px', background: '#1e293b', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.65rem' }}>
+          <div style={{ width: '100%', height: '8px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.85rem' }}>
             <div
               style={{
                 width: `${percent}%`,
                 height: '100%',
                 background: isFull
-                  ? '#ff334b'
-                  : percent > 75
-                  ? '#f59e0b'
-                  : 'linear-gradient(90deg, #10b981, #06b6d4)',
+                  ? 'linear-gradient(90deg, #f87171, #ef4444)'
+                  : 'linear-gradient(90deg, #34d399, #10b981)',
                 transition: 'width 0.4s ease',
               }}
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>
-              Current Residents: <strong style={{ color: '#ffffff' }}>{occupancy} Persons</strong>
-            </span>
-            <span style={{ color: isFull ? '#ff6b7e' : '#34d399', fontWeight: 700 }}>
-              {isFull ? '🔴 Zero Bed Availability' : `🟢 ${availableBeds} Available Beds Ready`}
-            </span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', textAlign: 'center' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem', borderRadius: 'var(--radius-xs)' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>TOTAL BEDS</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>{capacity}</div>
+            </div>
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem', borderRadius: 'var(--radius-xs)' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>OCCUPIED</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{occupancy}</div>
+            </div>
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem', borderRadius: 'var(--radius-xs)' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>VACANT / OPEN</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: isFull ? 'var(--crimson)' : 'var(--mint)' }}>{availableBeds}</div>
+            </div>
           </div>
         </div>
 
         {/* Facilities & Amenities Checklist */}
         <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <Icon name="shield-check" size={17} color="#34d399" />
-            <span>Available Amenities & Relief Facilities</span>
-          </h3>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
-            {shelter.facilities && shelter.facilities.length > 0 ? (
-              shelter.facilities.map((facility, idx) => (
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.6rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+            Verified Emergency Amenities & Facilities
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.5rem' }}>
+            {targetShelter.facilities && targetShelter.facilities.length > 0 ? (
+              targetShelter.facilities.map((facility, idx) => (
                 <div
                   key={idx}
                   style={{
@@ -230,13 +232,13 @@ const ShelterDetailModal = ({ isOpen, onClose, shelter }) => {
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Icon name="phone" size={16} color="#38bdf8" />
-              <span>{shelter.phone || '+91 11 2345 6780'}</span>
+              <span>{targetShelter.phone || '+91 11 2345 6780'}</span>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '0.65rem' }}>
             <a
-              href={`tel:${shelter.phone || '+911123456780'}`}
+              href={`tel:${targetShelter.phone || '+911123456780'}`}
               className="btn btn-primary"
               style={{ padding: '0.6rem 1.15rem' }}
             >

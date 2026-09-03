@@ -1,12 +1,13 @@
 import React from 'react';
 import Icon from './Icons';
 
-const AlertDetailModal = ({ isOpen, onClose, alert }) => {
-  if (!isOpen || !alert) return null;
+const AlertDetailModal = ({ isOpen = true, onClose, alert, item }) => {
+  const targetAlert = alert || item;
+  if ((isOpen !== undefined && !isOpen) || !targetAlert) return null;
 
-  const isCritical = alert.severity === 'Critical';
-  const isDanger = alert.severity === 'Danger';
-  const isExpired = !alert.active || (alert.expiresAt && new Date(alert.expiresAt) < new Date());
+  const isCritical = targetAlert.severity === 'Critical';
+  const isDanger = targetAlert.severity === 'Danger';
+  const isExpired = !targetAlert.active || (targetAlert.expiresAt && new Date(targetAlert.expiresAt) < new Date());
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -39,8 +40,8 @@ const AlertDetailModal = ({ isOpen, onClose, alert }) => {
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                <span className={`badge badge-${alert.severity?.toLowerCase()}`} style={{ fontSize: '0.7rem' }}>
-                  {alert.severity} ADVISORY
+                <span className={`badge badge-${targetAlert.severity?.toLowerCase()}`} style={{ fontSize: '0.7rem' }}>
+                  {targetAlert.severity} ADVISORY
                 </span>
                 {isExpired ? (
                   <span className="badge badge-neutral" style={{ fontSize: '0.68rem' }}>EXPIRED / ARCHIVED</span>
@@ -49,7 +50,7 @@ const AlertDetailModal = ({ isOpen, onClose, alert }) => {
                 )}
               </div>
               <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.3 }}>
-                {alert.title}
+                {targetAlert.title}
               </h2>
             </div>
           </div>
@@ -72,7 +73,7 @@ const AlertDetailModal = ({ isOpen, onClose, alert }) => {
             color: 'var(--text-primary)',
           }}
         >
-          {alert.message}
+          {targetAlert.message}
         </div>
 
         {/* Metadata Details Grid */}
@@ -89,26 +90,26 @@ const AlertDetailModal = ({ isOpen, onClose, alert }) => {
             <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Affected Location:</div>
             <strong style={{ color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Icon name="map-pin" size={13} color="#818cf8" />
-              <span>{alert.location}</span>
+              <span>{targetAlert.location}</span>
             </strong>
           </div>
 
           <div style={{ background: 'rgba(15, 24, 44, 0.7)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Hazard Classification:</div>
-            <strong style={{ color: '#fbbf24' }}>{alert.type || 'Civil Defense / Weather'}</strong>
+            <strong style={{ color: '#fbbf24' }}>{targetAlert.type || 'Civil Defense / Weather'}</strong>
           </div>
 
           <div style={{ background: 'rgba(15, 24, 44, 0.7)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Issued Timestamp:</div>
             <strong style={{ color: '#ffffff' }}>
-              {new Date(alert.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+              {new Date(targetAlert.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
             </strong>
           </div>
 
           <div style={{ background: 'rgba(15, 24, 44, 0.7)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Expiration Status:</div>
             <strong style={{ color: isExpired ? '#94a3b8' : '#34d399' }}>
-              {alert.expiresAt ? new Date(alert.expiresAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Until Resolved'}
+              {targetAlert.expiresAt ? new Date(targetAlert.expiresAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Until Resolved'}
             </strong>
           </div>
         </div>

@@ -326,6 +326,8 @@ const ResourceTrackingPage = () => {
       {/* Resource Journey Timeline Modal */}
       {selectedJourney && (
         <ResourceJourneyModal
+          isOpen={Boolean(selectedJourney)}
+          resourceData={selectedJourney}
           item={selectedJourney}
           onClose={() => setSelectedJourney(null)}
         />
