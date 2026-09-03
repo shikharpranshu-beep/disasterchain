@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createSosRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Icon from './Icons';
+import offlineSyncService from '../services/offlineSyncService';
 
 /**
  * SOS Operational Lifecycle States:
@@ -89,30 +90,54 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
     setSosState('LOCATING');
     setErrorMessage('');
 
-    try {
-      const payload = {
-        name: formData.name.trim(),
-        emergencyType: formData.emergencyType,
-        description: formData.description.trim(),
-        location: formData.location.trim(),
-        latitude: Number(formData.latitude) || 28.6139,
-        longitude: Number(formData.longitude) || 77.2090,
-        peopleAffected: Number(formData.peopleAffected) || 1,
-        severity: formData.severity,
-        contact: formData.contact.trim(),
-      };
+    const payload = {
+      name: formData.name.trim(),
+      emergencyType: formData.emergencyType,
+      description: formData.description.trim(),
+      location: formData.location.trim(),
+      latitude: Number(formData.latitude) || 28.6139,
+      longitude: Number(formData.longitude) || 77.2090,
+      peopleAffected: Number(formData.peopleAffected) || 1,
+      severity: formData.severity,
+      contact: formData.contact.trim(),
+    };
 
+    // 1. Offline Mode Check
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      const queued = offlineSyncService.enqueueEmergency('sos', payload);
+      setSubmittedRecord({
+        ...payload,
+        requestId: queued.queueId,
+        isOfflineQueued: true,
+      });
+      setSosState('DISPATCHED');
+      if (onSosSubmitted) onSosSubmitted(queued);
+      return;
+    }
+
+    // 2. Online Mode Dispatch
+    try {
       const result = await createSosRequest(payload);
       if (result) {
-        setSubmittedRecord(result);
+        setSubmittedRecord({
+          ...result,
+          isOfflineQueued: false,
+        });
         setSosState('DISPATCHED');
         if (onSosSubmitted) onSosSubmitted(result);
       } else {
         throw new Error('Server returned empty response for SOS dispatch.');
       }
     } catch (err) {
-      setSosState('READY');
-      setErrorMessage(err.message || 'SOS dispatch rejected. Please check network connectivity.');
+      // Network failure during transmission -> save to offline queue safely
+      const queued = offlineSyncService.enqueueEmergency('sos', payload);
+      setSubmittedRecord({
+        ...payload,
+        requestId: queued.queueId,
+        isOfflineQueued: true,
+      });
+      setSosState('DISPATCHED');
+      if (onSosSubmitted) onSosSubmitted(queued);
     }
   };
 
@@ -198,53 +223,113 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
         {/* STATE: DISPATCHED */}
         {sosState === 'DISPATCHED' && (
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-            <div
-              style={{
-                width: '64px',
-                height: '64px',
-                margin: '0 auto 1.25rem',
-                borderRadius: '50%',
-                background: 'rgba(16, 185, 129, 0.15)',
-                border: '2px solid var(--mint)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--mint)',
-                boxShadow: '0 0 24px rgba(16, 185, 129, 0.3)',
-              }}
-            >
-              <Icon name="shield-check" size={34} />
-            </div>
+            {submittedRecord?.isOfflineQueued ? (
+              <>
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    margin: '0 auto 1.25rem',
+                    borderRadius: '50%',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    border: '2px solid #f59e0b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#f59e0b',
+                    boxShadow: '0 0 24px rgba(245, 158, 11, 0.3)',
+                  }}
+                >
+                  <Icon name="clock" size={34} />
+                </div>
 
-            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
-              DISTRESS BEACON BROADCASTED
-            </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', marginBottom: '1.25rem' }}>
-              Emergency teams and nearest relief shelters have received your distress telemetry.
-            </p>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f59e0b', marginBottom: '0.4rem' }}>
+                  EMERGENCY REQUEST SAVED LOCALLY
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                  Emergency request saved locally. It will be transmitted automatically when connectivity returns.
+                </p>
 
-            <div
-              style={{
-                background: 'rgba(7, 11, 19, 0.85)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '1rem',
-                textAlign: 'left',
-                marginBottom: '1.5rem',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.78rem',
-              }}
-            >
-              <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-                SIGNAL ID: <span style={{ color: 'var(--cyan)' }}>{submittedRecord?.requestId || submittedRecord?._id}</span>
-              </div>
-              <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-                SEVERITY: <span style={{ color: 'var(--crimson)' }}>{formData.severity}</span>
-              </div>
-              <div style={{ color: 'var(--text-muted)' }}>
-                COORDINATES: <span style={{ color: '#ffffff' }}>{formData.latitude}, {formData.longitude}</span>
-              </div>
-            </div>
+                <div
+                  style={{
+                    background: 'rgba(7, 11, 19, 0.85)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '1rem',
+                    textAlign: 'left',
+                    marginBottom: '1.5rem',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.78rem',
+                  }}
+                >
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                    LOCAL QUEUE ID: <span style={{ color: '#f59e0b' }}>{submittedRecord?.requestId}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                    STATUS: <span style={{ color: '#f59e0b', fontWeight: 700 }}>QUEUED LOCALLY (PENDING SYNC)</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                    SEVERITY: <span style={{ color: 'var(--crimson)' }}>{formData.severity}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)' }}>
+                    COORDINATES: <span style={{ color: '#ffffff' }}>{formData.latitude}, {formData.longitude}</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    margin: '0 auto 1.25rem',
+                    borderRadius: '50%',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    border: '2px solid var(--mint)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--mint)',
+                    boxShadow: '0 0 24px rgba(16, 185, 129, 0.3)',
+                  }}
+                >
+                  <Icon name="shield-check" size={34} />
+                </div>
+
+                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
+                  DISTRESS BEACON BROADCASTED
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', marginBottom: '1.25rem' }}>
+                  Emergency request transmitted successfully. Responders and nearest relief shelters have received your distress telemetry.
+                </p>
+
+                <div
+                  style={{
+                    background: 'rgba(7, 11, 19, 0.85)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '1rem',
+                    textAlign: 'left',
+                    marginBottom: '1.5rem',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.78rem',
+                  }}
+                >
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                    SIGNAL ID: <span style={{ color: 'var(--cyan)' }}>{submittedRecord?.requestId || submittedRecord?._id}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                    STATUS: <span style={{ color: 'var(--mint)', fontWeight: 700 }}>TRANSMITTED TO LIVE DATABASE</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
+                    SEVERITY: <span style={{ color: 'var(--crimson)' }}>{formData.severity}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)' }}>
+                    COORDINATES: <span style={{ color: '#ffffff' }}>{formData.latitude}, {formData.longitude}</span>
+                  </div>
+                </div>
+              </>
+            )}
 
             <button onClick={onClose} className="btn btn-primary" style={{ width: '100%' }}>
               ACKNOWLEDGE & RETURN TO COMMAND

@@ -9,6 +9,7 @@ import SosModal from './components/SosModal';
 import IncidentModal from './components/IncidentModal';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import MobileEmergencyNav from './components/MobileEmergencyNav';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -125,6 +126,12 @@ const AppLayout = () => {
           </Routes>
         </main>
       </div>
+
+      {/* Persistent Mobile Emergency Bottom Navigation (Phase 13) */}
+      <MobileEmergencyNav
+        onOpenSos={() => setIsSosOpen(true)}
+        onOpenIncident={() => setIsIncidentOpen(true)}
+      />
 
       {/* Global Modals */}
       <SosModal

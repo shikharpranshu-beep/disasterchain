@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { fetchShelters } from '../services/api';
 import ShelterDetailModal from '../components/ShelterDetailModal';
 import Icon from '../components/Icons';
 
 const SheltersPage = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const incidentTitle = searchParams.get('incident') || location.state?.incidentTitle;
+  const incidentLat = parseFloat(searchParams.get('lat') || location.state?.latitude);
+  const incidentLon = parseFloat(searchParams.get('lon') || location.state?.longitude);
+  const hasIncidentContext = Boolean(incidentTitle || (!isNaN(incidentLat) && !isNaN(incidentLon)));
+
   const [shelters, setShelters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,12 +77,30 @@ const SheltersPage = () => {
   const openSheltersCount = useMemo(() => shelters.filter((s) => s.status === 'Open' && s.capacity - s.occupancy > 0).length, [shelters]);
   const avgOccupancyRate = totalCapacity > 0 ? Math.round((totalOccupancy / totalCapacity) * 100) : 0;
 
-  // Highest bed capacity recommendation
+  // Recommended shelter ONLY if actual active incident context exists
   const recommendedShelter = useMemo(() => {
+    if (!hasIncidentContext) return null;
+
     const openList = shelters.filter((s) => s.status === 'Open' && s.capacity - s.occupancy > 0);
     if (openList.length === 0) return null;
+
+    if (!isNaN(incidentLat) && !isNaN(incidentLon)) {
+      // Sort by proximity and available capacity
+      return [...openList].sort((a, b) => {
+        const dLatA = Math.abs(a.latitude - incidentLat);
+        const dLonA = Math.abs(a.longitude - incidentLon);
+        const distA = Math.sqrt(dLatA * dLatA + dLonA * dLonA);
+
+        const dLatB = Math.abs(b.latitude - incidentLat);
+        const dLonB = Math.abs(b.longitude - incidentLon);
+        const distB = Math.sqrt(dLatB * dLatB + dLonB * dLonB);
+
+        return distA - distB;
+      })[0];
+    }
+
     return [...openList].sort((a, b) => (b.capacity - b.occupancy) - (a.capacity - a.occupancy))[0];
-  }, [shelters]);
+  }, [shelters, hasIncidentContext, incidentLat, incidentLon]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -143,8 +169,8 @@ const SheltersPage = () => {
         </div>
       </div>
 
-      {/* Recommended Shelter Spotlight Card */}
-      {recommendedShelter && (
+      {/* Recommended Shelter Spotlight Card (only shown when actual active incident context exists) */}
+      {hasIncidentContext && recommendedShelter && (
         <div
           className="spatial-panel"
           style={{
@@ -161,11 +187,11 @@ const SheltersPage = () => {
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-              <span className="badge badge-info" style={{ fontSize: '0.68rem' }}>
-                ⭐ RECOMMENDED SAFE HAVEN
+              <span className="badge badge-success" style={{ fontSize: '0.68rem', fontWeight: 800 }}>
+                ⭐ RECOMMENDED FOR CURRENT INCIDENT
               </span>
               <span className="micro-label" style={{ color: 'var(--mint)' }}>
-                HIGHEST AVAILABLE CAPACITY
+                {incidentTitle ? `CONTEXT: ${incidentTitle.toUpperCase()}` : 'OPTIMAL SAFE HAVEN'}
               </span>
             </div>
             <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#ffffff' }}>
@@ -390,7 +416,7 @@ const SheltersPage = () => {
               {/* Action Buttons */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
                 <a
-                  href={`https://maps.google.com/?q=${sh.latitude},${sh.longitude}`}
+                  href={sh.directionsUrl || `https://www.google.com/maps/dir/?api=1&destination=${sh.latitude},${sh.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-secondary btn-sm"
