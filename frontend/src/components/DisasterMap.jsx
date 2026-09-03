@@ -7,6 +7,7 @@ import {
   fetchAffectedAreas,
   fetchResources,
   fetchIncidents,
+  fetchRiskHeatmap,
 } from '../services/api';
 import Icon from './Icons';
 import CrisisGlobe3D from './CrisisGlobe3D';
@@ -201,9 +202,10 @@ const DisasterMap = ({
   const [affectedAreas, setAffectedAreas] = useState([]);
   const [resources, setResources] = useState([]);
   const [incidents, setIncidents] = useState([]);
+  const [riskZones, setRiskZones] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter state: 'ALL' | 'SOS' | 'SHELTERS' | 'AREAS' | 'RESOURCES' | 'INCIDENTS'
+  // Filter state: 'ALL' | 'RISK' | 'SOS' | 'SHELTERS' | 'AREAS' | 'RESOURCES' | 'INCIDENTS'
   const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLegendExpanded, setIsLegendExpanded] = useState(true);
@@ -216,12 +218,13 @@ const DisasterMap = ({
     const loadMapData = async () => {
       setLoading(true);
       try {
-        const [sos, sh, areas, res, inc] = await Promise.all([
+        const [sos, sh, areas, res, inc, heatmapRes] = await Promise.all([
           fetchSosRequests(),
           fetchShelters(),
           fetchAffectedAreas(),
           fetchResources(),
           fetchIncidents(),
+          fetchRiskHeatmap().catch(() => ({ data: { zones: [] } })),
         ]);
 
         if (isMounted) {
@@ -230,6 +233,7 @@ const DisasterMap = ({
           setAffectedAreas(areas || []);
           setResources(res || []);
           setIncidents(inc || []);
+          setRiskZones(heatmapRes?.data?.zones || []);
         }
       } catch (err) {
         console.error('Error fetching map data:', err);
@@ -539,6 +543,24 @@ const DisasterMap = ({
                 {incidentCount}
               </span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('RISK')}
+              className={`btn ${activeFilter === 'RISK' ? 'btn-secondary' : 'btn-secondary'} btn-sm`}
+              style={{
+                fontSize: '0.78rem',
+                padding: '0.35rem 0.75rem',
+                borderColor: activeFilter === 'RISK' ? '#ff0044' : 'var(--border-subtle)',
+                color: activeFilter === 'RISK' ? '#ff0044' : 'var(--text-secondary)',
+                fontWeight: 700,
+              }}
+            >
+              <span>⚡ Risk Zones</span>
+              <span className="badge badge-critical" style={{ fontSize: '0.65rem', background: 'rgba(255, 0, 68, 0.2)' }}>
+                {riskZones.length}
+              </span>
+            </button>
           </div>
 
           {/* Search & Recenter Tools */}
@@ -600,6 +622,8 @@ const DisasterMap = ({
           sosRequests={sosList}
           affectedAreas={affectedAreas}
           shelters={shelters}
+          incidents={incidents}
+          riskZones={riskZones}
         />
       ) : (
       <div style={{ width: '100%', height, position: 'relative' }}>
@@ -639,10 +663,10 @@ const DisasterMap = ({
           style={{ width: '100%', height: '100%', background: '#0b1222' }}
           scrollWheelZoom={true}
         >
-          {/* Dark CartoDB Tile Layer for Command Center Aesthetic */}
+          {/* Free, Public OpenStreetMap Tile Layer - Zero-Cost & No API Key Required */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             maxZoom={19}
           />
 
@@ -651,6 +675,74 @@ const DisasterMap = ({
             triggerRecenter={recenterFlag}
             onRecenterDone={handleRecenterDone}
           />
+
+          {/* AI-Assisted Live Risk Heatmap Zones */}
+          {(activeFilter === 'ALL' || activeFilter === 'RISK') &&
+            riskZones.map((zone) => {
+              const isCritical = zone.riskLevel === 'CRITICAL';
+              const isHigh = zone.riskLevel === 'HIGH';
+              const color = isCritical
+                ? '#ff0044'
+                : isHigh
+                ? '#f97316'
+                : zone.riskLevel === 'MEDIUM'
+                ? '#f59e0b'
+                : '#38bdf8';
+
+              return (
+                <Circle
+                  key={zone.id}
+                  center={[zone.latitude, zone.longitude]}
+                  radius={(zone.radiusKm || 2.5) * 1000}
+                  pathOptions={{
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: isCritical ? 0.3 : 0.18,
+                    weight: isCritical ? 2.5 : 1.5,
+                    dashArray: isCritical ? '6, 6' : undefined,
+                  }}
+                >
+                  <Popup className="custom-leaflet-popup">
+                    <div style={{ padding: '0.45rem', minWidth: '240px', maxWidth: '300px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <span
+                          style={{
+                            background: `${color}22`,
+                            color: color,
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontWeight: 800,
+                            fontSize: '0.72rem',
+                            border: `1px solid ${color}`,
+                          }}
+                        >
+                          ⚡ {zone.riskLevel} [{zone.riskScore}/100]
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          ~{zone.radiusKm} km radius
+                        </span>
+                      </div>
+
+                      <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '0.95rem', color: '#ffffff', fontWeight: 800 }}>
+                        {zone.dominantHazard} CONVERGENCE
+                      </h4>
+
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', lineHeight: 1.4 }}>
+                        <div>• Active SOS Signals: <strong style={{ color: '#ff4d6d' }}>{zone.activeSOSCount}</strong></div>
+                        <div>• Active Incidents: <strong style={{ color: '#f97316' }}>{zone.activeIncidentCount}</strong></div>
+                        <div>• Nearby Shelter Strain: <strong style={{ color: zone.nearbyShelterStrain === 'High' ? '#ff0044' : '#10b981' }}>{zone.nearbyShelterStrain}</strong></div>
+                      </div>
+
+                      {zone.reasons && zone.reasons[0] && (
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.35rem' }}>
+                          Key Driver: {zone.reasons[0]}
+                        </div>
+                      )}
+                    </div>
+                  </Popup>
+                </Circle>
+              );
+            })}
 
           {/* Affected Area Radii Circles */}
           {filteredAreas.map((area) => (
