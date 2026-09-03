@@ -131,7 +131,7 @@ const CesiumCrisisGlobe = ({
         pitch: Cesium.Math.toRadians(altitude > 1000000 ? -90.0 : -65.0),
         roll: 0.0,
       },
-      duration: 1.8,
+      duration: 0.7,
     });
 
     if (entity) {
@@ -158,20 +158,35 @@ const CesiumCrisisGlobe = ({
   const handleSelectSearchResult = (result) => {
     setSearchQuery(result.name);
     setIsSearching(false);
-    const altitude = result.type === 'country' ? 3500000.0 : 45000.0;
+    const altitude = result.type === 'country' ? 2500000.0 : 35000.0;
     flyToLocation(result.lon, result.lat, altitude, result, result.type);
   };
 
-  // Navigation Presets
+  // Fast Zoom In / Out Step Functions
+  const handleZoomIn = () => {
+    const viewer = viewerRef.current;
+    if (!viewer || viewer.isDestroyed()) return;
+    const currentHeight = viewer.camera.positionCartographic.height;
+    viewer.camera.zoomIn(currentHeight * 0.45);
+  };
+
+  const handleZoomOut = () => {
+    const viewer = viewerRef.current;
+    if (!viewer || viewer.isDestroyed()) return;
+    const currentHeight = viewer.camera.positionCartographic.height;
+    viewer.camera.zoomOut(currentHeight * 0.75);
+  };
+
+  // Navigation Presets (Fast Responsive Flights)
   const handleFocusIndia = () => {
     setCameraViewMode('INDIA');
     const india = WORLD_COUNTRIES.find((c) => c.id === 'IND');
-    flyToLocation(78.9629, 21.5937, 4800000.0, india, 'country');
+    flyToLocation(78.9629, 21.5937, 4500000.0, india, 'country');
   };
 
   const handleFocusWorld = () => {
     setCameraViewMode('WORLD');
-    flyToLocation(0.0, 20.0, 18000000.0, null, 'country');
+    flyToLocation(0.0, 20.0, 16000000.0, null, 'country');
     setSelectedEntity(null);
   };
 
@@ -185,7 +200,7 @@ const CesiumCrisisGlobe = ({
         const userLat = pos.coords.latitude;
         const userLon = pos.coords.longitude;
         setCameraViewMode('USER');
-        flyToLocation(userLon, userLat, 18000.0, {
+        flyToLocation(userLon, userLat, 15000.0, {
           name: 'Your Current Location',
           subtitle: 'Active GPS Coordinates',
           lat: userLat,
@@ -268,9 +283,19 @@ const CesiumCrisisGlobe = ({
           scene.globe.atmosphereSaturationShift = -0.15;
           scene.backgroundColor = Cesium.Color.fromCssColorString('#0a0705');
 
+          // FAST & RESPONSIVE CAMERA CONTROLLER TUNING (Eliminates sluggish/slow zoom)
+          const controller = scene.screenSpaceCameraController;
+          controller.inertiaSpin = 0.05; // crisp, responsive rotation
+          controller.inertiaTranslate = 0.05; // responsive panning
+          controller.inertiaZoom = 0.02; // instant stop, zero floaty zoom lag
+          controller.zoomFactor = 16.0; // powerful, fast zoom response per notch
+          controller.minimumZoomDistance = 250.0; // street/local level accessibility
+          controller.maximumZoomDistance = 25000000.0; // full orbital overview
+          controller.enableCollisionDetection = false;
+
           // Set initial view to India
           viewer.camera.setView({
-            destination: Cesium.Cartesian3.fromDegrees(78.9629, 21.5937, 4800000.0),
+            destination: Cesium.Cartesian3.fromDegrees(78.9629, 21.5937, 4500000.0),
             orientation: {
               heading: 0.0,
               pitch: Cesium.Math.toRadians(-75.0),
@@ -278,9 +303,10 @@ const CesiumCrisisGlobe = ({
             },
           });
 
-          // Screen space event handler for clicks and hover
+          // Screen space event handler for clicks, double clicks, and hover
           const handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
 
+          // Left Click (Select Entity)
           handler.setInputAction((click) => {
             const pickedObject = scene.pick(click.position);
             if (Cesium.defined(pickedObject) && pickedObject.id && pickedObject.id.dcData) {
@@ -290,10 +316,23 @@ const CesiumCrisisGlobe = ({
               setSelectedType(entityType);
               if (onSelectEntity) onSelectEntity(entityData);
             } else {
-              // Deselect on empty ground click
               setSelectedEntity(null);
             }
           }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+          // Double Click (Fast Direct Zoom to Position)
+          handler.setInputAction((click) => {
+            const ray = viewer.camera.getPickRay(click.position);
+            const targetPos = scene.globe.pick(ray, scene);
+            if (Cesium.defined(targetPos)) {
+              const carto = Cesium.Cartographic.fromCartesian(targetPos);
+              const targetHeight = Math.max(12000.0, viewer.camera.positionCartographic.height * 0.35);
+              viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromRadians(carto.longitude, carto.latitude, targetHeight),
+                duration: 0.5,
+              });
+            }
+          }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
           handler.setInputAction((movement) => {
             const pickedObject = scene.pick(movement.endPosition);
@@ -716,6 +755,40 @@ const CesiumCrisisGlobe = ({
           transition: 'right 0.2s ease',
         }}
       >
+        <button
+          type="button"
+          onClick={handleZoomIn}
+          className="btn btn-secondary btn-sm"
+          style={{
+            background: 'rgba(18, 11, 8, 0.9)',
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '0.9rem',
+            padding: '2px 9px',
+            minWidth: '28px',
+          }}
+          title="Zoom In (Fast)"
+        >
+          +
+        </button>
+
+        <button
+          type="button"
+          onClick={handleZoomOut}
+          className="btn btn-secondary btn-sm"
+          style={{
+            background: 'rgba(18, 11, 8, 0.9)',
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '0.9rem',
+            padding: '2px 9px',
+            minWidth: '28px',
+          }}
+          title="Zoom Out (Fast)"
+        >
+          −
+        </button>
+
         <button
           type="button"
           onClick={handleFocusIndia}
