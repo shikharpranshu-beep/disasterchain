@@ -652,6 +652,114 @@ export const WORLD_CITIES = [
     tier: 3,
     isCapital: false,
   },
+  {
+    id: 'in-agr',
+    name: 'Agra',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Uttar Pradesh',
+    lat: 27.1767,
+    lon: 78.0081,
+    population: 1760000,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-asr',
+    name: 'Amritsar',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Punjab',
+    lat: 31.634,
+    lon: 74.8723,
+    population: 1200000,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-cbe',
+    name: 'Coimbatore',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Tamil Nadu',
+    lat: 11.0168,
+    lon: 76.9558,
+    population: 2900000,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-mdu',
+    name: 'Madurai',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Tamil Nadu',
+    lat: 9.9252,
+    lon: 78.1198,
+    population: 1700000,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-rpr',
+    name: 'Raipur',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Chhattisgarh',
+    lat: 21.2514,
+    lon: 81.6296,
+    population: 1120000,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-jdh',
+    name: 'Jodhpur',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Rajasthan',
+    lat: 26.2389,
+    lon: 73.0243,
+    population: 1130000,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-goa',
+    name: 'Panaji',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Goa',
+    lat: 15.4909,
+    lon: 73.8278,
+    population: 114000,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-leh',
+    name: 'Leh',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Ladakh',
+    lat: 34.1526,
+    lon: 77.5771,
+    population: 30870,
+    tier: 3,
+    isCapital: false,
+  },
+  {
+    id: 'in-ixz',
+    name: 'Port Blair',
+    country: 'India',
+    countryCode: 'IN',
+    region: 'Andaman & Nicobar Islands',
+    lat: 11.6234,
+    lon: 92.7265,
+    population: 108000,
+    tier: 3,
+    isCapital: false,
+  },
 
   // --- ASIA / MIDDLE EAST / OCEANIA ---
   {
@@ -665,6 +773,18 @@ export const WORLD_CITIES = [
     population: 37400000,
     tier: 1,
     isCapital: true,
+  },
+  {
+    id: 'jp-osa',
+    name: 'Osaka',
+    country: 'Japan',
+    countryCode: 'JP',
+    region: 'Kansai',
+    lat: 34.6937,
+    lon: 135.5023,
+    population: 19100000,
+    tier: 2,
+    isCapital: false,
   },
   {
     id: 'cn-bjs',
@@ -691,6 +811,30 @@ export const WORLD_CITIES = [
     isCapital: false,
   },
   {
+    id: 'hk-hkg',
+    name: 'Hong Kong',
+    country: 'China',
+    countryCode: 'HK',
+    region: 'Hong Kong SAR',
+    lat: 22.3193,
+    lon: 114.1694,
+    population: 7413000,
+    tier: 1,
+    isCapital: false,
+  },
+  {
+    id: 'tw-tpe',
+    name: 'Taipei',
+    country: 'Taiwan',
+    countryCode: 'TW',
+    region: 'Northern Taiwan',
+    lat: 25.033,
+    lon: 121.5654,
+    population: 2600000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
     id: 'sg-sin',
     name: 'Singapore',
     country: 'Singapore',
@@ -715,6 +859,54 @@ export const WORLD_CITIES = [
     isCapital: true,
   },
   {
+    id: 'my-kul',
+    name: 'Kuala Lumpur',
+    country: 'Malaysia',
+    countryCode: 'MY',
+    region: 'Federal Territory',
+    lat: 3.139,
+    lon: 101.6869,
+    population: 8400000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'ph-mnl',
+    name: 'Manila',
+    country: 'Philippines',
+    countryCode: 'PH',
+    region: 'Metro Manila',
+    lat: 14.5995,
+    lon: 120.9842,
+    population: 14400000,
+    tier: 1,
+    isCapital: true,
+  },
+  {
+    id: 'vn-han',
+    name: 'Hanoi',
+    country: 'Vietnam',
+    countryCode: 'VN',
+    region: 'Red River Delta',
+    lat: 21.0285,
+    lon: 105.8542,
+    population: 5250000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'vn-sgn',
+    name: 'Ho Chi Minh City',
+    country: 'Vietnam',
+    countryCode: 'VN',
+    region: 'Southeast',
+    lat: 10.8231,
+    lon: 106.6297,
+    population: 9000000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
     id: 'ae-dxb',
     name: 'Dubai',
     country: 'United Arab Emirates',
@@ -735,6 +927,30 @@ export const WORLD_CITIES = [
     lat: 24.4539,
     lon: 54.3773,
     population: 1540000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'qa-doh',
+    name: 'Doha',
+    country: 'Qatar',
+    countryCode: 'QA',
+    region: 'Ad Dawhah',
+    lat: 25.2854,
+    lon: 51.531,
+    population: 2382000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'kw-kwi',
+    name: 'Kuwait City',
+    country: 'Kuwait',
+    countryCode: 'KW',
+    region: 'Al Asimah',
+    lat: 29.3759,
+    lon: 47.9774,
+    population: 3100000,
     tier: 2,
     isCapital: true,
   },
@@ -909,6 +1125,18 @@ export const WORLD_CITIES = [
     isCapital: true,
   },
   {
+    id: 'de-fra',
+    name: 'Frankfurt',
+    country: 'Germany',
+    countryCode: 'DE',
+    region: 'Hesse',
+    lat: 50.1109,
+    lon: 8.6821,
+    population: 791000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
     id: 'it-rom',
     name: 'Rome',
     country: 'Italy',
@@ -921,6 +1149,18 @@ export const WORLD_CITIES = [
     isCapital: true,
   },
   {
+    id: 'it-mil',
+    name: 'Milan',
+    country: 'Italy',
+    countryCode: 'IT',
+    region: 'Lombardy',
+    lat: 45.4642,
+    lon: 9.19,
+    population: 3150000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
     id: 'es-mad',
     name: 'Madrid',
     country: 'Spain',
@@ -930,6 +1170,78 @@ export const WORLD_CITIES = [
     lon: -3.7038,
     population: 6710000,
     tier: 1,
+    isCapital: true,
+  },
+  {
+    id: 'es-bcn',
+    name: 'Barcelona',
+    country: 'Spain',
+    countryCode: 'ES',
+    region: 'Catalonia',
+    lat: 41.3879,
+    lon: 2.1699,
+    population: 5620000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
+    id: 'nl-ams',
+    name: 'Amsterdam',
+    country: 'Netherlands',
+    countryCode: 'NL',
+    region: 'North Holland',
+    lat: 52.3676,
+    lon: 4.9041,
+    population: 2431000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'be-bru',
+    name: 'Brussels',
+    country: 'Belgium',
+    countryCode: 'BE',
+    region: 'Brussels-Capital',
+    lat: 50.8503,
+    lon: 4.3517,
+    population: 2095000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'ch-zrh',
+    name: 'Zurich',
+    country: 'Switzerland',
+    countryCode: 'CH',
+    region: 'Zurich',
+    lat: 47.3769,
+    lon: 8.5417,
+    population: 1420000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
+    id: 'at-vie',
+    name: 'Vienna',
+    country: 'Austria',
+    countryCode: 'AT',
+    region: 'Vienna',
+    lat: 48.2082,
+    lon: 16.3738,
+    population: 1982000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'se-sto',
+    name: 'Stockholm',
+    country: 'Sweden',
+    countryCode: 'SE',
+    region: 'Stockholm County',
+    lat: 59.3293,
+    lon: 18.0686,
+    population: 1680000,
+    tier: 2,
     isCapital: true,
   },
   {
@@ -1019,6 +1331,30 @@ export const WORLD_CITIES = [
     isCapital: false,
   },
   {
+    id: 'us-mia',
+    name: 'Miami',
+    country: 'United States',
+    countryCode: 'US',
+    region: 'Florida',
+    lat: 25.7617,
+    lon: -80.1918,
+    population: 6130000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
+    id: 'us-sea',
+    name: 'Seattle',
+    country: 'United States',
+    countryCode: 'US',
+    region: 'Washington',
+    lat: 47.6062,
+    lon: -122.3321,
+    population: 4018000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
     id: 'ca-tor',
     name: 'Toronto',
     country: 'Canada',
@@ -1041,6 +1377,18 @@ export const WORLD_CITIES = [
     population: 1420000,
     tier: 2,
     isCapital: true,
+  },
+  {
+    id: 'ca-yvr',
+    name: 'Vancouver',
+    country: 'Canada',
+    countryCode: 'CA',
+    region: 'British Columbia',
+    lat: 49.2827,
+    lon: -123.1207,
+    population: 2632000,
+    tier: 2,
+    isCapital: false,
   },
   {
     id: 'mx-mex',
@@ -1088,6 +1436,42 @@ export const WORLD_CITIES = [
     lon: -58.3816,
     population: 15370000,
     tier: 1,
+    isCapital: true,
+  },
+  {
+    id: 'co-bog',
+    name: 'Bogotá',
+    country: 'Colombia',
+    countryCode: 'CO',
+    region: 'Bogotá D.C.',
+    lat: 4.711,
+    lon: -74.0721,
+    population: 11340000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'cl-scl',
+    name: 'Santiago',
+    country: 'Chile',
+    countryCode: 'CL',
+    region: 'Santiago Metropolitan',
+    lat: -33.4489,
+    lon: -70.6693,
+    population: 6850000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'pe-lim',
+    name: 'Lima',
+    country: 'Peru',
+    countryCode: 'PE',
+    region: 'Lima Province',
+    lat: -12.0464,
+    lon: -77.0428,
+    population: 11040000,
+    tier: 2,
     isCapital: true,
   },
 
@@ -1152,6 +1536,42 @@ export const WORLD_CITIES = [
     tier: 1,
     isCapital: false,
   },
+  {
+    id: 'ma-cas',
+    name: 'Casablanca',
+    country: 'Morocco',
+    countryCode: 'MA',
+    region: 'Casablanca-Settat',
+    lat: 33.5731,
+    lon: -7.5898,
+    population: 3750000,
+    tier: 2,
+    isCapital: false,
+  },
+  {
+    id: 'et-add',
+    name: 'Addis Ababa',
+    country: 'Ethiopia',
+    countryCode: 'ET',
+    region: 'Addis Ababa',
+    lat: 9.032,
+    lon: 38.7483,
+    population: 5228000,
+    tier: 2,
+    isCapital: true,
+  },
+  {
+    id: 'gh-acc',
+    name: 'Accra',
+    country: 'Ghana',
+    countryCode: 'GH',
+    region: 'Greater Accra',
+    lat: 5.6037,
+    lon: -0.187,
+    population: 2605000,
+    tier: 2,
+    isCapital: true,
+  },
 ];
 
 // ============================================================================
@@ -1167,57 +1587,70 @@ export const searchGeographicLocations = (query, limit = 8) => {
   }
 
   const q = query.toLowerCase().trim();
-  const results = [];
-
-  // Match countries first
-  for (const country of WORLD_COUNTRIES) {
-    if (
-      country.name.toLowerCase().includes(q) ||
-      country.capital.toLowerCase().includes(q) ||
-      country.code.toLowerCase() === q
-    ) {
-      results.push({
-        type: 'country',
-        id: country.id,
-        name: country.name,
-        subtitle: `Country • Capital: ${country.capital} • ${country.region}`,
-        capital: country.capital,
-        lat: country.lat,
-        lon: country.lon,
-        countryCode: country.code,
-        region: country.region,
-        population: country.population,
-      });
-      if (results.length >= limit) return results;
-    }
-  }
+  const exactMatches = [];
+  const prefixMatches = [];
+  const substringMatches = [];
 
   // Match cities
   for (const city of WORLD_CITIES) {
-    if (
-      city.name.toLowerCase().includes(q) ||
+    const nameLower = city.name.toLowerCase();
+    const item = {
+      type: 'city',
+      id: city.id,
+      name: city.name,
+      subtitle: `${city.country} • ${city.region || ''} ${city.isCapital ? '⭐ Capital' : ''}`,
+      country: city.country,
+      countryCode: city.countryCode,
+      region: city.region,
+      lat: city.lat,
+      lon: city.lon,
+      tier: city.tier,
+      population: city.population,
+      isCapital: city.isCapital,
+    };
+
+    if (nameLower === q) {
+      exactMatches.push(item);
+    } else if (nameLower.startsWith(q)) {
+      prefixMatches.push(item);
+    } else if (
+      nameLower.includes(q) ||
       city.country.toLowerCase().includes(q) ||
       city.region?.toLowerCase().includes(q)
     ) {
-      results.push({
-        type: 'city',
-        id: city.id,
-        name: city.name,
-        subtitle: `${city.country} • ${city.region || ''} ${city.isCapital ? '⭐ Capital' : ''}`,
-        country: city.country,
-        countryCode: city.countryCode,
-        region: city.region,
-        lat: city.lat,
-        lon: city.lon,
-        tier: city.tier,
-        population: city.population,
-        isCapital: city.isCapital,
-      });
-      if (results.length >= limit) return results;
+      substringMatches.push(item);
     }
   }
 
-  return results;
+  // Match countries
+  for (const country of WORLD_COUNTRIES) {
+    const nameLower = country.name.toLowerCase();
+    const item = {
+      type: 'country',
+      id: country.id,
+      name: country.name,
+      subtitle: `Country • Capital: ${country.capital} • ${country.region}`,
+      capital: country.capital,
+      lat: country.lat,
+      lon: country.lon,
+      countryCode: country.code,
+      region: country.region,
+      population: country.population,
+    };
+
+    if (nameLower === q || country.code.toLowerCase() === q) {
+      exactMatches.push(item);
+    } else if (nameLower.startsWith(q)) {
+      prefixMatches.push(item);
+    } else if (
+      nameLower.includes(q) ||
+      country.capital.toLowerCase().includes(q)
+    ) {
+      substringMatches.push(item);
+    }
+  }
+
+  return [...exactMatches, ...prefixMatches, ...substringMatches].slice(0, limit);
 };
 
 /**
