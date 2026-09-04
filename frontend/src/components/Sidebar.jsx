@@ -34,21 +34,49 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const navItems = [
-    { label: t('nav.commandHud', 'Command HUD'), path: '/dashboard', icon: 'activity', section: 'OPERATION' },
-    { label: t('nav.emergencySos', 'Emergency SOS'), path: '/sos', icon: 'sos', badge: t('common.live', 'LIVE'), section: 'OPERATION' },
-    { label: t('nav.reliefShelters', 'Relief Shelters'), path: '/shelters', icon: 'shelter', section: 'OPERATION' },
-    { label: t('nav.affectedAreas', 'Affected Areas'), path: '/affected-areas', icon: 'map', section: 'OPERATION' },
-    { label: t('nav.crisisAlerts', 'Crisis Alerts'), path: '/alerts', icon: 'bell', section: 'OPERATION' },
-    { label: t('nav.weatherIntelligence', 'Weather Intelligence'), path: '/weather', icon: 'cloud', badge: t('common.live', 'LIVE'), section: 'OPERATION' },
-    { label: t('nav.hazardReports', 'Hazard Reports'), path: '/incidents', icon: 'warning', section: 'REPORTING' },
-    { label: t('nav.mySubmissions', 'My Submissions'), path: '/my-reports', icon: 'report', section: 'REPORTING' },
-    { label: t('nav.emergencyFacilities', 'Emergency Facilities'), path: '/resources', icon: 'hospital', section: 'SUPPLY' },
-    { label: t('nav.aidDonations', 'Aid Donations'), path: '/donations', icon: 'donations', section: 'SUPPLY' },
-    { label: t('nav.distributionTransit', 'Distribution Transit'), path: '/resource-tracking', icon: 'logistics', section: 'SUPPLY' },
-    { label: t('nav.transparencyLedger', 'Transparency Ledger'), path: '/transparency', icon: 'ledger', section: 'AUDIT' },
-    { label: t('nav.safetyProtocols', 'Safety Protocols'), path: '/guides', icon: 'guide', section: 'SURVIVAL' },
-    { label: t('nav.offlineMode', 'Offline Mode'), path: '/offline', icon: 'offline', section: 'SURVIVAL' },
+  const navSections = [
+    {
+      title: 'MAIN',
+      items: [
+        { label: 'Home', path: '/', icon: 'activity' },
+        { label: 'Dashboard', path: '/dashboard', icon: 'activity' },
+        { label: 'SOS', path: '/sos', icon: 'sos', badge: 'LIVE' },
+        { label: 'Map', path: '/affected-areas', icon: 'map' },
+        { label: 'Alerts', path: '/alerts', icon: 'bell' },
+        { label: 'Weather', path: '/weather', icon: 'cloud' },
+      ],
+    },
+    {
+      title: 'RESPONSE',
+      items: [
+        { label: 'Shelters', path: '/shelters', icon: 'shelter' },
+        { label: 'Incidents', path: '/incidents', icon: 'warning' },
+        { label: 'Resources', path: '/resources', icon: 'hospital' },
+      ],
+    },
+    {
+      title: 'COMMUNITY',
+      items: [
+        { label: 'Donations', path: '/donations', icon: 'donations' },
+        { label: 'Preparedness', path: '/guides', icon: 'guide' },
+      ],
+    },
+    {
+      title: 'SYSTEM',
+      items: [
+        { label: 'Offline Mode', path: '/offline', icon: 'offline' },
+        {
+          label: 'AI Assistant',
+          path: '#ai',
+          icon: 'bot',
+          isAction: true,
+          action: () => {
+            window.dispatchEvent(new CustomEvent('disasterchain:ai-assistant-open', { detail: { query: '' } }));
+          },
+        },
+        { label: 'Profile', path: '/profile', icon: 'profile' },
+      ],
+    },
   ];
 
   return (
@@ -56,92 +84,95 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
       {/* Desktop Spatial Command Rail */}
       {!hideDesktopRail && (
         <aside className="command-rail">
-        {/* Admin Quick Terminal Access */}
-        {isAdmin && (
-          <div style={{ marginBottom: '1.25rem' }}>
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `btn ${isActive ? 'btn-primary' : 'btn-secondary'}`
-              }
-              style={{
-                width: '100%',
-                justifyContent: 'flex-start',
-                padding: '0.65rem 0.85rem',
-                fontSize: '0.8rem',
-                border: '1px solid var(--border-highlight)',
-                boxShadow: 'var(--glow-cyan)',
-              }}
-            >
-              <Icon name="shield" size={16} color="var(--cyan)" />
-              <span>{t('nav.adminCommand', 'ADMIN COMMAND')}</span>
-            </NavLink>
+          {/* Admin Quick Terminal Access */}
+          {isAdmin && (
+            <div style={{ marginBottom: '1rem' }}>
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `btn ${isActive ? 'btn-primary' : 'btn-secondary'}`
+                }
+                style={{
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  padding: '0.65rem 0.85rem',
+                  fontSize: '0.8rem',
+                  border: '1px solid var(--border-highlight)',
+                }}
+              >
+                <Icon name="shield" size={16} color="var(--cyan)" />
+                <span>{t('nav.adminCommand', 'ADMIN COMMAND')}</span>
+              </NavLink>
+            </div>
+          )}
+
+          {/* Grouped Navigation Links */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto' }}>
+            {navSections.map((sec) => (
+              <div key={sec.title} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    color: '#94a3b8',
+                    letterSpacing: '0.08em',
+                    padding: '0.2rem 0.75rem',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {sec.title}
+                </div>
+                {sec.items.map((item) => {
+                  if (item.isAction) {
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={item.action}
+                        className="rail-nav-item"
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          width: '100%',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span className="nav-icon-wrap">
+                          <Icon name={item.icon} size={17} />
+                        </span>
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  }
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      end={item.path === '/'}
+                      className={({ isActive }) =>
+                        `rail-nav-item ${isActive ? 'active' : ''}`
+                      }
+                    >
+                      <span className="nav-icon-wrap">
+                        <Icon name={item.icon} size={17} />
+                      </span>
+                      <span>{item.label}</span>
+                      {item.badge && (
+                        <span className="rail-nav-badge badge badge-critical">
+                          {item.badge}
+                        </span>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-        )}
-
-        {/* Operational Role Badge */}
-        {!isAdmin && isPrivileged && (
-          <div
-            style={{
-              marginBottom: '1rem',
-              padding: '0.45rem 0.75rem',
-              borderRadius: 'var(--radius-sm)',
-              background: 'rgba(0, 240, 255, 0.08)',
-              border: '1px solid var(--border-subtle)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <span className="live-beacon-pulse" />
-            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              ROLE: {role.toUpperCase()}
-            </span>
-          </div>
-        )}
-
-        {/* Grouped Navigation Links */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <div className="rail-section-title">{t('nav.navigationMenu', 'MISSION DIRECTORY')}</div>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `rail-nav-item ${isActive ? 'active' : ''}`
-              }
-            >
-              <span className="nav-icon-wrap">
-                <Icon name={item.icon} size={17} />
-              </span>
-              <span>{item.label}</span>
-              {item.badge && (
-                <span className="rail-nav-badge badge badge-critical">
-                  {item.badge}
-                </span>
-              )}
-            </NavLink>
-          ))}
-        </div>
-
-        {/* Tactical Personnel Account Link */}
-        <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `rail-nav-item ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="nav-icon-wrap">
-              <Icon name="profile" size={17} />
-            </span>
-            <span>{t('nav.profile', 'Personnel Dossier')}</span>
-          </NavLink>
-        </div>
-      </aside>
+        </aside>
       )}
 
-      {/* Mobile Slide-Out Drawer Navigation (Triggered via Navbar hamburger) */}
+      {/* Mobile Slide-Out Drawer Navigation */}
       <div
         className={`mobile-drawer-backdrop ${isOpen ? 'open' : ''}`}
         onClick={onClose}
@@ -150,7 +181,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
 
       <aside
         className={`mobile-nav-drawer ${isOpen ? 'open' : ''}`}
-        aria-label="Mobile Mission Directory"
+        aria-label="Mobile Navigation Menu"
       >
         {/* Drawer Header */}
         <div className="mobile-drawer-header">
@@ -159,22 +190,23 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
               style={{
                 width: '34px',
                 height: '34px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'linear-gradient(135deg, rgba(255, 107, 44, 0.25), rgba(245, 158, 11, 0.15))',
-                border: '1px solid var(--border-highlight)',
+                borderRadius: '8px',
+                background: 'rgba(255, 107, 44, 0.15)',
+                border: '1px solid rgba(255, 107, 44, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                color: '#ff6b2c',
               }}
             >
-              <Icon name="shield-check" size={18} color="var(--primary)" />
+              <Icon name="shield-check" size={18} />
             </div>
             <div>
               <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#ffffff' }}>
                 DISASTERCHAIN
               </div>
-              <div className="micro-label" style={{ color: 'var(--primary)' }}>
-                {t('nav.navigationMenu', 'MISSION DIRECTORY')}
+              <div style={{ fontSize: '0.72rem', color: '#ff6b2c', fontWeight: 600 }}>
+                Emergency response, simplified
               </div>
             </div>
           </div>
@@ -184,6 +216,13 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
             className="mobile-drawer-close-btn"
             onClick={onClose}
             aria-label="Close Navigation Drawer"
+            style={{
+              minWidth: '44px',
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             ✕
           </button>
@@ -200,133 +239,117 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
           style={{
             width: '100%',
             marginBottom: '1rem',
-            padding: '0.65rem',
+            minHeight: '48px',
             justifyContent: 'center',
-            fontSize: '0.85rem',
+            fontSize: '0.9rem',
             fontWeight: 800,
           }}
         >
           <Icon name="alert-circle" size={18} color="#ffffff" />
-          <span>{t('nav.broadcastSos', 'BROADCAST SOS')}</span>
+          <span>EMERGENCY SOS</span>
         </button>
 
-        {/* Admin Terminal Link */}
-        {isAdmin && (
-          <div style={{ marginBottom: '1rem' }}>
-            <NavLink
-              to="/admin"
-              onClick={onClose}
-              className={({ isActive }) =>
-                `btn ${isActive ? 'btn-primary' : 'btn-secondary'}`
-              }
-              style={{
-                width: '100%',
-                justifyContent: 'flex-start',
-                padding: '0.65rem 0.85rem',
-                fontSize: '0.82rem',
-                border: '1px solid var(--border-highlight)',
-              }}
-            >
-              <Icon name="shield" size={16} color="var(--cyan)" />
-              <span>{t('nav.adminCommand', 'ADMIN COMMAND')}</span>
-            </NavLink>
-          </div>
-        )}
-
-        {/* Operational Role Indicator */}
-        {!isAdmin && isPrivileged && (
-          <div
-            style={{
-              marginBottom: '0.85rem',
-              padding: '0.45rem 0.75rem',
-              borderRadius: 'var(--radius-sm)',
-              background: 'rgba(0, 240, 255, 0.08)',
-              border: '1px solid var(--border-subtle)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <span className="live-beacon-pulse" />
-            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              ROLE: {role.toUpperCase()}
-            </span>
-          </div>
-        )}
-
-        {/* Full Navigation Item List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `rail-nav-item ${isActive ? 'active' : ''}`
-              }
-              style={{ minHeight: '44px' }}
-            >
-              <span className="nav-icon-wrap">
-                <Icon name={item.icon} size={18} />
-              </span>
-              <span style={{ fontSize: '0.9rem' }}>{item.label}</span>
-              {item.badge && (
-                <span className="rail-nav-badge badge badge-critical">
-                  {item.badge}
-                </span>
-              )}
-            </NavLink>
+        {/* Grouped Nav Items for Mobile Drawer */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto', flex: 1 }}>
+          {navSections.map((sec) => (
+            <div key={sec.title} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div
+                style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  color: '#94a3b8',
+                  letterSpacing: '0.08em',
+                  padding: '0.2rem 0.5rem',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {sec.title}
+              </div>
+              {sec.items.map((item) => {
+                if (item.isAction) {
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        item.action();
+                      }}
+                      className="rail-nav-item"
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        width: '100%',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        minHeight: '44px',
+                      }}
+                    >
+                      <span className="nav-icon-wrap">
+                        <Icon name={item.icon} size={18} />
+                      </span>
+                      <span style={{ fontSize: '0.92rem' }}>{item.label}</span>
+                    </button>
+                  );
+                }
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.path === '/'}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `rail-nav-item ${isActive ? 'active' : ''}`
+                    }
+                    style={{ minHeight: '44px' }}
+                  >
+                    <span className="nav-icon-wrap">
+                      <Icon name={item.icon} size={18} />
+                    </span>
+                    <span style={{ fontSize: '0.92rem' }}>{item.label}</span>
+                    {item.badge && (
+                      <span className="rail-nav-badge badge badge-critical">
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
           ))}
-        </div>
 
-        {/* PWA Mobile Installation Trigger */}
-        {isInstallable && !isInstalled && (
-          <div style={{ marginTop: '0.75rem', marginBottom: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                promptInstall();
-              }}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '11px 14px',
-                borderRadius: 'var(--radius-sm, 8px)',
-                background: 'linear-gradient(135deg, rgba(255, 107, 44, 0.18), rgba(245, 158, 11, 0.12))',
-                border: '1px solid var(--border-highlight, #FF6B2C)',
-                color: '#FFF',
-                fontWeight: '700',
-                fontSize: '0.88rem',
-                cursor: 'pointer',
-                minHeight: '44px',
-              }}
-            >
-              <span className="nav-icon-wrap" style={{ color: 'var(--primary, #FF6B2C)' }}>
-                <Icon name="download" size={18} />
-              </span>
-              <span>{t('pwa.installApp', 'Install DisasterChain App')}</span>
-            </button>
-          </div>
-        )}
-
-        {/* Footer Link: Personnel Profile */}
-        <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid var(--border-subtle)' }}>
-          <NavLink
-            to="/profile"
-            onClick={onClose}
-            className={({ isActive }) =>
-              `rail-nav-item ${isActive ? 'active' : ''}`
-            }
-            style={{ minHeight: '44px' }}
-          >
-            <span className="nav-icon-wrap">
-              <Icon name="profile" size={18} />
-            </span>
-            <span style={{ fontSize: '0.9rem' }}>{t('nav.profile', 'Personnel Dossier')}</span>
-          </NavLink>
+          {/* PWA Mobile Installation Trigger */}
+          {isInstallable && !isInstalled && (
+            <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  promptInstall();
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '11px 14px',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 107, 44, 0.15)',
+                  border: '1px solid rgba(255, 107, 44, 0.5)',
+                  color: '#FFF',
+                  fontWeight: '700',
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  minHeight: '44px',
+                }}
+              >
+                <span className="nav-icon-wrap" style={{ color: '#ff6b2c' }}>
+                  <Icon name="download" size={18} />
+                </span>
+                <span>Install DisasterChain App</span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
     </>
