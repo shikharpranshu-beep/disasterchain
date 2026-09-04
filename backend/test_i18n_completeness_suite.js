@@ -189,6 +189,7 @@ async function runCompletenessSuite() {
     'OfflineSyncBadge.jsx',
     'Sidebar.jsx',
     'Navbar.jsx',
+    'Footer.jsx',
   ];
 
   criticalComponents.forEach((cmpName) => {

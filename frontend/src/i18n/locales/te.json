@@ -579,5 +579,8 @@
     "nonCommercialNotice": "పౌర భద్రత కోసం వాణిజ్యేతర అత్యవసర డేటా ఆర్కిటెక్చర్.",
     "unavailable": "వాతావరణ సమాచారం అందుబాటులో లేదు",
     "errorNotice": "బాహ్య ఫీడ్‌లు అందుబాటులో లేవు. స్థానిక కాష్డ్ రికార్డులు చురుకుగా ఉన్నాయి."
+  },
+  "footer": {
+    "developedBy": "Developed by Pranshu Shikhar"
   }
 }

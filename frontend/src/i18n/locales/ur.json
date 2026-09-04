@@ -579,5 +579,8 @@
     "nonCommercialNotice": "شہری تحفظ کیلئے غیر تجارتی ہنگامی ڈیٹا آرکیٹیکچر۔",
     "unavailable": "موسمیاتی ڈیٹا دستیاب نہیں ہے",
     "errorNotice": "بیرونی فضائی فیڈز تک رسائی ممکن نہیں۔ مقامی محفوظ شدہ ریکارڈ فعال ہے۔"
+  },
+  "footer": {
+    "developedBy": "Developed by Pranshu Shikhar"
   }
 }

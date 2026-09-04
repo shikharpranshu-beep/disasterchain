@@ -301,13 +301,6 @@ const LandingPage = ({ onOpenSos }) => {
           ))}
         </div>
       </section>
-
-      {/* Footer */}
-      <footer style={{ background: 'var(--bg-void)', borderTop: '1px solid var(--border-subtle)', padding: '2rem 1.5rem', textAlign: 'center' }}>
-        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-          {t('landing.footerText')}
-        </div>
-      </footer>
     </div>
   );
 };

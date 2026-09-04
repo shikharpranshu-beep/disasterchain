@@ -6,6 +6,7 @@ import { LanguageProvider } from './i18n/i18n';
 // Components
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import Footer from './components/Footer';
 import SosModal from './components/SosModal';
 import IncidentModal from './components/IncidentModal';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -130,6 +131,9 @@ const AppLayout = () => {
             />
           </Routes>
         </main>
+
+        {/* Shared Global Application Footer */}
+        <Footer />
       </div>
 
       {/* Persistent Mobile Emergency Bottom Navigation (Phase 13) */}

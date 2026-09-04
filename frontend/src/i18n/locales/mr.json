@@ -579,5 +579,8 @@
     "nonCommercialNotice": "नागरी संरक्षणासाठी गैर-व्यावसायिक आणीबाणी डेटा संरचना.",
     "unavailable": "हवामान डेटा अनुपलब्ध",
     "errorNotice": "बाह्य फीडपर्यंत पोहोचता आले नाही. स्थानिक कॅश डेटा सक्रिय आहे."
+  },
+  "footer": {
+    "developedBy": "Developed by Pranshu Shikhar"
   }
 }

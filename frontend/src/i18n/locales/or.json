@@ -579,5 +579,8 @@
     "nonCommercialNotice": "Compliant non-commercial civic emergency intelligence data architecture.",
     "unavailable": "WEATHER DATA UNAVAILABLE",
     "errorNotice": "External atmospheric feeds could not be reached. Local cached weather records remain active."
+  },
+  "footer": {
+    "developedBy": "Developed by Pranshu Shikhar"
   }
 }
