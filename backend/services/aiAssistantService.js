@@ -50,9 +50,43 @@ const EMERGENCY_KEYWORDS = [
   'unconscious',
   'smoke inhalation',
   'electrocution',
+  'crushed',
+  'rubble',
+  'chest pain',
+  'severe hemorrhage',
+  'hypothermia',
+  'suffocating',
+  'gas leak',
+  'amputation',
+  'in immediate danger',
+  'water rising fast',
 ];
 
-// Verified Fallback Preparedness Guides
+// Off-topic keywords to politely deflect back to disaster management
+const OFF_TOPIC_KEYWORDS = [
+  'joke',
+  'jokes',
+  'riddle',
+  'poem',
+  'poetry',
+  'sing a song',
+  'write a story',
+  'recipe',
+  'cooking recipe',
+  'who won the match',
+  'football score',
+  'cricket score',
+  'crypto',
+  'bitcoin',
+  'stock market',
+  'dating advice',
+  'movie review',
+  'video game',
+  'write code in python',
+  'do my homework',
+];
+
+// Verified Fallback Preparedness Guides covering 15+ Disaster Types and Preparedness Topics
 const PREPAREDNESS_GUIDES = {
   earthquake: {
     title: 'Earthquake Safety & Structural Collapse Protocols',
@@ -62,127 +96,688 @@ const PREPAREDNESS_GUIDES = {
       'Cover head and neck with arms or sturdy furniture.',
       'Hold on until shaking completely stops.',
       'Use stairs only when evacuating buildings.',
+      'Expect and prepare for strong aftershocks.',
     ],
     donts: [
       'Do NOT use elevators during or after earthquakes.',
       'Do NOT run outside while ground shaking is active.',
       'Do NOT light matches or candles if gas leaks are suspected.',
+      'Do NOT stand under glass windows, mirrors, or heavy lighting fixtures.',
     ],
-    kit: ['Water (3L/person/day)', 'Battery-powered AM/FM radio', 'High-intensity LED flashlight', 'Emergency whistle', 'First aid kit'],
+    kit: [
+      'Water (3L/person/day for 3 days)',
+      'Battery-powered AM/FM radio with extra cells',
+      'High-intensity LED flashlight & work gloves',
+      'Emergency whistle for acoustic signaling',
+      'Comprehensive first aid kit with tourniquets',
+    ],
   },
   flood: {
     title: 'Flood & Rapid Waterlogging Response Protocols',
     immediate: 'Move immediately to higher floors or high ground. Turn off electricity mains.',
     dos: [
       'Move to higher ground or upper building levels.',
-      'Shut off main electrical breakers before water enters.',
-      'Boil all drinking water or use purification tablets.',
-      'Follow official evacuation alerts promptly.',
+      'Shut off main electrical breakers and gas before water enters.',
+      'Boil all drinking water or use chlorine purification tablets.',
+      'Follow official evacuation alerts and designated safe corridors promptly.',
     ],
     donts: [
       'Do NOT walk through moving water currents (6 inches can knock an adult down).',
-      'Do NOT drive into waterlogged roads or underpasses.',
+      'Do NOT drive into waterlogged roads, flooded dips, or underpasses ("Turn Around, Don\'t Drown").',
       'Do NOT touch submerged electronic equipment or fallen wires.',
+      'Do NOT consume tap water until municipal safety is confirmed.',
     ],
-    kit: ['Waterproof pouch for ID and cash', 'Chlorine water purification tablets', 'Non-perishable food rations', 'Portable mobile power bank'],
+    kit: [
+      'Waterproof floating pouch for government ID, deeds & cash',
+      'Chlorine water purification tablets or portable filter straw',
+      'Non-perishable high-calorie food rations',
+      'Portable mobile power bank with sealed waterproof cable',
+      'High-visibility reflective life vest or floatation aid',
+    ],
   },
   fire: {
     title: 'Fire Safety & Smoke Evacuation Protocols',
     immediate: 'CRAWL LOW under smoke toward the nearest fire exit. Feel door handles before opening.',
     dos: [
-      'Crawl low under smoke where breathable air remains.',
-      'Feel door handles with the back of your hand before opening.',
-      'If clothes catch fire: STOP, DROP to ground, and ROLL.',
-      'Evacuate immediately via stairwells.',
+      'Crawl low under smoke where breathable oxygen remains.',
+      'Feel door handles with the back of your hand before opening; if hot, keep closed.',
+      'If clothes catch fire: STOP, DROP to the ground, and ROLL repeatedly.',
+      'Evacuate immediately via designated fire exit stairwells.',
+      'Close doors behind you to slow flame and smoke progression.',
     ],
     donts: [
       'Do NOT use elevators during a fire evacuation.',
       'Do NOT open doors that feel warm to the touch.',
-      'Do NOT re-enter a burning building for any belongings.',
+      'Do NOT re-enter a burning building for any pets or belongings.',
+      'Do NOT attempt to fight raging structural fires with basic domestic equipment.',
     ],
-    kit: ['Emergency smoke escape hoods / N95 masks', 'ABC dry chemical extinguisher', 'Fire blanket', 'Sterile burn gel dressings'],
+    kit: [
+      'Emergency smoke escape hoods / certified N95 or P100 masks',
+      'ABC dry chemical fire extinguisher',
+      'Flame-retardant fiberglass fire blanket',
+      'Sterile burn gel dressings and non-adherent bandages',
+      'Heavy-duty leather work gloves',
+    ],
   },
   cyclone: {
-    title: 'Cyclone & Severe Windstorm Protocols',
+    title: 'Cyclone, Hurricane & Severe Windstorm Protocols',
     immediate: 'Remain indoors in an interior windowless room (bathroom or central corridor).',
     dos: [
-      'Stay in central windowless interior rooms.',
-      'Keep mobile phones in power-saving mode.',
-      'Stockpile 5 days of non-perishable food and potable water.',
+      'Stay in central windowless interior rooms on lowest non-flooding level.',
+      'Keep mobile phones in extreme battery-saving mode.',
+      'Stockpile 5 to 7 days of non-perishable food and potable water.',
+      'Secure loose outdoor objects, shutters, and roof sheets beforehand.',
+      'Disconnect electrical appliances to avoid storm power surge damage.',
     ],
     donts: [
-      'Do NOT venture outside during the calm "eye" of the storm.',
-      'Do NOT stand near large glass windows or skylights.',
+      'Do NOT venture outside during the calm "eye" of the storm (destructive reverse winds follow).',
+      'Do NOT stand near large glass windows, french doors, or skylights.',
+      'Do NOT park vehicles under large trees, utility towers, or metal hoardings.',
     ],
-    kit: ['Transistor radio with extra batteries', 'Heavy-duty tarpaulin & rope', 'Prescription medicines for 7 days'],
+    kit: [
+      'Transistor radio with extra batteries',
+      'Heavy-duty waterproof tarpaulin & nylon cordage',
+      'Prescription medicines for at least 7 to 14 days',
+      'Multi-tool with wrench and pliers for emergency valve shutoff',
+    ],
+  },
+  tsunami: {
+    title: 'Tsunami & Coastal Surge Safety Protocols',
+    immediate: 'If you feel strong coastal shaking or see sudden ocean recession, flee immediately to high ground (at least 30m above sea level or 3km inland).',
+    dos: [
+      'Immediately evacuate on foot to high ground or inland if near the coast.',
+      'Seek vertical evacuation in upper floors of reinforced multi-story concrete buildings if high ground is unreachable.',
+      'Stay inland until civil defense authorities declare the all-clear (tsunamis arrive in series of waves hours apart).',
+    ],
+    donts: [
+      'Do NOT go to the shore or beach to watch waves or receding water.',
+      'Do NOT return to low-lying coastal areas after the first wave.',
+      'Do NOT use private cars if roads are bottlenecked; evacuate on foot.',
+    ],
+    kit: [
+      'Compact emergency bug-out bag with water and rations',
+      'Emergency thermal space blankets',
+      'Waterproof whistle and strobe signaling light',
+    ],
   },
   landslide: {
     title: 'Landslide & Mudflow Safety Protocols',
-    immediate: 'If movement is heard or observed, evacuate immediately to stable high ground.',
+    immediate: 'If slope movement or loud rumbling is heard, evacuate immediately perpendicular to the slide path.',
     dos: [
-      'Evacuate immediately if slope rumbling or ground cracking occurs.',
-      'Curl into a tight protective ball if caught indoors.',
+      'Evacuate immediately if slope rumbling, cracking trees, or sudden muddy runoff occurs.',
+      'Move sideways away from the path of the flow, seeking stable rock outcroppings or ridgelines.',
+      'Curl into a tight protective ball and protect your head if caught indoors.',
     ],
     donts: [
-      'Do NOT cross fresh mudflow paths.',
-      'Do NOT remain near steep riverbanks during torrential rain.',
+      'Do NOT cross fresh mudflow channels or swollen mountain ravines.',
+      'Do NOT remain near steep cliffs or unstable riverbanks during torrential rain.',
+      'Do NOT build or stay in low-lying alluvial fans or debris drainage gullies.',
     ],
-    kit: ['Sturdy hiking boots', 'Emergency high-vis signaling vest', 'Whistle and emergency beacon'],
+    kit: [
+      'Sturdy hiking boots with ankle support',
+      'Emergency high-visibility signaling vest',
+      'Acoustic distress whistle and personal emergency beacon',
+    ],
   },
   heatwave: {
-    title: 'Extreme Heatwave & Dehydration Prevention',
-    immediate: 'Stay in shaded/air-conditioned indoor areas. Hydrate frequently with electrolytes.',
+    title: 'Extreme Heatwave & Hyperthermia Prevention Protocols',
+    immediate: 'Stay in shaded or air-conditioned indoor areas. Hydrate frequently with oral rehydration salts.',
     dos: [
-      'Drink plenty of water and ORS electrolytes.',
-      'Wear lightweight, loose-fitting light-colored cotton clothing.',
-      'Sponge skin with cool water if feeling dizziness or nausea.',
+      'Drink plenty of cool water and ORS electrolytes even before feeling thirsty.',
+      'Wear lightweight, loose-fitting, light-colored breathable cotton clothing.',
+      'Sponge skin with cool wet towels if experiencing dizziness, headaches, or nausea.',
+      'Keep curtains and shades closed during peak daytime hours to block solar radiation.',
     ],
     donts: [
-      'Do NOT leave children or pets inside parked vehicles.',
-      'Do NOT engage in strenuous outdoor activity between 11 AM and 4 PM.',
+      'Do NOT leave children, elderly persons, or pets inside parked vehicles for ANY amount of time.',
+      'Do NOT engage in strenuous outdoor labor or exercise between 11 AM and 4 PM.',
+      'Do NOT consume excessive alcohol, caffeinated energy drinks, or heavily sugary beverages.',
     ],
-    kit: ['ORS electrolyte sachets', 'Insulated cold-water bottle', 'Broad-spectrum SPF 50 sunscreen'],
+    kit: [
+      'Oral Rehydration Salt (ORS) sachets and electrolyte powders',
+      'Insulated double-walled cold-water container',
+      'Broad-spectrum SPF 50+ sunscreen and wide-brimmed hat',
+      'Digital medical thermometer and instant cold packs',
+    ],
+  },
+  extreme_cold: {
+    title: 'Extreme Cold, Blizzard & Hypothermia Protocols',
+    immediate: 'Seek warm insulated shelter immediately. Layer clothing and protect extremities from frostbite.',
+    dos: [
+      'Dress in multiple loose, warm, moisture-wicking layers topped with a windproof outer shell.',
+      'Cover head, face, neck, and hands (mittens are warmer than gloves).',
+      'Keep indoor heating ventilated to prevent lethal carbon monoxide poisoning.',
+      'Recognize early hypothermia symptoms: shivering, slurred speech, confusion, drowsiness.',
+    ],
+    donts: [
+      'Do NOT use outdoor fuel generators or charcoal grills inside enclosed rooms or tents.',
+      'Do NOT rub frostbitten skin or apply direct intense heat (use gentle warm water bath instead).',
+      'Do NOT venture outside into whiteout conditions where orientation is lost within meters.',
+    ],
+    kit: [
+      'Mylar thermal space blankets and zero-degree rated sleeping bags',
+      'Hand and foot chemical thermal warmers',
+      'Battery-powered carbon monoxide detector',
+      'High-calorie energy bars and thermos flask',
+    ],
+  },
+  storm: {
+    title: 'Severe Thunderstorm & Gale Protocols',
+    immediate: 'Take shelter inside a substantial building or fully enclosed metal vehicle immediately.',
+    dos: [
+      'Seek shelter in a solid enclosed structure away from windows.',
+      'Unplug sensitive electronic devices and home entertainment systems.',
+      'Secure patio furniture, trash bins, and sheet metal outside.',
+    ],
+    donts: [
+      'Do NOT seek shelter under isolated trees, metal pavilions, or carports.',
+      'Do NOT walk or drive through flooded roads or under passes.',
+      'Do NOT use corded landline phones or touch plumbing fixtures during electrical storms.',
+    ],
+    kit: [
+      'Emergency hand-crank emergency radio',
+      'Sturdy wind-resistant umbrellas and rain ponchos',
+      'Heavy-duty work gloves and flashlights',
+    ],
+  },
+  lightning: {
+    title: 'Lightning Strike & High-Voltage Surge Protocols',
+    immediate: 'When thunder roars, go indoors! Seek an enclosed building or hard-topped vehicle immediately.',
+    dos: [
+      'Remember the 30/30 rule: go indoors if thunder occurs within 30 seconds of lightning; stay in for 30 minutes after last sound.',
+      'If trapped outdoors in an open field: crouch low on the balls of your feet with heels together and head tucked ("lightning crouch").',
+      'Administer immediate CPR to lightning strike victims (they do not carry electrical charge and are safe to touch).',
+    ],
+    donts: [
+      'Do NOT lie flat on the ground (this increases ground current surface area).',
+      'Do NOT hold tall metal poles, golf clubs, fishing rods, or metal umbrellas.',
+      'Do NOT touch wired electronics, showers, or water faucets during active strikes.',
+    ],
+    kit: [
+      'Battery-powered portable radio',
+      'Emergency medical kit with CPR face shield',
+      'Rubber-soled boots and non-conductive safety gear',
+    ],
+  },
+  building_collapse: {
+    title: 'Building Collapse & Structural Void Survival Protocols',
+    immediate: 'If trapped under structural rubble: cover nose/mouth with cloth, conserve oxygen, tap rhythmically on pipes/walls.',
+    dos: [
+      'Protect your airway with clothing or handkerchief to avoid suffocating on pulverized concrete dust.',
+      'Tap in rhythmic bursts of 3 on metal pipes, beams, or solid masonry to alert acoustic search sensors.',
+      'Listen for rescue dog barks or responder hailing calls before shouting.',
+      'Conserve flashlight batteries and body hydration.',
+    ],
+    donts: [
+      'Do NOT light matches or lighters (gas leaks are widespread in structural collapse).',
+      'Do NOT shout continuously (shouting exhausts oxygen and causes severe dust inhalation).',
+      'Do NOT make erratic, violent movements that could trigger secondary collapse shifts.',
+    ],
+    kit: [
+      'High-decibel rescue whistle',
+      'Dust-filtering particulate mask (N95/KN95/P100)',
+      'Miniature tactical penlight with strobe mode',
+    ],
+  },
+  industrial_accident: {
+    title: 'Industrial Plant Hazard & Vapor Cloud Protocols',
+    immediate: 'Evacuate UPWIND and UPHILL from industrial facilities, or shelter-in-place sealing all doors/windows with tape.',
+    dos: [
+      'Determine wind direction and immediately evacuate upwind and crosswind of any visible vapor plume.',
+      'If instructed to shelter-in-place: close all external windows, doors, and fireplace dampers; turn off HVAC and air intakes.',
+      'Seal gaps around windows and doors with plastic sheeting and duct tape.',
+    ],
+    donts: [
+      'Do NOT approach industrial factory perimeters or overturned chemical tank trucks.',
+      'Do NOT touch unknown liquid puddles, vapor clouds, or residue.',
+      'Do NOT inhale unknown vapors (cover face with a wet dense cloth if caught outdoors).',
+    ],
+    kit: [
+      'Duct tape and heavy 4-mil plastic sheeting',
+      'Activated carbon respirators or P100 chemical vapor masks',
+      'Battery-operated emergency weather radio',
+    ],
+  },
+  chemical_emergency: {
+    title: 'Hazardous Chemical Leak & HAZMAT Inhalation Protocols',
+    immediate: 'Immediately move crosswind and uphill away from chemical clouds. Remove contaminated clothing and rinse eyes.',
+    dos: [
+      'Move upwind and uphill away from the chemical source.',
+      'If contaminated: cut off clothing rather than pulling over your head; flush skin/eyes with copious cool running water for 15 minutes.',
+      'Cover airways with damp cloth or rated organic vapor filter.',
+      'Report chemical release location to emergency dispatch (112/101/911).',
+    ],
+    donts: [
+      'Do NOT walk into low-lying basins, basements, or ditches where heavy toxic gases pool.',
+      'Do NOT rub contaminated eyes or open chemical-exposed skin violently.',
+      'Do NOT reuse contaminated personal garments until cleared by HAZMAT decontamination.',
+    ],
+    kit: [
+      'Emergency eye wash sterile saline solution (500ml x 2)',
+      'Sealed chemical-resistant nitrile gloves',
+      'Full-seal splash goggles and chemical protective apron',
+    ],
+  },
+  road_accident: {
+    title: 'Mass Casualty Traffic Collision & Extrication Protocols',
+    immediate: 'Park your vehicle safely, turn on hazard blinkers, place warning triangles 50m behind, and call 112/911.',
+    dos: [
+      'Secure scene safety before approaching: turn off vehicle ignitions to prevent fuel tank ignition.',
+      'Call emergency dispatch (112/101/911) with exact highway kilometer marker, direction of travel, and victim count.',
+      'Check Airway, Breathing, and Circulation (ABC); apply direct firm pressure to severe bleeding.',
+      'Keep injured persons warm and immobilize their cervical spine/neck.',
+    ],
+    donts: [
+      'Do NOT move injured victims unless there is an imminent threat of vehicle fire or explosion.',
+      'Do NOT remove a motorcyclist\'s crash helmet unless breathing is obstructed.',
+      'Do NOT smoke or use open flames anywhere near vehicle accident scenes.',
+    ],
+    kit: [
+      'Reflective breakdown warning triangles (pair)',
+      'High-visibility safety vests for all vehicle occupants',
+      'Automotive trauma first aid kit with shears and pressure dressings',
+      'Seatbelt cutter and tempered glass window punch tool',
+    ],
+  },
+  crowd_emergency: {
+    title: 'Stampede & High-Density Crowd Crush Protocols',
+    immediate: 'Keep on your feet! Adopt a boxer\'s stance with arms held across your chest to preserve breathing space.',
+    dos: [
+      'Keep your footing at all costs; if shoes come off, keep moving.',
+      'Hold arms up in front of your chest like a boxer with elbows tucked to protect your rib cage and diaphragm from compressive asphyxiation.',
+      'Move diagonally with the crowd flow toward the periphery rather than pushing straight ahead or resisting.',
+      'If you fall down: curl into a fetal ball on your left side, tuck knees to chest, and wrap hands around your head and neck.',
+    ],
+    donts: [
+      'Do NOT fight directly against the direction of surging crowd momentum.',
+      'Do NOT stop to pick up dropped phones, wallets, or luggage.',
+      'Do NOT scream or shout unnecessarily (preserves vital oxygen).',
+    ],
+    kit: [
+      'Emergency acoustic whistle pinned to clothing collar',
+      'Hands-free crossbody bag (avoid bulky backpacks that trap limbs in dense crowds)',
+      'Physical identity card with emergency ICE phone contacts',
+    ],
+  },
+  emergency_kit: {
+    title: '72-Hour Disaster Survival & Bug-Out Bag Checklist',
+    immediate: 'Keep one grab-and-go bag per person near your main exit door, refreshed every 6 months.',
+    dos: [
+      'Pack 3 liters of water per person per day for at least 3 days (9L minimum per person).',
+      'Include ready-to-eat non-perishable high-protein foods (nuts, dried fruit, granola bars, MREs).',
+      'Store digital copies of passports, land deeds, insurance policies, and IDs on an encrypted flash drive in a waterproof pouch.',
+      'Include a 14-day supply of essential daily prescription medications and copies of medical prescriptions.',
+    ],
+    donts: [
+      'Do NOT overpack heavy luxury items that make the bag impossible to carry on foot for 10 kilometers.',
+      'Do NOT store expired foods or leaking alkaline batteries inside your go-bag.',
+    ],
+    kit: [
+      'Water purification tablets & stainless steel canteen',
+      'Multi-band NOAA weather radio with solar crank charging',
+      'Tactical LED headlamp with extra lithium batteries',
+      'Class 2 trauma first aid kit with clotting gauze',
+      'Emergency Mylar bivvy sleeping bag',
+      'Multi-tool, duct tape, and 550 military-spec paracord (15m)',
+    ],
+  },
+  evacuation: {
+    title: 'Evacuation Planning, Corridors & Assembly Zones',
+    immediate: 'Follow civil defense evacuation orders immediately. Take your go-bag, lock your home, and take primary designated routes.',
+    dos: [
+      'Know at least two distinct evacuation routes out of your neighborhood.',
+      'Designate an inland/out-of-zone assembly point where all family members agree to meet.',
+      'Unplug home appliances and turn off main water and gas shutoff valves before leaving.',
+      'Leave a note on your door stating the time and destination of your evacuation for emergency responders.',
+    ],
+    donts: [
+      'Do NOT delay evacuation until floodwaters or wildfire flames are visible at your doorstep.',
+      'Do NOT take hazardous shortcuts through unknown flooded dirt roads or forested trails.',
+    ],
+    kit: [
+      'Physical laminated road map of your county/district (GPS towers fail in major disasters)',
+      'Comfortable broken-in walking shoes',
+      'Cash in small denominations ($1, $5, $10 / ₹50, ₹100, ₹500 bills)',
+    ],
+  },
+  communication: {
+    title: 'Emergency Family Communications & Contact Plans',
+    immediate: 'Use text messages (SMS) instead of voice calls during disaster grid overload. Keep calls under 10 seconds.',
+    dos: [
+      'Designate an out-of-state/out-of-district contact person that all family members text during an emergency.',
+      'Send SMS rather than voice calls; text packets slip through congested cellular towers when voice circuits are busy.',
+      'Conserve phone battery: switch to extreme battery saver, dim screen, disable Bluetooth/Wi-Fi scanning.',
+    ],
+    donts: [
+      'Do NOT tie up emergency phone lines (112/911) with routine questions about power outages or weather updates.',
+      'Do NOT spread unverified rumors or social media claims that create panic.',
+    ],
+    kit: [
+      'Heavy-duty 20,000mAh external battery power bank',
+      'Paper card with important phone numbers written in waterproof ink',
+      'Analog emergency AM/FM receiver',
+    ],
+  },
+  first_aid: {
+    title: 'Critical Emergency First Aid & Trauma Management',
+    immediate: 'For severe bleeding: apply direct, firm, uninterrupted pressure with clean cloth or apply a commercial tourniquet 2-3 inches above wound.',
+    dos: [
+      'Direct pressure stops 90% of bleeding: press hard directly on the wound without lifting dressing to peek.',
+      'For unresponsive victim not breathing normally: start chest compressions immediately (100-120 beats/min to the beat of "Stayin\' Alive").',
+      'For burns: cool immediately with clean running tap water for 10-20 minutes; cover loosely with sterile cling wrap.',
+      'Keep trauma victims warm with blankets to prevent lethal hypothermic shock.',
+    ],
+    donts: [
+      'Do NOT apply butter, toothpaste, grease, or ice directly to burn wounds.',
+      'Do NOT remove an impaled object (knife, rebar, glass) from a wound; stabilize it in place with bulky bandages.',
+      'Do NOT give food or drink to an unconscious or severely bleeding trauma patient awaiting surgery.',
+    ],
+    kit: [
+      'Combat Application Tourniquet (CAT)',
+      'Hemostatic clotting gauze dressings (QuikClot / Celox)',
+      'Elastic pressure bandages (Israeli bandage)',
+      'Sterile burn dressings and hydrogel',
+      'CPR face mask with one-way valve',
+    ],
+  },
+  power_outage: {
+    title: 'Extended Power Outage & Utility Shutoff Protocols',
+    immediate: 'Keep refrigerator/freezer doors closed. Disconnect sensitive electronics to prevent power surge fires.',
+    dos: [
+      'Keep refrigerator closed (food stays cold for 4 hours; full freezer for 48 hours if unopened).',
+      'If you smell rotten eggs (mercaptan) indicating gas: evacuate immediately on foot without touching light switches, and turn off external gas valve.',
+      'Operate portable fuel generators exclusively OUTDOORS at least 20 feet away from windows, doors, and vents.',
+      'Know the exact location of your main water shutoff valve and electrical breaker panel.',
+    ],
+    donts: [
+      'Do NOT run generators inside garages, basements, or enclosed porches (carbon monoxide is colorless and odorless).',
+      'Do NOT use gas stoves, ovens, or open fire pits to heat interior rooms.',
+      'Do NOT leave candles unattended; use battery LED lanterns instead.',
+    ],
+    kit: [
+      'Battery LED lanterns and magnetic work lights',
+      'Crescent wrench for manual gas/water meter valve shutoff',
+      'Battery-powered carbon monoxide detector with digital PPM display',
+    ],
+  },
+  vulnerable_care: {
+    title: 'Vulnerable Population & Pet Disaster Preparedness',
+    immediate: 'Maintain a 14-day supply of specialty medicines, medical device backup batteries, and secure pet carriers.',
+    dos: [
+      'Create a neighborhood buddy network to assist elderly residents and those with limited mobility during evacuations.',
+      'Prepare portable battery power backups for oxygen concentrators, CPAP machines, and dialysis monitors.',
+      'Ensure pets have microchips, secure carriers, leashes, and 7 days of canned food/water.',
+      'Pack comfort items and familiar sensory soothing toys for young children and neurodivergent family members.',
+    ],
+    donts: [
+      'Do NOT leave companion animals chained or caged indoors during an evacuation.',
+      'Do NOT forget specialty infant formula, diapers, or pediatric fever medications in go-bags.',
+    ],
+    kit: [
+      'Collapsible pet travel crates, harnesses & vaccination records',
+      'Heavy-duty battery power station for medical devices',
+      '14-day supply of pediatric and geriatric maintenance medicines',
+      'Manual wheelchair tire pump and emergency repair patch kit',
+    ],
   },
 };
 
 /**
- * Detects user intent from incoming message string
+ * Safe internal accessors for DisasterChain live telemetry
+ */
+async function getActiveSOS(userRole = 'citizen') {
+  let raw = [];
+  if (isDbConnected()) {
+    raw = await SosRequest.find({ status: { $nin: ['Resolved', 'Cancelled'] } }).sort({ createdAt: -1 }).limit(20).lean();
+  } else {
+    raw = (memoryStore.sosRequests || []).filter((s) => s.status !== 'Resolved' && s.status !== 'Cancelled').slice(0, 20);
+  }
+
+  return raw.map((s) => ({
+    id: s._id || s.id,
+    emergencyType: s.emergencyType,
+    severity: s.severity,
+    location: s.location,
+    status: s.status,
+    peopleAffected: s.peopleAffected,
+    createdAt: s.createdAt,
+    contact: userRole === 'citizen' ? undefined : s.contact,
+    reporterName: userRole === 'citizen' ? undefined : s.name,
+  }));
+}
+
+async function getShelters(coordinates = null, userRole = 'citizen') {
+  let raw = [];
+  if (isDbConnected()) {
+    raw = await Shelter.find({}).lean();
+  } else {
+    raw = memoryStore.shelters || [];
+  }
+
+  const queryLat = coordinates?.latitude ?? (coordinates?.lat != null ? Number(coordinates.lat) : 28.6139);
+  const queryLon = coordinates?.longitude ?? (coordinates?.lng != null ? Number(coordinates.lng) : 77.2090);
+
+  const best = recommendBestShelter(queryLat, queryLon, raw);
+  const sanitizedBest = best ? sanitizeShelterForRole(best, userRole) : null;
+
+  const sanitizedList = raw.map((sh) => sanitizeShelterForRole(sh, userRole));
+
+  return {
+    best: sanitizedBest,
+    all: sanitizedList,
+    totalCount: raw.length,
+  };
+}
+
+async function getIncidents(userRole = 'citizen') {
+  let raw = [];
+  if (isDbConnected()) {
+    raw = await Incident.find({ status: { $nin: ['Resolved', 'Rejected'] } }).sort({ createdAt: -1 }).limit(10).lean();
+  } else {
+    raw = (memoryStore.incidents || []).filter((i) => i.status !== 'Resolved' && i.status !== 'Rejected').slice(0, 10);
+  }
+
+  return raw.map((i) => ({
+    id: i._id || i.id,
+    title: i.title,
+    severity: i.severity,
+    type: i.type,
+    location: i.location,
+    status: i.status,
+    reporterName: userRole === 'citizen' ? undefined : i.reporterName,
+  }));
+}
+
+async function getAffectedAreas() {
+  if (isDbConnected()) {
+    return await AffectedArea.find({}).lean();
+  }
+  return memoryStore.affectedAreas || [];
+}
+
+async function getRiskHeatmap(userRole = 'citizen') {
+  let rawSos = [];
+  let rawIncidents = [];
+  let rawAreas = [];
+  let rawShelters = [];
+
+  if (isDbConnected()) {
+    [rawSos, rawIncidents, rawAreas, rawShelters] = await Promise.all([
+      SosRequest.find({ status: { $nin: ['Resolved', 'Cancelled'] } }).lean(),
+      Incident.find({ status: { $nin: ['Resolved', 'Rejected'] } }).lean(),
+      AffectedArea.find({}).lean(),
+      Shelter.find({}).lean(),
+    ]);
+  } else {
+    rawSos = (memoryStore.sosRequests || []).filter((s) => s.status !== 'Resolved' && s.status !== 'Cancelled');
+    rawIncidents = (memoryStore.incidents || []).filter((i) => i.status !== 'Resolved' && i.status !== 'Rejected');
+    rawAreas = memoryStore.affectedAreas || [];
+    rawShelters = memoryStore.shelters || [];
+  }
+
+  const zones = buildRiskHeatmap(
+    {
+      sosRequests: rawSos,
+      incidents: rawIncidents,
+      affectedAreas: rawAreas,
+      alerts: [],
+      shelters: rawShelters,
+    },
+    { limit: 10 }
+  ) || [];
+
+  const sanitizedZones = (zones || []).map((z) => sanitizeRiskZoneForRole(z, userRole));
+
+  const summary = {
+    totalZones: sanitizedZones.length,
+    criticalZones: sanitizedZones.filter((z) => z.riskLevel === 'CRITICAL').length,
+    highZones: sanitizedZones.filter((z) => z.riskLevel === 'HIGH').length,
+    mediumZones: sanitizedZones.filter((z) => z.riskLevel === 'MEDIUM').length,
+    lowZones: sanitizedZones.filter((z) => z.riskLevel === 'LOW').length,
+    highestRiskScore: sanitizedZones.length > 0 ? Math.max(...sanitizedZones.map((z) => z.riskScore || 0)) : 0,
+  };
+
+  return {
+    summary,
+    zones: sanitizedZones,
+    activeSosCount: rawSos.length,
+  };
+}
+
+async function getActiveIntelligence() {
+  const [sos, incidents, areas] = await Promise.all([
+    getActiveSOS('responder'),
+    getIncidents('responder'),
+    getAffectedAreas(),
+  ]);
+
+  return {
+    activeSosCount: sos.length,
+    activeIncidentsCount: incidents.length,
+    monitoredAreasCount: areas.length,
+    systemStatus: 'ACTIVE_SURVEILLANCE',
+  };
+}
+
+async function getResources(userRole = 'citizen') {
+  let raw = [];
+  if (isDbConnected()) {
+    raw = await Resource.find({}).limit(10).lean();
+  } else {
+    raw = (memoryStore.resources || []).slice(0, 10);
+  }
+
+  return raw.map((r) => ({
+    name: r.name,
+    type: r.type,
+    status: r.status,
+    address: r.address,
+    phone: userRole === 'citizen' ? undefined : r.phone,
+  }));
+}
+
+async function getAlerts() {
+  let raw = [];
+  if (isDbConnected()) {
+    raw = await Alert.find({ status: { $ne: 'Expired' } }).sort({ createdAt: -1 }).limit(10).lean();
+  } else {
+    raw = (memoryStore.alerts || []).filter((a) => a.status !== 'Expired').slice(0, 10);
+  }
+
+  return raw.map((a) => ({
+    id: a._id || a.id,
+    title: a.title,
+    severity: a.severity,
+    location: a.location,
+    type: a.type,
+  }));
+}
+
+function getPreparednessGuides() {
+  return PREPAREDNESS_GUIDES;
+}
+
+/**
+ * Detects user intent and category from incoming message string
  */
 function analyzeIntent(message) {
   const text = (message || '').toLowerCase();
 
   const isEmergency = EMERGENCY_KEYWORDS.some((kw) => text.includes(kw));
 
+  // Check for explicit confirmation of SOS creation
+  const isSosConfirmation = /\b(yes,? create sos|create sos|yes,? please create sos|send help now|trigger sos|broadcast sos|confirm sos)\b/i.test(text);
+
   let primaryIntent = 'general';
+  let dataCategory = 'GUIDANCE';
+
   if (/\b(brief|situation|summary|overview|status report|sitrep)\b/i.test(text)) {
     primaryIntent = 'situation_brief';
+    dataCategory = 'LIVE_DATA';
   } else if (/\b(shelters?|beds?|safe havens?|refuges?|evac centers?|where to sleep)\b/i.test(text)) {
     primaryIntent = 'shelter';
+    dataCategory = 'LIVE_DATA';
   } else if (/\b(risks?|hazards?|dangers?|threats?|heat maps?|vulnerab)/i.test(text)) {
     primaryIntent = 'risk';
+    dataCategory = 'LIVE_DATA';
   } else if (/\b(alerts?|warnings?|advisories|advisory|sirens?|evacuations?)\b/i.test(text)) {
     primaryIntent = 'alert';
+    dataCategory = 'LIVE_DATA';
   } else if (/\b(incidents?|reports?|fires?|floods?|accidents?|collapsed|leaks?)\b/i.test(text) && !/what should|how to/i.test(text)) {
     primaryIntent = 'incident';
-  } else if (/\b(resources?|supplies|supply|water|food|medical kit|rations?|blankets?)\b/i.test(text)) {
+    dataCategory = 'LIVE_DATA';
+  } else if (/\b(resources?|supplies|supply|water|food|medical kit|rations?|blankets?)\b/i.test(text) && !/what should|how to|emergency kit/i.test(text)) {
     primaryIntent = 'resource';
-  } else if (/\b(what should|how do|how to|prepare|emergency kit|protocol|safety tip|earthquake|cyclone|landslide|heatwave)\b/i.test(text)) {
+    dataCategory = 'LIVE_DATA';
+  } else if (/\b(what should|how do|how to|prepare|emergency kit|protocol|safety tip|checklist|first aid|cpr|evacuat|guideline|dos and donts)\b/i.test(text)) {
     primaryIntent = 'preparedness';
+    dataCategory = 'GUIDANCE';
   }
 
-  // Detect specific disaster type for preparedness
+  // Detect specific disaster type or topic for preparedness
   let disasterType = null;
   if (/earthquake|tremor|quake/i.test(text)) disasterType = 'earthquake';
-  else if (/flood|waterlog|tsunami|drown/i.test(text)) disasterType = 'flood';
-  else if (/fire|smoke|burn/i.test(text)) disasterType = 'fire';
-  else if (/cyclone|hurricane|storm|typhoon/i.test(text)) disasterType = 'cyclone';
+  else if (/tsunami|coastal surge/i.test(text)) disasterType = 'tsunami';
+  else if (/flood|waterlog|drown|rising water/i.test(text)) disasterType = 'flood';
+  else if (/wildfire|forest fire|flame|smoke|fire/i.test(text)) disasterType = 'fire';
+  else if (/cyclone|hurricane|storm|typhoon|gale/i.test(text)) disasterType = 'cyclone';
   else if (/landslide|mudslide|mudflow/i.test(text)) disasterType = 'landslide';
-  else if (/heatwave|heat stroke|hyperthermia|hot/i.test(text)) disasterType = 'heatwave';
+  else if (/heatwave|heat stroke|hyperthermia|hot weather/i.test(text)) disasterType = 'heatwave';
+  else if (/cold|blizzard|frostbite|hypothermia|winter storm|snow/i.test(text)) disasterType = 'extreme_cold';
+  else if (/lightning|thunder/i.test(text)) disasterType = 'lightning';
+  else if (/collapse|rubble|structural failure|building collapse/i.test(text)) disasterType = 'building_collapse';
+  else if (/industrial|chemical|toxic|hazmat|gas leak|vapor cloud/i.test(text)) disasterType = 'chemical_emergency';
+  else if (/traffic|car crash|pileup|road accident|collision/i.test(text)) disasterType = 'road_accident';
+  else if (/stampede|crowd crush|crush|crowd/i.test(text)) disasterType = 'crowd_emergency';
+  else if (/kit|bag|supplies|72 hour|go bag/i.test(text)) disasterType = 'emergency_kit';
+  else if (/evacuat/i.test(text)) disasterType = 'evacuation';
+  else if (/first aid|cpr|bleeding|tourniquet|bandage/i.test(text)) disasterType = 'first_aid';
+  else if (/power outage|blackout|gas shutoff|electricity shutoff/i.test(text)) disasterType = 'power_outage';
+  else if (/\b(elderly|infant|infants|baby|babies|pets? evacuation|pet care|service animals?|disabled|wheelchairs?)\b/i.test(text)) disasterType = 'vulnerable_care';
+
+  if (disasterType && primaryIntent === 'general') {
+    primaryIntent = 'preparedness';
+    dataCategory = 'GUIDANCE';
+  }
+
+  // Detect completely off-topic queries (jokes, poems, games, chit-chat)
+  const hasOffTopicKeyword = OFF_TOPIC_KEYWORDS.some((kw) => text.includes(kw));
+  if (hasOffTopicKeyword && !isEmergency) {
+    primaryIntent = 'off_topic';
+    dataCategory = 'GUIDANCE';
+    disasterType = null;
+  }
+
+  if (isEmergency) {
+    dataCategory = 'EMERGENCY';
+  }
 
   return {
     isEmergency,
+    isSosConfirmation,
     primaryIntent,
     disasterType,
+    dataCategory,
   };
 }
 
@@ -236,7 +831,7 @@ async function retrieveLiveContext(intentInfo, userRole, coordinates = null) {
       }
 
       context.activeAlerts = rawAlerts.map((a) => ({
-        id: a._id,
+        id: a._id || a.id,
         title: a.title,
         severity: a.severity,
         location: a.location,
@@ -249,89 +844,22 @@ async function retrieveLiveContext(intentInfo, userRole, coordinates = null) {
 
     // 3. Fetch Risk Heatmap if needed
     if (intentInfo.primaryIntent === 'risk' || intentInfo.primaryIntent === 'situation_brief' || intentInfo.isEmergency) {
-      let rawSos = [];
-      let rawIncidents = [];
-      let rawAreas = [];
-      let rawShelters = [];
-
-      if (isDbConnected()) {
-        [rawSos, rawIncidents, rawAreas, rawShelters] = await Promise.all([
-          SosRequest.find({ status: { $nin: ['Resolved', 'Cancelled'] } }).lean(),
-          Incident.find({ status: { $nin: ['Resolved', 'Rejected'] } }).lean(),
-          AffectedArea.find({}).lean(),
-          Shelter.find({}).lean(),
-        ]);
-      } else {
-        rawSos = (memoryStore.sosRequests || []).filter((s) => s.status !== 'Resolved' && s.status !== 'Cancelled');
-        rawIncidents = (memoryStore.incidents || []).filter((i) => i.status !== 'Resolved' && i.status !== 'Rejected');
-        rawAreas = memoryStore.affectedAreas || [];
-        rawShelters = memoryStore.shelters || [];
-      }
-
-      context.activeSosCount = rawSos.length;
-
-      const zones = buildRiskHeatmap(
-        {
-          sosRequests: rawSos,
-          incidents: rawIncidents,
-          affectedAreas: rawAreas,
-          alerts: [],
-          shelters: rawShelters,
-        },
-        { limit: 10 }
-      ) || [];
-
-      const sanitizedZones = (zones || []).map((z) => sanitizeRiskZoneForRole(z, userRole));
-
-      context.riskSummary = {
-        totalZones: sanitizedZones.length,
-        criticalZones: sanitizedZones.filter((z) => z.riskLevel === 'CRITICAL').length,
-        highZones: sanitizedZones.filter((z) => z.riskLevel === 'HIGH').length,
-        mediumZones: sanitizedZones.filter((z) => z.riskLevel === 'MEDIUM').length,
-        lowZones: sanitizedZones.filter((z) => z.riskLevel === 'LOW').length,
-        highestRiskScore: sanitizedZones.length > 0 ? Math.max(...sanitizedZones.map((z) => z.riskScore || 0)) : 0,
-      };
-      context.riskZones = sanitizedZones.slice(0, 3);
+      const riskData = await getRiskHeatmap(userRole);
+      context.activeSosCount = riskData.activeSosCount;
+      context.riskSummary = riskData.summary;
+      context.riskZones = riskData.zones.slice(0, 3);
       context.sources.push('Risk Intelligence Heatmap');
     }
 
     // 4. Fetch Incidents if needed
     if (intentInfo.primaryIntent === 'incident' || intentInfo.primaryIntent === 'situation_brief') {
-      let rawIncidents = [];
-      if (isDbConnected()) {
-        rawIncidents = await Incident.find({ status: { $nin: ['Resolved', 'Rejected'] } }).sort({ createdAt: -1 }).limit(4).lean();
-      } else {
-        rawIncidents = (memoryStore.incidents || []).filter((i) => i.status !== 'Resolved' && i.status !== 'Rejected').slice(0, 4);
-      }
-
-      context.activeIncidents = rawIncidents.map((i) => ({
-        id: i._id,
-        title: i.title,
-        severity: i.severity,
-        type: i.type,
-        location: i.location,
-        status: i.status,
-        reporterName: userRole === 'citizen' ? undefined : i.reporterName,
-      }));
+      context.activeIncidents = await getIncidents(userRole);
       context.sources.push('Field Incident Logs');
     }
 
     // 5. Fetch Resources if needed
     if (intentInfo.primaryIntent === 'resource') {
-      let rawResources = [];
-      if (isDbConnected()) {
-        rawResources = await Resource.find({}).limit(4).lean();
-      } else {
-        rawResources = (memoryStore.resources || []).slice(0, 4);
-      }
-
-      context.resources = rawResources.map((r) => ({
-        name: r.name,
-        type: r.type,
-        status: r.status,
-        address: r.address,
-        phone: userRole === 'citizen' ? undefined : r.phone,
-      }));
+      context.resources = await getResources(userRole);
       context.sources.push('Disaster Resource Directory');
     }
 
@@ -363,7 +891,8 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
       `**Essential Immediate Actions:**\n` +
       `• Protect your airway from smoke or floodwaters.\n` +
       `• Do not attempt to cross moving currents or re-enter structurally compromised buildings.\n` +
-      `• Keep your mobile device in battery-saver mode with GPS enabled.`;
+      `• Keep your mobile device in battery-saver mode with GPS enabled.\n\n` +
+      `*Do you want me to create an SOS distress signal with your current location for regional emergency responders?*`;
 
     if (context.recommendedShelter) {
       reply += `\n\n**Nearest Safe Haven Available:**\n` +
@@ -391,10 +920,53 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
       label: '🚨 BROADCAST EMERGENCY SOS',
     });
 
-    return { reply, actions, isEmergency: true };
+    return { reply, actions, isEmergency: true, dataCategory: 'EMERGENCY' };
   }
 
-  // 2. Shelter Intent
+  // 1b. SOS Confirmation Handling
+  if (intentInfo.isSosConfirmation) {
+    reply = `🚨 **EMERGENCY SOS SIGNAL CONFIRMED**\n\n` +
+      `Your emergency distress request has been registered for transmission to the DisasterChain Responder Network.\n\n` +
+      `**Immediate Safety Instructions:**\n` +
+      `1. Dial **112 / 911** on your phone if reachable.\n` +
+      `2. Stay in a protected location, elevate your position above rising water, or protect against smoke.\n` +
+      `3. Keep your phone screen low to save power and keep GPS enabled.`;
+
+    actions.push({
+      type: 'TRIGGER_SOS',
+      label: '🚨 OPEN SOS DISPATCH BEACON',
+    });
+
+    return { reply, actions, isEmergency: true, dataCategory: 'EMERGENCY' };
+  }
+
+  // 2. Off-Topic Query Deflection
+  if (intentInfo.primaryIntent === 'off_topic') {
+    reply = `🛡️ **DisasterChain Emergency Intelligence Assistant**\n\n` +
+      `I am dedicated strictly to **disaster response, operational intelligence, and human life safety protocols**.\n\n` +
+      `To ensure crisis availability, I cannot assist with entertainment, casual chat, or unrelated tasks.\n\n` +
+      `**I can immediately assist you with:**\n` +
+      `• 🏛️ Finding nearby shelters with live bed capacities\n` +
+      `• 📢 Checking active civil defense alerts and weather advisories\n` +
+      `• 🔥 Analyzing regional hazard scores and risk zones\n` +
+      `• 📦 72-Hour emergency supply checklists & evacuation protocols\n` +
+      `• 🚨 Emergency first aid and SOS distress broadcasting`;
+
+    actions.push({
+      type: 'QUICK_QUERY',
+      label: 'FIND SHELTER',
+      query: 'Where is the nearest safe shelter?',
+    });
+    actions.push({
+      type: 'QUICK_QUERY',
+      label: 'ACTIVE ALERTS',
+      query: 'What are the active emergency alerts?',
+    });
+
+    return { reply, actions, isEmergency: false, dataCategory: 'GUIDANCE' };
+  }
+
+  // 3. Shelter Intent
   if (intentInfo.primaryIntent === 'shelter') {
     if (context.recommendedShelter) {
       const sh = context.recommendedShelter;
@@ -429,10 +1001,10 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
         route: '/shelters',
       });
     }
-    return { reply, actions, isEmergency: false };
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
   }
 
-  // 3. Risk / Hazard Intent
+  // 4. Risk / Hazard Intent
   if (intentInfo.primaryIntent === 'risk') {
     const summary = context.riskSummary || {};
     reply = `🔥 **Live Risk Intelligence Assessment**\n\n` +
@@ -460,10 +1032,10 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
       route: '/dashboard',
     });
 
-    return { reply, actions, isEmergency: false };
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
   }
 
-  // 4. Alert Intent
+  // 5. Alert Intent
   if (intentInfo.primaryIntent === 'alert') {
     if (context.activeAlerts && context.activeAlerts.length > 0) {
       reply = `📢 **Active Emergency Advisories & Broadcasts**\n\n` +
@@ -484,10 +1056,10 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
       route: '/alerts',
     });
 
-    return { reply, actions, isEmergency: false };
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
   }
 
-  // 5. Incident Intent
+  // 6. Incident Intent
   if (intentInfo.primaryIntent === 'incident') {
     if (context.activeIncidents && context.activeIncidents.length > 0) {
       reply = `📋 **Active Field Incident Reports**\n\n` +
@@ -507,10 +1079,10 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
       route: '/incidents',
     });
 
-    return { reply, actions, isEmergency: false };
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
   }
 
-  // 6. Situation Brief for Responders / Admins
+  // 7. Situation Brief for Responders / Admins
   if (intentInfo.primaryIntent === 'situation_brief') {
     const summary = context.riskSummary || {};
     reply = `🛡️ **DisasterChain Operational Situation Briefing**\n\n` +
@@ -534,10 +1106,10 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
       route: '/dashboard',
     });
 
-    return { reply, actions, isEmergency: false };
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
   }
 
-  // 7. Preparedness Intent
+  // 8. Preparedness Intent
   if (intentInfo.primaryIntent === 'preparedness') {
     const guide = context.preparedness || PREPAREDNESS_GUIDES.flood;
     reply = `🛡️ **${guide.title}**\n\n` +
@@ -555,10 +1127,10 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
       route: '/guides',
     });
 
-    return { reply, actions, isEmergency: false };
+    return { reply, actions, isEmergency: false, dataCategory: 'GUIDANCE' };
   }
 
-  // 8. General / Fallback
+  // 9. General / Fallback
   reply = `Greetings. I am the **DisasterChain AI Emergency Assistant**.\n\n` +
     `I provide real-time situational awareness and verified safety guidance directly from the DisasterChain network.\n\n` +
     `**How I can assist you right now:**\n` +
@@ -566,6 +1138,7 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
     `• 📢 **"Current alerts"** — Summarizes active civil defense and weather advisories\n` +
     `• 🔥 **"Explain my risk"** — Analyzes regional hazard scores and risk zones\n` +
     `• 🛡️ **"What should I do during an earthquake/flood?"** — Step-by-step life safety guides\n` +
+    `• 📦 **"Emergency kit checklist"** — 72-hour survival supplies & family planning\n` +
     `• 🚨 **"Help me"** — Instant safety protocols and emergency extraction guidance`;
 
   actions.push({
@@ -584,7 +1157,7 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
     query: 'What should I keep in an emergency kit?',
   });
 
-  return { reply, actions, isEmergency: false };
+  return { reply, actions, isEmergency: false, dataCategory: 'GUIDANCE' };
 }
 
 /**
@@ -600,12 +1173,13 @@ async function callExternalProvider(message, conversation, context, userRole) {
 Your visual theme is Warm Crisis Command.
 Your top priority is human life safety.
 Follow these strict policies:
-1. Prioritize human safety above all else. If immediate life threat is detected, immediately instruct calling local emergency services (112 or 911).
-2. Never pretend to be human emergency dispatchers or claim you have dispatched responders unless confirmed in system data.
-3. Use the provided LIVE DISASTERCHAIN CONTEXT for all facts, numbers, shelter capacities, and risk levels. Never invent shelters, bed counts, or risk scores.
+1. Prioritize human safety above all else. If immediate life threat is detected, immediately instruct calling local emergency services (112, 101, or 911) and ask if they want to create an SOS signal.
+2. Never pretend to be human emergency dispatchers or claim you have dispatched responders unless confirmed in system data. Never invent operational data (shelters, bed numbers, incident counts, hazard scores, coordinates).
+3. Use the provided LIVE DISASTERCHAIN CONTEXT for all facts, numbers, shelter capacities, and risk levels. If data is not in context, state clearly that it is not in the live registry.
 4. Keep emergency guidance concise, clear, and actionable. Use bullet points and bold formatting for critical steps.
 5. User role: ${userRole}. Do not expose private contact information, personal victim phone numbers, or reporter identities to unauthorized roles.
-6. Clearly distinguish between live system data and general safety guidance.`;
+6. Clearly distinguish between live system data and general safety guidance.
+7. If the user asks an off-topic question (jokes, poems, sports, coding), politely deflect back to disaster preparedness and safety operations.`;
 
   const compactContextStr = JSON.stringify({
     role: userRole,
@@ -628,6 +1202,7 @@ Follow these strict policies:
       severity: i.severity,
       location: i.location,
     })),
+    activeSosCount: context.activeSosCount,
   });
 
   const promptMessages = [
@@ -730,9 +1305,17 @@ async function processChat({ message, conversation = [], latitude = null, longit
       shelterName: context.recommendedShelter?.name || null,
       shelterDistanceKm: context.recommendedShelter?.distanceKm || null,
       activeAlertsCount: context.activeAlerts?.length || 0,
+      activeSosCount: context.activeSosCount || 0,
     },
     actions,
     isEmergency: intentInfo.isEmergency,
+    dataCategory: deterministic.dataCategory || intentInfo.dataCategory || 'GUIDANCE',
+    liveStats: {
+      activeSos: context.activeSosCount || 0,
+      activeAlerts: context.activeAlerts?.length || 0,
+      activeIncidents: context.activeIncidents?.length || 0,
+    },
+    actionRequired: intentInfo.isEmergency ? 'SOS_CONFIRMATION' : null,
   };
 }
 
@@ -742,4 +1325,14 @@ module.exports = {
   retrieveLiveContext,
   generateDeterministicReply,
   PREPAREDNESS_GUIDES,
+  // Safe internal accessors
+  getActiveSOS,
+  getShelters,
+  getIncidents,
+  getAffectedAreas,
+  getRiskHeatmap,
+  getActiveIntelligence,
+  getResources,
+  getAlerts,
+  getPreparednessGuides,
 };

@@ -344,6 +344,71 @@ async function runTestSuite() {
     delete process.env.AI_API_KEY;
     global.fetch = originalFetch;
 
+    // --- 9. Production-Ready Accessors & 15+ Disaster Types Verification ---
+    console.log('\n--- 9. Production-Ready Accessors & 15+ Disaster Types Verification ---');
+    const {
+      getActiveSOS,
+      getShelters,
+      getIncidents,
+      getAffectedAreas,
+      getRiskHeatmap,
+      getActiveIntelligence,
+      getResources,
+      getAlerts,
+      getPreparednessGuides,
+    } = require('./services/aiAssistantService');
+
+    // 9.1 Accessors
+    const activeSosList = await getActiveSOS('citizen');
+    assert(Array.isArray(activeSosList), '26. getActiveSOS returns an array');
+    if (activeSosList.length > 0) {
+      assert(activeSosList[0].contact === undefined, '26b. getActiveSOS sanitizes citizen contact info');
+    }
+
+    const sheltersData = await getShelters({ lat: 28.6139, lng: 77.2090 }, 'citizen');
+    assert(sheltersData.best != null, '27. getShelters computes best shelter');
+    assert(Array.isArray(sheltersData.all), '27b. getShelters returns full shelter list');
+
+    const incidentsList = await getIncidents('citizen');
+    assert(Array.isArray(incidentsList), '28. getIncidents returns incidents list');
+
+    const affectedAreasList = await getAffectedAreas();
+    assert(Array.isArray(affectedAreasList), '29. getAffectedAreas returns affected areas');
+
+    const heatmapData = await getRiskHeatmap('responder');
+    assert(heatmapData.summary && heatmapData.summary.totalZones !== undefined, '30. getRiskHeatmap returns zones summary');
+
+    const intelligenceData = await getActiveIntelligence();
+    assert(intelligenceData.systemStatus === 'ACTIVE_SURVEILLANCE', '31. getActiveIntelligence reports ACTIVE_SURVEILLANCE');
+
+    const resourcesList = await getResources('citizen');
+    assert(Array.isArray(resourcesList), '32. getResources returns resource directory');
+
+    const alertsList = await getAlerts();
+    assert(Array.isArray(alertsList), '33. getAlerts returns active broadcasts');
+
+    // 9.2 15+ Disaster Types in Preparedness Guides
+    const guides = getPreparednessGuides();
+    const requiredDisasterTypes = [
+      'earthquake', 'flood', 'fire', 'cyclone', 'tsunami', 'landslide',
+      'heatwave', 'extreme_cold', 'storm', 'lightning', 'building_collapse',
+      'industrial_accident', 'chemical_emergency', 'road_accident', 'crowd_emergency',
+      'emergency_kit', 'evacuation', 'communication', 'first_aid', 'power_outage', 'vulnerable_care'
+    ];
+    const presentTypes = requiredDisasterTypes.filter((t) => guides[t] && guides[t].title && guides[t].dos && guides[t].donts);
+    assert(presentTypes.length >= 15, `34. PREPAREDNESS_GUIDES covers 15+ verified emergency topics (found ${presentTypes.length})`);
+
+    // 9.3 Off-Topic Query Deflection
+    const jokeIntent = analyzeIntent('Tell me a funny joke about cats');
+    assert(jokeIntent.primaryIntent === 'off_topic', '35. Off-topic joke detected as off_topic intent');
+    const jokeReply = generateDeterministicReply('Tell me a funny joke about cats', jokeIntent, {}, 'citizen');
+    assert(jokeReply.reply.includes('dedicated strictly to **disaster response'), '35b. Off-topic query deflected back to disaster safety');
+
+    // 9.4 Data Category & Telemetry Classification
+    const liveQueryRes = await processChat({ message: 'What are the current emergency alerts?', userRole: 'citizen' });
+    assert(liveQueryRes.dataCategory === 'LIVE_DATA', '36. Operational query classified as LIVE_DATA category');
+    assert(liveQueryRes.liveStats && typeof liveQueryRes.liveStats.activeAlerts === 'number', '36b. Live telemetry stats returned in chat response');
+
   } finally {
     server.close();
   }
