@@ -36,8 +36,8 @@ const FormattedMessage = ({ content }) => {
         const cleanText = isBullet
           ? trimmed.replace(/^[•\-*]\s*/, '')
           : isNumbered
-          ? trimmed
-          : trimmed;
+            ? trimmed
+            : trimmed;
 
         // Render bold text
         const parts = cleanText.split(/(\*\*.*?\*\*)/g);
@@ -161,7 +161,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
             longitude: pos.coords.longitude,
           });
         },
-        () => {},
+        () => { },
         { timeout: 5000 }
       );
     }
@@ -244,7 +244,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
     setSosConfirmDialog(null);
     try {
       sessionStorage.removeItem('disasterchain_chat_history');
-    } catch {}
+    } catch { }
   };
 
   // Action button executor
@@ -514,14 +514,14 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                       background: isUser
                         ? '#ff6b2c'
                         : m.isEmergency
-                        ? 'rgba(239, 68, 68, 0.15)'
-                        : '#1c1612',
+                          ? 'rgba(239, 68, 68, 0.15)'
+                          : '#1c1612',
                       color: '#ffffff',
                       border: isUser
                         ? 'none'
                         : m.isEmergency
-                        ? '1px solid rgba(239, 68, 68, 0.4)'
-                        : '1px solid rgba(255, 255, 255, 0.08)',
+                          ? '1px solid rgba(239, 68, 68, 0.4)'
+                          : '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
                       padding: '0.75rem 1rem',
                       maxWidth: '90%',

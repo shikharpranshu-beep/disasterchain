@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "org.disasterchain.app",
+      "sha256_cert_fingerprints": [
+        "4E:29:36:D0:91:D5:C2:0E:BB:D9:A3:0E:F3:D6:B0:08:9C:FF:2F:06:C8:A5:75:47:80:C5:3F:57:67:F9:95:A3"
+      ]
+    }
+  }
+]

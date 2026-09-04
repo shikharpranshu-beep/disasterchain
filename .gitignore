@@ -22,3 +22,9 @@ Thumbs.db
 # IDE configuration
 .vscode/
 .idea/
+
+# Android build outputs & keystore security
+android/app/build/
+android/.gradle/
+*.keystore
+android/app-release-unsigned*.apk

@@ -112,7 +112,7 @@ async function runTests() {
     try {
       targets = await getJson(`http://127.0.0.1:${PORT}/json`);
       if (targets && targets.length > 0) break;
-    } catch (e) {}
+    } catch (e) { }
     await sleep(400);
   }
 
@@ -166,9 +166,9 @@ async function runTests() {
     results.push({
       test: 'Desktop Landing Page',
       passed: landingData.h1.includes('DISASTERCHAIN') &&
-              landingData.hasSosBtn &&
-              landingData.blocksCount === 3 &&
-              landingData.secBtns.length >= 3,
+        landingData.hasSosBtn &&
+        landingData.blocksCount === 3 &&
+        landingData.secBtns.length >= 3,
     });
 
     // -------------------------------------------------------------
@@ -207,10 +207,10 @@ async function runTests() {
     results.push({
       test: 'Desktop Dashboard Emergency Overview',
       passed: dashData.hasSosBtn &&
-              dashData.statusCardsCount === 4 &&
-              !!dashData.attentionHeader &&
-              !!dashData.quickActionsHeader &&
-              dashData.hasLiveMapPreview,
+        dashData.statusCardsCount === 4 &&
+        !!dashData.attentionHeader &&
+        !!dashData.quickActionsHeader &&
+        dashData.hasLiveMapPreview,
     });
 
     // -------------------------------------------------------------
@@ -263,9 +263,9 @@ async function runTests() {
     results.push({
       test: 'Desktop AI Assistant Open & Close',
       passed: aiOpenData.hasModal &&
-              aiOpenData.chipsCount === 5 &&
-              aiClosedX &&
-              aiClosedEsc,
+        aiOpenData.chipsCount === 5 &&
+        aiClosedX &&
+        aiClosedEsc,
     });
 
     // -------------------------------------------------------------
@@ -342,11 +342,11 @@ async function runTests() {
       console.log(`${vp.name} Closed successfully via ✕ button:`, mobileClosed);
 
       const passed = !mobileCheck.hasOverflow &&
-                     mobileCheck.gridCols === 1 &&
-                     mobileAiCheck.closeBtnWidth >= 44 &&
-                     mobileAiCheck.closeBtnHeight >= 44 &&
-                     mobileAiCheck.closeBtnTop >= 16 &&
-                     mobileClosed;
+        mobileCheck.gridCols === 1 &&
+        mobileAiCheck.closeBtnWidth >= 44 &&
+        mobileAiCheck.closeBtnHeight >= 44 &&
+        mobileAiCheck.closeBtnTop >= 16 &&
+        mobileClosed;
 
       results.push({
         test: `Mobile Viewport ${vp.name}`,
@@ -407,9 +407,9 @@ async function runTests() {
     results.push({
       test: 'PWA Standalone Mode AI Close Button',
       passed: pwaCheck.isStandalone &&
-              pwaCheck.closeBtnWidth >= 44 &&
-              pwaCheck.closeBtnTop >= 16 &&
-              pwaClosed,
+        pwaCheck.closeBtnWidth >= 44 &&
+        pwaCheck.closeBtnTop >= 16 &&
+        pwaClosed,
     });
 
   } catch (err) {
