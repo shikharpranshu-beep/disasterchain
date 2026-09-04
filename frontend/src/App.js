@@ -118,8 +118,10 @@ const AppLayout = () => {
             />
             <Route path="/shelters" element={<SheltersPage />} />
             <Route path="/affected-areas" element={<AffectedAreasPage />} />
+            <Route path="/map" element={<AffectedAreasPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
             <Route path="/guides" element={<DisasterGuidesPage />} />
+            <Route path="/preparedness" element={<DisasterGuidesPage />} />
             <Route path="/incidents" element={<IncidentReportsPage onOpenIncident={() => setIsIncidentOpen(true)} />} />
             <Route path="/my-reports" element={<MyReportsPage />} />
             <Route path="/resources" element={<EmergencyResourcesPage />} />

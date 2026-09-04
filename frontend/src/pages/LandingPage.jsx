@@ -97,7 +97,7 @@ const LandingPage = ({ onOpenSos }) => {
   }, []);
 
   return (
-    <div style={{ minHeight: '100dvh', width: '100%', display: 'flex', flexDirection: 'column', background: '#0d0a08', color: '#f8fafc' }}>
+    <div style={{ minHeight: 'auto', height: 'auto', width: '100%', display: 'flex', flexDirection: 'column', background: '#0d0a08', color: '#f8fafc', touchAction: 'pan-y' }}>
       {/* Top Quiet Helpline Banner */}
       <div
         style={{
@@ -125,7 +125,8 @@ const LandingPage = ({ onOpenSos }) => {
       </div>
 
       {/* Main Simplified Hero Container */}
-      <main
+      <section
+        aria-label="Emergency Home Content"
         style={{
           flex: 1,
           maxWidth: '1080px',
@@ -612,7 +613,7 @@ const LandingPage = ({ onOpenSos }) => {
             <span>View All Emergency Data</span>
           </Link>
         </div>
-      </main>
+      </section>
     </div>
   );
 };

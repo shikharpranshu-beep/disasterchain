@@ -17,14 +17,13 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
   // Lock body scroll when mobile drawer is open to prevent accidental background scrolling
   useEffect(() => {
     if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow || '';
-      };
+      document.body.classList.add('drawer-open');
     } else {
-      document.body.style.overflow = '';
+      document.body.classList.remove('drawer-open');
     }
+    return () => {
+      document.body.classList.remove('drawer-open');
+    };
   }, [isOpen]);
 
   // Handle Escape key to close mobile drawer

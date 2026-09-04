@@ -32,6 +32,8 @@ const PWAInstallPrompt = () => {
         bottom: 'calc(68px + env(safe-area-inset-bottom, 0px))',
         left: '12px',
         right: '12px',
+        maxWidth: 'calc(100% - 24px)',
+        boxSizing: 'border-box',
         zIndex: 9990,
         backgroundColor: 'rgba(28, 17, 13, 0.96)',
         backdropFilter: 'blur(16px)',

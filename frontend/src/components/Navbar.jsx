@@ -35,7 +35,7 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
   return (
     <header className="app-navbar">
       {/* Left Area: Hamburger Toggle (Mobile/Tablet) + Brand HUD Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0, flexShrink: 1 }}>
         {onToggleSidebar && (
           <button
             type="button"
@@ -53,12 +53,12 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
           </button>
         )}
 
-        <Link to="/" className="hud-logo">
-          <div className="hud-logo-icon">
+        <Link to="/" className="hud-logo" style={{ minWidth: 0, flexShrink: 1 }}>
+          <div className="hud-logo-icon" style={{ flexShrink: 0 }}>
             <Icon name="shield-check" size={20} color="var(--primary)" />
           </div>
-          <div>
-            <div className="hud-logo-title">
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <div className="hud-logo-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               <span>DISASTERCHAIN</span>
               <span className="hud-logo-tag">{t('common.appTag', 'NET v2.6')}</span>
             </div>
@@ -97,7 +97,7 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
       </div>
 
       {/* Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
         {/* Urgent Emergency Beacon Button (Always Visible, Mobile & Desktop) */}
         <button
           type="button"

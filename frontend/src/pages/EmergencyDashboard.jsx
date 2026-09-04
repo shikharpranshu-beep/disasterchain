@@ -167,12 +167,14 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
     <div
       className="emergency-overview-container"
       style={{
-        minHeight: '100dvh',
+        minHeight: 'auto',
+        height: 'auto',
         width: '100%',
         background: '#0e0b08',
         color: '#f8fafc',
         padding: '1.5rem 1rem 4rem',
         boxSizing: 'border-box',
+        touchAction: 'pan-y',
       }}
     >
       <div

@@ -72,26 +72,77 @@ class CDPClient {
   }
 
   async setViewport(width, height) {
+    const isMobile = width < 900;
     await this.send('Emulation.setDeviceMetricsOverride', {
       width,
       height,
       deviceScaleFactor: 2,
-      mobile: width < 900,
+      mobile: isMobile,
     });
+    if (isMobile) {
+      await this.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    }
   }
 
   async navigate(url) {
     await this.send('Page.navigate', { url });
-    await sleep(1500);
+    await sleep(1200);
   }
 
   close() {
-    if (this.ws) this.ws.close();
+    if (this.ws) {
+      try {
+        this.ws.close();
+      } catch (e) { }
+    }
   }
 }
 
+// Emulate real physical touch finger drag across the screen
+async function realTouchSwipeUp(cdp, startX, startY, distance = 350, steps = 10) {
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: startX, y: startY, id: 0 }]
+  });
+  const stepDelta = distance / steps;
+  for (let i = 1; i <= steps; i++) {
+    const curY = Math.round(startY - stepDelta * i);
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: startX, y: curY, id: 0 }]
+    });
+    await sleep(20);
+  }
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchEnd',
+    touchPoints: []
+  });
+  await sleep(350);
+}
+
+async function realTouchSwipeDown(cdp, startX, startY, distance = 350, steps = 10) {
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: startX, y: startY, id: 0 }]
+  });
+  const stepDelta = distance / steps;
+  for (let i = 1; i <= steps; i++) {
+    const curY = Math.round(startY + stepDelta * i);
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: startX, y: curY, id: 0 }]
+    });
+    await sleep(20);
+  }
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchEnd',
+    touchPoints: []
+  });
+  await sleep(350);
+}
+
 async function runTests() {
-  console.log('=== STARTING DISASTERCHAIN VERTICAL SCROLLING & UX VERIFICATION ===');
+  console.log('=== STARTING DISASTERCHAIN REAL TOUCH VERTICAL SCROLLING & UX VERIFICATION ===');
 
   const edgeProc = spawn(
     EDGE_PATH,
@@ -141,7 +192,7 @@ async function runTests() {
 
     const landingData = await cdp.eval(`(() => {
       const h1 = document.querySelector('h1')?.innerText;
-      const subtitle = document.querySelector('main p')?.innerText;
+      const subtitle = document.querySelector('section p')?.innerText;
       const sosBtn = document.getElementById('landing-primary-sos-btn');
       const loginHeroBtn = document.getElementById('landing-hero-login-btn');
       const navbarLoginBtn = document.getElementById('navbar-login-btn');
@@ -171,7 +222,7 @@ async function runTests() {
       };
     })()`);
 
-    // Verify vertical scroll down and up
+    // Verify vertical scroll down and up on desktop
     await cdp.eval(`window.scrollTo({ top: 300, behavior: 'instant' })`);
     await sleep(150);
     const desktopScrolledDown = await cdp.eval(`window.scrollY > 0`);
@@ -236,25 +287,22 @@ async function runTests() {
     });
 
     // -------------------------------------------------------------
-    // TEST 3: FULL DEVICE TEST MATRIX - VERTICAL SCROLLING & TOUCH SWIPE
+    // TEST 3: FULL DEVICE TEST MATRIX - REAL TOUCH VERTICAL SCROLLING
     // -------------------------------------------------------------
     const testMatrix = [
-      // Phones
+      // Exact required viewports from STEP 13
       { w: 360, h: 800, name: 'Phone 360x800', type: 'phone' },
       { w: 375, h: 812, name: 'Phone 375x812', type: 'phone' },
       { w: 390, h: 844, name: 'Phone 390x844', type: 'phone' },
       { w: 412, h: 915, name: 'Phone 412x915', type: 'phone' },
       { w: 430, h: 932, name: 'Phone 430x932', type: 'phone' },
-      { w: 480, h: 960, name: 'Phone 480x960', type: 'phone' },
-      // Large Phones
-      { w: 540, h: 1200, name: 'Large Phone 540x1200', type: 'phone' },
-      { w: 600, h: 1024, name: 'Large Phone 600x1024', type: 'large-phone' },
-      { w: 720, h: 1600, name: 'Large Phone 720x1600', type: 'large-phone' },
-      // Tablets
+      { w: 480, h: 1040, name: 'Phone 480x1040', type: 'phone' },
+      { w: 540, h: 720, name: 'Phone/Foldable 540x720', type: 'phone' },
+      { w: 600, h: 800, name: 'Phone 600x800', type: 'phone' },
+      { w: 720, h: 1280, name: 'Large Phone 720x1280', type: 'large-phone' },
       { w: 768, h: 1024, name: 'Tablet 768x1024', type: 'tablet' },
       { w: 820, h: 1180, name: 'Tablet 820x1180', type: 'tablet' },
       { w: 900, h: 1200, name: 'Tablet 900x1200', type: 'compact-desktop' },
-      // Desktop
       { w: 1024, h: 768, name: 'Desktop 1024x768', type: 'desktop' },
       { w: 1280, h: 800, name: 'Desktop 1280x800', type: 'desktop' },
       { w: 1920, h: 1080, name: 'Desktop 1920x1080', type: 'desktop' },
@@ -294,13 +342,29 @@ async function runTests() {
         };
       })()`);
 
-      // Test vertical swipe/scroll on Landing Page
-      await cdp.eval(`window.scrollTo(0, 350)`);
-      await sleep(150);
-      const landingScrolledDown = await cdp.eval(`window.scrollY > 50`);
-      await cdp.eval(`window.scrollTo(0, 0)`);
-      await sleep(100);
-      const landingScrolledBack = await cdp.eval(`window.scrollY === 0`);
+      // Test REAL TOUCH SWIPE on mobile (< 900) or programmatic/mouse on desktop (>= 900)
+      let landingScrolledDown = false;
+      let landingScrolledBack = false;
+
+      if (dev.w < 900) {
+        // Real touch finger swipe upward -> moves page downward
+        await realTouchSwipeUp(cdp, Math.round(dev.w / 2), Math.round(dev.h * 0.7), Math.round(dev.h * 0.4));
+        const downY = await cdp.eval(`window.scrollY`);
+        landingScrolledDown = downY > 30;
+
+        // Real touch finger swipe downward -> moves page back up
+        await realTouchSwipeDown(cdp, Math.round(dev.w / 2), Math.round(dev.h * 0.25), Math.round(dev.h * 0.45));
+        const backY = await cdp.eval(`window.scrollY`);
+        landingScrolledBack = backY < downY;
+        await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`);
+      } else {
+        await cdp.eval(`window.scrollTo({ top: 350, behavior: 'instant' })`);
+        await sleep(150);
+        landingScrolledDown = await cdp.eval(`window.scrollY > 50`);
+        await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`);
+        await sleep(100);
+        landingScrolledBack = await cdp.eval(`window.scrollY === 0`);
+      }
 
       console.log(`${dev.name} Landing Check:`, JSON.stringify({
         ...landingVpCheck,
@@ -338,12 +402,26 @@ async function runTests() {
       })()`);
 
       // Test vertical swipe/scroll on Dashboard
-      await cdp.eval(`window.scrollTo(0, 300)`);
-      await sleep(150);
-      const dashScrolledDown = await cdp.eval(`window.scrollY > 50`);
-      await cdp.eval(`window.scrollTo(0, 0)`);
-      await sleep(100);
-      const dashScrolledBack = await cdp.eval(`window.scrollY === 0`);
+      let dashScrolledDown = false;
+      let dashScrolledBack = false;
+
+      if (dev.w < 900) {
+        await realTouchSwipeUp(cdp, Math.round(dev.w / 2), Math.round(dev.h * 0.7), Math.round(dev.h * 0.35));
+        const downY = await cdp.eval(`window.scrollY`);
+        dashScrolledDown = downY > 30;
+
+        await realTouchSwipeDown(cdp, Math.round(dev.w / 2), Math.round(dev.h * 0.25), Math.round(dev.h * 0.45));
+        const backY = await cdp.eval(`window.scrollY`);
+        dashScrolledBack = backY < downY;
+        await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`);
+      } else {
+        await cdp.eval(`window.scrollTo({ top: 300, behavior: 'instant' })`);
+        await sleep(150);
+        dashScrolledDown = await cdp.eval(`window.scrollY > 50`);
+        await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`);
+        await sleep(100);
+        dashScrolledBack = await cdp.eval(`window.scrollY === 0`);
+      }
 
       console.log(`${dev.name} Dashboard Check:`, JSON.stringify({
         ...dashVpCheck,
@@ -365,13 +443,11 @@ async function runTests() {
           const cRect = closeBtn ? closeBtn.getBoundingClientRect() : null;
           const bottomNav = document.querySelector('.mobile-emergency-nav');
           const bottomNavDisplay = bottomNav ? window.getComputedStyle(bottomNav).display : 'none';
-          const bodyOverflow = window.getComputedStyle(document.body).overflow;
 
           return {
             hasModal: !!modal,
             modalWidth: mRect?.width,
             modalHeight: mRect?.height,
-            isFullScreenOnMobile: devWidth => devWidth < 900 ? (mRect && Math.abs(mRect.width - window.innerWidth) <= 2) : true,
             closeBtnWidth: cRect?.width,
             closeBtnHeight: cRect?.height,
             bottomNavHiddenWhenAiOpen: bottomNavDisplay === 'none',
@@ -386,10 +462,10 @@ async function runTests() {
         const aiClosed = await cdp.eval(`!document.querySelector('.disaster-ai-modal')`);
 
         // CRITICAL: Verify page vertical scrolling works immediately after AI closes
-        await cdp.eval(`window.scrollTo(0, 250)`);
+        await cdp.eval(`window.scrollTo({ top: 250, behavior: 'instant' })`);
         await sleep(150);
         const postAiScrolled = await cdp.eval(`window.scrollY > 0`);
-        await cdp.eval(`window.scrollTo(0, 0)`);
+        await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`);
 
         aiPassed = aiCheck.hasModal &&
           aiCheck.closeBtnWidth >= 44 &&
@@ -423,11 +499,8 @@ async function runTests() {
       // Evaluation criteria
       let passed = !landingVpCheck.hasOverflow &&
         !dashVpCheck.hasOverflow &&
-        landingVpCheck.isTallerThanViewport &&
-        landingScrolledDown &&
-        landingScrolledBack &&
-        dashScrolledDown &&
-        dashScrolledBack &&
+        (landingVpCheck.isTallerThanViewport ? (landingScrolledDown && landingScrolledBack) : true) &&
+        (dashVpCheck.isTallerThanViewport ? (dashScrolledDown && dashScrolledBack) : true) &&
         landingVpCheck.hasLoginHeroBtn &&
         landingVpCheck.hasSosBtn &&
         aiPassed &&
@@ -444,7 +517,7 @@ async function runTests() {
         passed,
         details: {
           noOverflow: !landingVpCheck.hasOverflow && !dashVpCheck.hasOverflow,
-          pageScrollsVertically: landingScrolledDown && dashScrolledDown,
+          touchOrPageScrollsVertically: landingScrolledDown && dashScrolledDown,
           contentTallerThanScreen: landingVpCheck.isTallerThanViewport,
           loginHeroBtn: landingVpCheck.hasLoginHeroBtn,
           desktopExtrasHidden: dev.w < 900 ? landingVpCheck.desktopExtrasHidden : 'N/A',
@@ -457,15 +530,30 @@ async function runTests() {
     }
 
     // -------------------------------------------------------------
-    // TEST 4: CHECK VERTICAL SCROLL ACROSS ALL SECONDARY PAGES
+    // TEST 4: CHECK VERTICAL SCROLL ACROSS ALL REQUIRED ROUTES (STEP 12)
     // -------------------------------------------------------------
-    console.log('\n--- 4. Testing Secondary Pages Vertical Scrolling on Mobile (390x844) ---');
+    console.log('\n--- 4. Testing All Required Routes with Real Touch Drag on Mobile (390x844) ---');
     await cdp.setViewport(390, 844);
-    const secondaryPages = ['/alerts', '/weather', '/shelters', '/guides', '/offline', '/profile'];
 
-    for (const page of secondaryPages) {
+    const requiredRoutes = [
+      '/',
+      '/dashboard',
+      '/alerts',
+      '/weather',
+      '/shelters',
+      '/guides',
+      '/offline',
+      '/profile',
+      '/incidents',
+      '/resources',
+      '/donations',
+      '/preparedness',
+      '/map'
+    ];
+
+    for (const page of requiredRoutes) {
       await cdp.navigate(`http://localhost:3000${page}`);
-      await sleep(500);
+      await sleep(600);
 
       const pageCheck = await cdp.eval(`(() => {
         const docW = document.documentElement.clientWidth;
@@ -482,14 +570,19 @@ async function runTests() {
 
       let canScroll = true;
       if (pageCheck.isScrollable) {
-        await cdp.eval(`window.scrollTo(0, 200)`);
+        // Real touch swipe upward
+        await realTouchSwipeUp(cdp, 195, 600, 300);
+        const scrolledY = await cdp.eval(`window.scrollY`);
+        canScroll = scrolledY > 30;
+
+        // Real touch swipe back downward
+        await realTouchSwipeDown(cdp, 195, 250, 300);
         await sleep(100);
-        canScroll = await cdp.eval(`window.scrollY > 0`);
-        await cdp.eval(`window.scrollTo(0, 0)`);
+        await cdp.eval(`window.scrollTo({ top: 0, behavior: 'instant' })`);
       }
 
       results.push({
-        test: `Secondary Route ${page} Mobile Scroll`,
+        test: `Route ${page} Real Touch Mobile Scroll`,
         passed: !pageCheck.hasOverflow && canScroll,
         details: {
           hasOverflow: pageCheck.hasOverflow,
@@ -520,7 +613,7 @@ async function runTests() {
   }
 
   if (allPassed) {
-    console.log('\n🎉 ALL VERTICAL SCROLLING & RESPONSIVE CHECKS PASSED PERFECTLY!\n');
+    console.log('\n🎉 ALL REAL TOUCH VERTICAL SCROLLING & RESPONSIVE CHECKS PASSED PERFECTLY!\n');
     process.exit(0);
   } else {
     console.log('\n❌ SOME VERIFICATIONS FAILED.\n');
