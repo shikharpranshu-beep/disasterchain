@@ -45,6 +45,7 @@ export default function WeatherPage() {
   const [errorNotice, setErrorNotice] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isCached, setIsCached] = useState(false);
+  const [feedStatus, setFeedStatus] = useState('LIVE'); // 'LIVE' | 'PARTIAL_LIVE' | 'CACHED' | 'UNAVAILABLE'
 
   // Selected Cyclone for Detail Panel
   const [selectedCyclone, setSelectedCyclone] = useState(null);
@@ -64,22 +65,35 @@ export default function WeatherPage() {
         fetchDisasterEvents('ALL'),
       ]);
 
-      if (completeRes.status === 'fulfilled') {
-        setWeatherData(completeRes.value);
-        setIsCached(completeRes.value.isCached || false);
-        setLastUpdated(new Date().toLocaleTimeString());
+      if (completeRes.status === 'fulfilled' && completeRes.value) {
+        const val = completeRes.value;
+        setWeatherData(val);
+        const cachedFlag = Boolean(val.isCached);
+        setIsCached(cachedFlag);
+
+        if (cachedFlag) {
+          setFeedStatus('CACHED');
+          setLastUpdated(val.cachedAt ? new Date(val.cachedAt).toLocaleTimeString() : new Date().toLocaleTimeString());
+        } else {
+          const status = val.feedStatus || (val.current && val.airQuality ? 'LIVE' : 'PARTIAL_LIVE');
+          setFeedStatus(status);
+          setLastUpdated(new Date().toLocaleTimeString());
+          setErrorNotice(null);
+        }
       } else {
+        setFeedStatus('UNAVAILABLE');
         setErrorNotice(t('weather.unavailable', 'WEATHER DATA UNAVAILABLE'));
       }
 
-      if (cyclonesRes.status === 'fulfilled') {
-        setCyclonesData(cyclonesRes.value.cyclones || []);
+      if (cyclonesRes.status === 'fulfilled' && cyclonesRes.value?.cyclones) {
+        setCyclonesData(cyclonesRes.value.cyclones);
       }
 
-      if (disastersRes.status === 'fulfilled') {
-        setDisastersData(disastersRes.value.events || []);
+      if (disastersRes.status === 'fulfilled' && disastersRes.value?.events) {
+        setDisastersData(disastersRes.value.events);
       }
     } catch (err) {
+      setFeedStatus('UNAVAILABLE');
       setErrorNotice(err.message || t('weather.unavailable', 'WEATHER DATA UNAVAILABLE'));
     } finally {
       setIsLoading(false);
@@ -127,6 +141,9 @@ export default function WeatherPage() {
             longitude: lon,
           });
         }
+
+        // Trigger immediate live refresh
+        loadWeatherData(lat, lon);
       },
       (err) => {
         setIsLocating(false);
@@ -210,10 +227,27 @@ export default function WeatherPage() {
         }}
       >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className={`badge ${isCached ? 'badge-warning' : 'badge-primary'}`}>
-              {isCached ? '● CACHED DATA' : '● LIVE WEATHER'}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+            {feedStatus === 'LIVE' && (
+              <span className="badge" style={{ background: 'rgba(0, 230, 118, 0.15)', color: '#00E676', border: '1px solid #00E676' }}>
+                ● LIVE DATA
+              </span>
+            )}
+            {feedStatus === 'PARTIAL_LIVE' && (
+              <span className="badge" style={{ background: 'rgba(255, 171, 0, 0.15)', color: '#FFAB00', border: '1px solid #FFAB00' }}>
+                ◐ PARTIAL LIVE DATA
+              </span>
+            )}
+            {feedStatus === 'CACHED' && (
+              <span className="badge" style={{ background: 'rgba(148, 163, 184, 0.15)', color: '#94A3B8', border: '1px solid #94A3B8' }}>
+                ● CACHED DATA
+              </span>
+            )}
+            {feedStatus === 'UNAVAILABLE' && (
+              <span className="badge" style={{ background: 'rgba(255, 46, 77, 0.15)', color: '#FF2E4D', border: '1px solid #FF2E4D' }}>
+                ✕ FEED UNAVAILABLE
+              </span>
+            )}
             <span className="micro-label" style={{ color: 'var(--text-muted)' }}>
               {lastUpdated ? `${t('weather.lastUpdated', 'Last updated')}: ${lastUpdated}` : 'INITIALIZING...'}
             </span>
@@ -366,8 +400,8 @@ export default function WeatherPage() {
         )}
       </div>
 
-      {/* Error state if weather unavailable */}
-      {errorNotice && (
+      {/* Feedback banner: Unavailability / Partial / Cached */}
+      {errorNotice && !weatherData && (
         <div className="spatial-panel spatial-panel-critical" style={{ padding: '1.25rem', textAlign: 'center' }}>
           <h3 style={{ color: 'var(--crimson)', fontSize: '1.1rem', marginBottom: '0.35rem' }}>
             {errorNotice}
@@ -375,6 +409,22 @@ export default function WeatherPage() {
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
             {t('weather.errorNotice', 'External atmospheric feeds could not be reached. Local cached weather records remain active.')}
           </p>
+        </div>
+      )}
+
+      {feedStatus === 'PARTIAL_LIVE' && (
+        <div className="spatial-panel" style={{ padding: '0.65rem 1.25rem', borderLeft: '4px solid var(--amber)', background: 'rgba(255, 171, 0, 0.08)' }}>
+          <span style={{ color: 'var(--amber)', fontSize: '0.85rem', fontWeight: 600 }}>
+            ◐ Atmospheric feeds partially synchronized. Core weather conditions are live; secondary feeds are refreshing.
+          </span>
+        </div>
+      )}
+
+      {feedStatus === 'CACHED' && weatherData && (
+        <div className="spatial-panel" style={{ padding: '0.65rem 1.25rem', borderLeft: '4px solid var(--text-muted)', background: 'rgba(148, 163, 184, 0.08)' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            ● Operating in offline resilience mode. Displaying cached records from {lastUpdated}.
+          </span>
         </div>
       )}
 

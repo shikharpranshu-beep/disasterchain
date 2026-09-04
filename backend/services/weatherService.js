@@ -20,16 +20,21 @@ function setCache(key, data) {
 }
 
 /**
- * Universal HTTPS GET helper with IPv4 enforcement (family: 4)
+ * Universal HTTPS/HTTP GET helper with redirect following and IPv4 enforcement (family: 4)
  * to prevent Windows ETIMEDOUT / ENETUNREACH errors on IPv6.
  */
-function fetchUrl(url, options = {}) {
+function fetchUrl(url, options = {}, redirectCount = 0) {
   return new Promise((resolve, reject) => {
+    if (redirectCount > 3) {
+      return reject(new Error(`Too many redirects (max 3) from ${url}`));
+    }
+
     const isHttps = url.startsWith('https:');
     const client = isHttps ? https : http;
+    const timeoutMs = options.timeout || 15000;
     const reqOptions = {
-      family: 4,
-      timeout: options.timeout || 10000,
+      family: options.family !== undefined ? options.family : 4,
+      timeout: timeoutMs,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
         'Accept': options.accept || '*/*',
@@ -38,6 +43,12 @@ function fetchUrl(url, options = {}) {
     };
 
     const req = client.get(url, reqOptions, (res) => {
+      // Follow HTTP 301, 302, 307, 308 redirects
+      if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location) {
+        const redirectedUrl = new URL(res.headers.location, url).href;
+        return resolve(fetchUrl(redirectedUrl, options, redirectCount + 1));
+      }
+
       let data = '';
       res.on('data', (chunk) => {
         data += chunk;
@@ -52,10 +63,14 @@ function fetchUrl(url, options = {}) {
 
     req.on('timeout', () => {
       req.destroy();
-      reject(new Error(`Request timeout (${reqOptions.timeout}ms) from ${url}`));
+      reject(new Error(`Request timeout (${timeoutMs}ms) from ${url}`));
     });
 
     req.on('error', (err) => {
+      // If family: 4 fails with network error, attempt one fallback without family restriction
+      if (reqOptions.family === 4 && (err.code === 'ENETUNREACH' || err.code === 'EADDRNOTAVAIL')) {
+        return resolve(fetchUrl(url, { ...options, family: undefined }, redirectCount));
+      }
       reject(err);
     });
   });

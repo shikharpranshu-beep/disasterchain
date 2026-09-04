@@ -23,7 +23,7 @@ app.use(
   })
 );
 
-// CORS configuration (supports production frontend and local dev)
+// CORS configuration (supports production Vercel frontend, preview domains, and local dev)
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
@@ -34,8 +34,13 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      // Allow requests with no origin (mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
         return callback(null, true);
       }
       return callback(null, true);
@@ -53,7 +58,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     project: 'DisasterChain',
     tagline: 'Respond Faster. Recover Smarter. Track Transparently.',
-    version: '1.1.0-role-enum-fix',
+    version: '1.2.0-weather-live-connectivity',
     supportedRoles: ['citizen', 'volunteer', 'ngo', 'responder', 'admin'],
     database: mongoose.connection.readyState === 1 ? 'MongoDB Atlas Connected' : 'In-Memory Mode',
     dbHost: mongoose.connection.host || 'N/A',

@@ -302,6 +302,63 @@ async function runWeatherTestSuite() {
     assert(res.data.data.results.length > 0);
   });
 
+  // --- 11. Specific Requirement 17 Tests ---
+  console.log('\n--- 11. Resilience, Edge Cases & Security Checks ---');
+  await itAsync('Chandigarh Geocoding returns coordinates near 30.73, 76.78', async () => {
+    const res = await requestGet('/api/weather/location?q=Chandigarh');
+    assert.strictEqual(res.status, 200);
+    const match = res.data.data.results.find((r) => r.name.toLowerCase() === 'chandigarh');
+    assert(match != null, 'Chandigarh must be found in geocoding results');
+    assert(Math.abs(match.latitude - 30.73) < 0.2, 'Latitude must be near 30.73');
+    assert(Math.abs(match.longitude - 76.78) < 0.2, 'Longitude must be near 76.78');
+  });
+
+  await itAsync('Chandigarh coordinate-based weather (latitude=30.7333&longitude=76.7794) succeeds', async () => {
+    const res = await requestGet('/api/weather/current?latitude=30.7333&longitude=76.7794');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.data.success, true);
+    assert(typeof res.data.data.temperature === 'number');
+  });
+
+  await itAsync('GET /api/weather/complete accepts latitude/longitude aliases and returns feedStatus', async () => {
+    const res = await requestGet('/api/weather/complete?latitude=30.7333&longitude=76.7794');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.data.success, true);
+    assert(['LIVE', 'PARTIAL_LIVE'].includes(res.data.data.feedStatus));
+  });
+
+  it('No secrets or private tokens leaked in weather service or controller files', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const serviceContent = fs.readFileSync(path.join(__dirname, 'services', 'weatherService.js'), 'utf8');
+    const controllerContent = fs.readFileSync(path.join(__dirname, 'controllers', 'weatherController.js'), 'utf8');
+    const sensitiveTerms = ['mongodb+srv', 'api_key', 'private_key', 'jwt_secret', 'secret_key'];
+    for (const term of sensitiveTerms) {
+      assert(!serviceContent.toLowerCase().includes(term), `Secret pattern ${term} found in weatherService.js`);
+      assert(!controllerContent.toLowerCase().includes(term), `Secret pattern ${term} found in weatherController.js`);
+    }
+  });
+
+  it('CORS origin handler allows Vercel production and preview deployments', () => {
+    const serverContent = require('fs').readFileSync(require('path').join(__dirname, 'server.js'), 'utf8');
+    assert(serverContent.includes('.vercel.app'), 'server.js must permit vercel.app domains in CORS');
+  });
+
+  it('Frontend weatherApi uses dynamic production backend URL detection', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const apiContent = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'src', 'services', 'weatherApi.js'), 'utf8');
+    assert(apiContent.includes('disasterrchain-backend.onrender.com'), 'Must detect production backend on Render');
+    assert(apiContent.includes('fetchDirectOpenMeteo'), 'Must provide direct client-side Open-Meteo fallback');
+  });
+
+  it('Open-Meteo timeout configuration is set to at least 10,000ms for slow air-quality responses', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const serviceContent = fs.readFileSync(path.join(__dirname, 'services', 'weatherService.js'), 'utf8');
+    assert(serviceContent.includes('15000') || serviceContent.includes('10000'), 'Timeout must be resilient');
+  });
+
   console.log('\n================================================================');
   console.log(`📊 WEATHER INTELLIGENCE TEST SUMMARY: ${passedTests} / ${totalTests} TESTS PASSED (100%)`);
   console.log('🎉 ALL WEATHER & ATMOSPHERIC DISASTER INTELLIGENCE CHECKS PASSED!');

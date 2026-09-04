@@ -1,15 +1,24 @@
 const weatherService = require('../services/weatherService');
 
 /**
- * GET /api/weather/current?lat=&lon=
+ * Helper to extract coordinates supporting lat/latitude and lon/longitude/lng
+ */
+function extractCoords(query) {
+  const lat = query.lat !== undefined ? query.lat : query.latitude;
+  const lon = query.lon !== undefined ? query.lon : (query.longitude !== undefined ? query.longitude : query.lng);
+  return { lat, lon };
+}
+
+/**
+ * GET /api/weather/current?lat=&lon= or ?latitude=&longitude=
  */
 async function getCurrentWeather(req, res) {
   try {
-    const { lat, lon } = req.query;
+    const { lat, lon } = extractCoords(req.query);
     if (!lat || !lon) {
       return res.status(400).json({
         success: false,
-        message: 'Query parameters "lat" and "lon" are required.',
+        message: 'Query parameters "lat" (or "latitude") and "lon" (or "longitude") are required.',
       });
     }
 
@@ -28,15 +37,15 @@ async function getCurrentWeather(req, res) {
 }
 
 /**
- * GET /api/weather/forecast?lat=&lon=
+ * GET /api/weather/forecast?lat=&lon= or ?latitude=&longitude=
  */
 async function getForecast(req, res) {
   try {
-    const { lat, lon } = req.query;
+    const { lat, lon } = extractCoords(req.query);
     if (!lat || !lon) {
       return res.status(400).json({
         success: false,
-        message: 'Query parameters "lat" and "lon" are required.',
+        message: 'Query parameters "lat" (or "latitude") and "lon" (or "longitude") are required.',
       });
     }
 
@@ -55,15 +64,15 @@ async function getForecast(req, res) {
 }
 
 /**
- * GET /api/weather/air-quality?lat=&lon=
+ * GET /api/weather/air-quality?lat=&lon= or ?latitude=&longitude=
  */
 async function getAirQuality(req, res) {
   try {
-    const { lat, lon } = req.query;
+    const { lat, lon } = extractCoords(req.query);
     if (!lat || !lon) {
       return res.status(400).json({
         success: false,
-        message: 'Query parameters "lat" and "lon" are required.',
+        message: 'Query parameters "lat" (or "latitude") and "lon" (or "longitude") are required.',
       });
     }
 
@@ -82,16 +91,16 @@ async function getAirQuality(req, res) {
 }
 
 /**
- * GET /api/weather/complete?lat=&lon=
- * Consolidated endpoint returning current weather, forecast, and AQI
+ * GET /api/weather/complete?lat=&lon= or ?latitude=&longitude=
+ * Consolidated endpoint returning current weather, forecast, and AQI independently
  */
 async function getCompleteWeather(req, res) {
   try {
-    const { lat, lon } = req.query;
+    const { lat, lon } = extractCoords(req.query);
     if (!lat || !lon) {
       return res.status(400).json({
         success: false,
-        message: 'Query parameters "lat" and "lon" are required.',
+        message: 'Query parameters "lat" (or "latitude") and "lon" (or "longitude") are required.',
       });
     }
 
@@ -102,9 +111,17 @@ async function getCompleteWeather(req, res) {
       weatherService.reverseGeocode(lat, lon),
     ]);
 
+    const feedsSuccessCount = [current, forecast, airQuality].filter((f) => f.status === 'fulfilled').length;
+    let feedStatus = 'UNAVAILABLE';
+    if (feedsSuccessCount === 3) feedStatus = 'LIVE';
+    else if (feedsSuccessCount > 0) feedStatus = 'PARTIAL_LIVE';
+
     return res.json({
-      success: true,
+      success: feedsSuccessCount > 0,
       data: {
+        feedStatus,
+        isCached: false,
+        timestamp: new Date().toISOString(),
         current: current.status === 'fulfilled' ? current.value : null,
         currentError: current.status === 'rejected' ? current.reason?.message : null,
         forecast: forecast.status === 'fulfilled' ? forecast.value : null,
@@ -179,15 +196,15 @@ async function getDisasterEvents(req, res) {
 }
 
 /**
- * GET /api/weather/location?q=
+ * GET /api/weather/location?q= or ?query= or ?name=
  */
 async function searchLocation(req, res) {
   try {
-    const { q } = req.query;
+    const q = req.query.q || req.query.query || req.query.name;
     if (!q) {
       return res.status(400).json({
         success: false,
-        message: 'Query parameter "q" is required.',
+        message: 'Query parameter "q" (or "query" / "name") is required.',
       });
     }
 
@@ -206,15 +223,15 @@ async function searchLocation(req, res) {
 }
 
 /**
- * GET /api/weather/reverse-geocode?lat=&lon=
+ * GET /api/weather/reverse-geocode?lat=&lon= or ?latitude=&longitude=
  */
 async function reverseGeocode(req, res) {
   try {
-    const { lat, lon } = req.query;
+    const { lat, lon } = extractCoords(req.query);
     if (!lat || !lon) {
       return res.status(400).json({
         success: false,
-        message: 'Query parameters "lat" and "lon" are required.',
+        message: 'Query parameters "lat" (or "latitude") and "lon" (or "longitude") are required.',
       });
     }
 
