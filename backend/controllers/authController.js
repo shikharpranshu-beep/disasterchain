@@ -451,14 +451,22 @@ exports.login = async (req, res) => {
     // Offline / Demo account fallback
     if (
       (normalizedEmail === 'student@disasterchain.org' && password === 'student123') ||
-      (normalizedEmail === 'admin@disasterchain.org' && password === 'admin123')
+      (normalizedEmail === 'admin@disasterchain.org' && password === 'admin123') ||
+      (normalizedEmail === 'citizen@disasterchain.org' && password === 'citizen123')
     ) {
-      const isAdmin = normalizedEmail.includes('admin');
+      const role = normalizedEmail.includes('admin')
+        ? 'admin'
+        : (normalizedEmail.includes('citizen') ? 'citizen' : 'volunteer');
+
       const demoUser = {
-        _id: isAdmin ? 'demo-admin-id-67890' : 'demo-student-id-12345',
-        name: isAdmin ? 'Chief Disaster Officer' : 'Shikhar (Volunteer)',
+        _id: role === 'admin'
+          ? 'demo-admin-id-67890'
+          : (role === 'citizen' ? 'demo-citizen-id-11111' : 'demo-student-id-12345'),
+        name: role === 'admin'
+          ? 'Chief Disaster Officer'
+          : (role === 'citizen' ? 'Aarav (Citizen)' : 'Shikhar (Volunteer)'),
         email: normalizedEmail,
-        role: isAdmin ? 'admin' : 'volunteer',
+        role,
         isVerified: true,
       };
 

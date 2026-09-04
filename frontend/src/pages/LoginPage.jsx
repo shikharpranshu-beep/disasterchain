@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import Icon from '../components/Icons';
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -90,13 +92,13 @@ const LoginPage = () => {
             <Icon name="shield-check" size={26} color="#ffffff" />
           </div>
           <div className="micro-label" style={{ color: 'var(--cyan)', marginBottom: '0.25rem' }}>
-            OPERATOR AUTHENTICATION
+            {t('auth.loginSubtitle', 'OPERATOR AUTHENTICATION')}
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            Sign In to DisasterChain
+            {t('auth.loginTitle', 'Sign In to DisasterChain')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
-            Access crisis operational dispatch & cryptographic relief systems
+            {t('auth.registerSubtitle', 'Access crisis operational dispatch & cryptographic relief systems')}
           </p>
         </div>
 
@@ -144,7 +146,7 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Registered Email Address</label>
+            <label className="form-label">{t('auth.email', 'Registered Email Address')}</label>
             <input
               type="email"
               required
@@ -157,9 +159,9 @@ const LoginPage = () => {
 
           <div className="form-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <label className="form-label" style={{ margin: 0 }}>Password</label>
+              <label className="form-label" style={{ margin: 0 }}>{t('auth.password', 'Password')}</label>
               <Link to="/forgot-password" style={{ fontSize: '0.75rem', color: 'var(--cyan)' }}>
-                Forgot Password?
+                {t('auth.forgotPasswordLink', 'Forgot Password?')}
               </Link>
             </div>
             <input
@@ -178,14 +180,14 @@ const LoginPage = () => {
             className="btn btn-primary"
             style={{ width: '100%', marginTop: '0.5rem' }}
           >
-            {loading ? 'Authenticating Operator...' : 'Authenticate & Enter Grid'}
+            {loading ? t('common.loading', 'Authenticating Operator...') : t('auth.loginBtn', 'Authenticate & Enter Grid')}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-          New operator?{' '}
+          {t('auth.dontHaveAccount', "Don't have an account?")}{' '}
           <Link to="/register" style={{ color: 'var(--cyan)', fontWeight: 700 }}>
-            Register Personnel Account
+            {t('auth.registerBtn', 'Register Personnel Account')}
           </Link>
         </div>
       </div>

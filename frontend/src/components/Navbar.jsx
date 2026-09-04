@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 import OfflineSyncBadge from './OfflineSyncBadge';
+import LanguageSelector from './LanguageSelector';
 
 const Navbar = ({ onOpenSos }) => {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [timeStr, setTimeStr] = useState('');
 
@@ -38,7 +41,7 @@ const Navbar = ({ onOpenSos }) => {
         <div>
           <div className="hud-logo-title">
             <span>DISASTERCHAIN</span>
-            <span className="hud-logo-tag">NET v2.6</span>
+            <span className="hud-logo-tag">{t('common.appTag', 'NET v2.6')}</span>
           </div>
         </div>
       </Link>
@@ -47,15 +50,18 @@ const Navbar = ({ onOpenSos }) => {
       <div className="hud-telemetry" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div className="telemetry-chip">
           <span className="live-beacon-pulse" />
-          <span style={{ color: 'var(--primary)' }}>OPERATIONAL</span>
+          <span style={{ color: 'var(--primary)' }}>{t('common.operational', 'OPERATIONAL')}</span>
           <span style={{ opacity: 0.5 }}>|</span>
-          <span>{timeStr || 'SYNCING...'}</span>
+          <span>{timeStr || t('common.syncing', 'SYNCING...')}</span>
         </div>
         <OfflineSyncBadge />
       </div>
 
       {/* Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Multilingual 20-Language Selector */}
+        <LanguageSelector />
+
         {/* Urgent Emergency Beacon Button */}
         <button
           type="button"
@@ -65,17 +71,17 @@ const Navbar = ({ onOpenSos }) => {
           style={{ letterSpacing: '0.04em' }}
         >
           <Icon name="alert-circle" size={16} color="#ffffff" />
-          <span>BROADCAST SOS</span>
+          <span>{t('nav.broadcastSos', 'BROADCAST SOS')}</span>
         </button>
 
         {/* Low-Connectivity Mode Switcher */}
         <Link
           to="/offline"
           className="btn btn-secondary btn-sm"
-          title="Offline & Survivability Mode"
+          title={t('offline.offlineModeTitle', 'Offline & Survivability Mode')}
         >
           <Icon name="wifi-off" size={15} color="var(--primary)" />
-          <span style={{ fontSize: '0.78rem' }}>Offline Mode</span>
+          <span style={{ fontSize: '0.78rem' }}>{t('nav.offlineMode', 'Offline Mode')}</span>
         </Link>
 
         {/* User Status / Authentication */}
@@ -98,7 +104,7 @@ const Navbar = ({ onOpenSos }) => {
               type="button"
               onClick={handleLogout}
               className="btn btn-ghost btn-sm"
-              title="Sign Out"
+              title={t('nav.logout', 'Sign Out')}
               style={{ color: 'var(--text-muted)' }}
             >
               <Icon name="logout" size={16} />
@@ -107,10 +113,10 @@ const Navbar = ({ onOpenSos }) => {
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Link to="/login" className="btn btn-ghost btn-sm">
-              Sign In
+              {t('nav.login', 'Sign In')}
             </Link>
             <Link to="/register" className="btn btn-primary btn-sm">
-              Register
+              {t('nav.register', 'Register')}
             </Link>
           </div>
         )}

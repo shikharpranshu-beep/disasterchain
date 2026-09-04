@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from './Icons';
 import { sendAIChatMessage, createSosRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 
 /**
  * Safe lightweight Markdown parser without dangerouslySetInnerHTML.
@@ -90,6 +91,7 @@ const FormattedMessage = ({ content }) => {
  */
 export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null }) => {
   const { user } = useAuth();
+  const { t, currentLanguage, languageConfig, isRtl } = useTranslation();
   const navigate = useNavigate();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -115,12 +117,12 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
   const inputRef = useRef(null);
 
   // Progressive Thinking Phases for realistic crisis telemetry synthesis
-  const THINKING_PHASES = [
-    'Analyzing live crisis telemetry...',
-    'Querying smart shelter registry & bed capacities...',
-    'Checking regional risk heatmap & active hazard scores...',
-    'Synthesizing verified emergency life-safety protocols...',
-  ];
+  const THINKING_PHASES = useMemo(() => [
+    t('ai.thinking1', 'Analyzing live crisis telemetry...'),
+    t('ai.thinking2', 'Querying smart shelter registry & bed capacities...'),
+    t('ai.thinking3', 'Checking regional risk heatmap & active hazard scores...'),
+    t('ai.thinking4', 'Synthesizing verified emergency life-safety protocols...'),
+  ], [t]);
 
   useEffect(() => {
     let interval = null;
@@ -243,6 +245,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
         conversation: historyPayload,
         latitude: userCoords?.latitude,
         longitude: userCoords?.longitude,
+        language: currentLanguage,
       });
 
       if (res && res.success && res.data) {
@@ -357,22 +360,22 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
   // Role-tailored quick action prompts
   const quickActions = useMemo(() => {
     const list = [
-      { label: '🚨 Emergency Help', query: 'Help me, I am in immediate danger!' },
-      { label: '⛺ Nearby Shelters & Beds', query: 'Where is the nearest safe shelter with open beds?' },
-      { label: '📢 Active Alerts & Broadcasts', query: 'What are the current emergency broadcast alerts?' },
-      { label: '⚠️ Active Incidents & SOS', query: 'Show all active incidents and field reports' },
-      { label: '📦 Emergency Kit Checklist', query: 'What should I pack in a 72-hour emergency survival kit?' },
-      { label: '🌊 Flood Safety Guide', query: 'What should I do during a flood emergency?' },
-      { label: '🗺️ Evacuation Planning', query: 'What are the recommended evacuation procedures and routes?' },
-      { label: '🔥 Explain Risk Heatmap', query: 'Explain the current regional risk level and hazard hotspots' },
+      { label: t('ai.quickEmergency', '🚨 Emergency Help'), query: t('emergency.immediateDangerDetected', 'Help me, I am in immediate danger!') },
+      { label: t('ai.quickShelter', '⛺ Nearby Shelters & Beds'), query: t('shelters.nearestShelter', 'Where is the nearest safe shelter with open beds?') },
+      { label: t('ai.quickAlerts', '📢 Active Alerts & Broadcasts'), query: t('alerts.activeBroadcasts', 'What are the current emergency broadcast alerts?') },
+      { label: t('ai.quickIncidents', '⚠️ Active Incidents & SOS'), query: t('incidents.fieldReports', 'Show all active incidents and field reports') },
+      { label: t('ai.quickKit', '📦 Emergency Kit Checklist'), query: t('disasters.emergencyKit', 'What should I pack in a 72-hour emergency survival kit?') },
+      { label: t('ai.quickFlood', '🌊 Flood Safety Guide'), query: t('disasters.flood', 'What should I do during a flood emergency?') },
+      { label: t('ai.quickEvac', '🗺️ Evacuation Planning'), query: t('disasters.evacuation', 'What are the recommended evacuation procedures and routes?') },
+      { label: t('ai.quickRisk', '🔥 Explain Risk Heatmap'), query: t('risk.riskAssessment', 'Explain the current regional risk level and hazard hotspots') },
     ];
 
     if (isPrivileged) {
-      list.unshift({ label: '⚡ AI Situation Briefing', query: 'Give me an operational situation brief' });
+      list.unshift({ label: t('ai.quickBrief', '⚡ AI Situation Briefing'), query: t('dashboard.sitrep', 'Give me an operational situation brief') });
     }
 
     return list;
-  }, [isPrivileged]);
+  }, [isPrivileged, t]);
 
   return (
     <>
@@ -500,7 +503,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontWeight: 800, fontSize: '0.92rem', color: '#FFFFFF', letterSpacing: '0.04em' }}>
-                    DISASTERCHAIN AI
+                    {t('ai.aiTitle', 'DISASTERCHAIN AI')}
                   </span>
                   <span
                     style={{
@@ -514,11 +517,14 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                       letterSpacing: '0.05em',
                     }}
                   >
-                    {systemMode === 'LIVE' ? '● OPERATIONAL' : '● DEGRADED'}
+                    {systemMode === 'LIVE' ? `● ${t('common.operational', 'OPERATIONAL')}` : `● ${t('common.degraded', 'DEGRADED')}`}
                   </span>
                 </div>
                 <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '1px' }}>
-                  Emergency & Disaster Management Intelligence
+                  {t('ai.aiSubtitle', 'Emergency & Disaster Management Intelligence')}
+                </div>
+                <div style={{ fontSize: '0.62rem', color: '#f59e0b', fontWeight: 700, marginTop: '2px', letterSpacing: '0.04em' }}>
+                  {t('ai.aiResponseLang', `AI RESPONSE: ${languageConfig?.nativeName || 'English'}`)}
                 </div>
               </div>
             </div>
@@ -655,10 +661,10 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                   <Icon name="bot" size={24} color="#f97316" />
                 </div>
                 <h4 style={{ margin: '0 0 0.35rem', color: '#FFFFFF', fontSize: '1rem', fontWeight: 800 }}>
-                  DisasterChain Emergency Intelligence
+                  {t('ai.welcomeTitle', 'DisasterChain Emergency Intelligence')}
                 </h4>
                 <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8', lineHeight: 1.5 }}>
-                  Synthesizing real-time shelter registries, hazard heatmaps, field incident logs, and 15+ verified emergency protocols.
+                  {t('ai.welcomeDesc', 'Synthesizing real-time shelter registries, hazard heatmaps, field incident logs, and 21 verified emergency protocols.')}
                 </p>
 
                 <div
@@ -671,20 +677,20 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                   }}
                 >
                   <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ fontSize: '0.74rem', color: '#f97316', fontWeight: 700 }}>● Smart Shelters</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Live bed count and capacity routing</div>
+                    <div style={{ fontSize: '0.74rem', color: '#f97316', fontWeight: 700 }}>● {t('shelters.shelterTitle', 'Smart Shelters')}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{t('shelters.shelterSubtitle', 'Live bed count and capacity routing')}</div>
                   </div>
                   <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ fontSize: '0.74rem', color: '#f59e0b', fontWeight: 700 }}>● Risk Heatmap</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Dynamic sector hazard scoring</div>
+                    <div style={{ fontSize: '0.74rem', color: '#f59e0b', fontWeight: 700 }}>● {t('risk.riskTitle', 'Risk Heatmap')}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{t('risk.riskSubtitle', 'Dynamic sector hazard scoring')}</div>
                   </div>
                   <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ fontSize: '0.74rem', color: '#ef4444', fontWeight: 700 }}>● Emergency SOS</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Direct responder distress beacon</div>
+                    <div style={{ fontSize: '0.74rem', color: '#ef4444', fontWeight: 700 }}>● {t('emergency.sosTitle', 'Emergency SOS')}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{t('emergency.sosSubtitle', 'Direct responder distress beacon')}</div>
                   </div>
                   <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ fontSize: '0.74rem', color: '#10b981', fontWeight: 700 }}>● Verified Protocols</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Civil defense life-safety actions</div>
+                    <div style={{ fontSize: '0.74rem', color: '#10b981', fontWeight: 700 }}>● {t('nav.safetyProtocols', 'Verified Protocols')}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{t('emergency.safetyGuidanceOnly', 'Civil defense life-safety actions')}</div>
                   </div>
                 </div>
               </div>
@@ -726,7 +732,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                             animation: 'pulse 1.5s infinite',
                           }}
                         >
-                          <span>🚨</span> LIFE-THREAT EMERGENCY
+                          <span>🚨</span> {t('ai.lifeThreatEmergency', 'LIFE-THREAT EMERGENCY')}
                         </span>
                       ) : isLiveData ? (
                         <span
@@ -741,7 +747,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                             letterSpacing: '0.04em',
                           }}
                         >
-                          ● LIVE TELEMETRY
+                          {t('ai.liveTelemetry', '● LIVE TELEMETRY')}
                         </span>
                       ) : (
                         <span
@@ -756,7 +762,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                             letterSpacing: '0.04em',
                           }}
                         >
-                          ● VERIFIED PROTOCOL
+                          {t('ai.verifiedProtocol', '● VERIFIED PROTOCOL')}
                         </span>
                       )}
 
@@ -891,11 +897,11 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '1.1rem' }}>🚨</span>
                   <span style={{ color: '#ef4444', fontWeight: 800, fontSize: '0.86rem', letterSpacing: '0.03em' }}>
-                    EMERGENCY DISTRESS BEACON CONFIRMATION
+                    {t('emergency.confirmSosTitle', 'EMERGENCY DISTRESS BEACON CONFIRMATION')}
                   </span>
                 </div>
                 <p style={{ margin: '0 0 0.85rem', color: '#f8fafc', fontSize: '0.82rem', lineHeight: 1.5 }}>
-                  {sosConfirmDialog.promptText}
+                  {sosConfirmDialog.promptText || t('emergency.confirmSosPrompt')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button
@@ -914,7 +920,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                       boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
                     }}
                   >
-                    🚨 YES, BROADCAST SOS
+                    {t('emergency.confirmSosBtn', '🚨 YES, BROADCAST SOS')}
                   </button>
                   <button
                     type="button"
@@ -930,7 +936,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                       cursor: 'pointer',
                     }}
                   >
-                    No, Safety Guidance Only
+                    {t('emergency.safetyGuidanceOnly', 'No, Safety Guidance Only')}
                   </button>
                 </div>
               </div>
@@ -1036,7 +1042,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask about shelters, hazard risks, emergency procedures..."
+              placeholder={t('ai.askPlaceholder', 'Ask about shelters, hazard risks, emergency procedures...')}
               disabled={loading}
               maxLength={1000}
               style={{
@@ -1073,7 +1079,7 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                 transition: 'all 0.15s ease',
               }}
             >
-              <span>SEND</span>
+              <span>{t('ai.send', 'SEND')}</span>
               <Icon name="arrow-right" size={14} />
             </button>
           </form>

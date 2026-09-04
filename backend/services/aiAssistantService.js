@@ -31,6 +31,30 @@ const {
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
+// Supported Indian Regional Languages + English
+const SUPPORTED_LANGUAGES = {
+  en: 'English',
+  hi: 'Hindi',
+  bn: 'Bengali',
+  te: 'Telugu',
+  mr: 'Marathi',
+  ta: 'Tamil',
+  gu: 'Gujarati',
+  kn: 'Kannada',
+  ml: 'Malayalam',
+  pa: 'Punjabi',
+  or: 'Odia',
+  as: 'Assamese',
+  ur: 'Urdu',
+  sa: 'Sanskrit',
+  ne: 'Nepali',
+  kok: 'Konkani',
+  ks: 'Kashmiri',
+  mai: 'Maithili',
+  sd: 'Sindhi',
+  mni: 'Manipuri',
+};
+
 // Emergency Life-Threat Keywords
 const EMERGENCY_KEYWORDS = [
   'help me',
@@ -60,6 +84,10 @@ const EMERGENCY_KEYWORDS = [
   'amputation',
   'in immediate danger',
   'water rising fast',
+  // Indian regional life-threat keywords
+  'मदद', 'बचाओ', 'सहायता', 'বাঁচাও', 'உதவி', 'காப்பாற்றுங்கள்',
+  'సహాయం', 'కాపాడండి', 'मदत', 'વાંચવો', 'ಸಹಾಯ', 'രക്ഷിക്കൂ',
+  'ਮਦਦ', 'ସାହାଯ୍ୟ', 'সহায়', 'مدد', 'रक्षतु', 'मद्दत', 'بچاؤ'
 ];
 
 // Off-topic keywords to politely deflect back to disaster management
@@ -711,47 +739,47 @@ function analyzeIntent(message) {
   let primaryIntent = 'general';
   let dataCategory = 'GUIDANCE';
 
-  if (/\b(brief|situation|summary|overview|status report|sitrep)\b/i.test(text)) {
+  if (/\b(brief|situation|summary|overview|status report|sitrep)\b|स्थिति|সারাংশ|சுருக்கம்|పరిస్థితి|अहवाल|સંક્ષિપ્ત/i.test(text)) {
     primaryIntent = 'situation_brief';
     dataCategory = 'LIVE_DATA';
-  } else if (/\b(shelters?|beds?|safe havens?|refuges?|evac centers?|where to sleep)\b/i.test(text)) {
+  } else if (/\b(shelters?|beds?|safe havens?|refuges?|evac centers?|where to sleep)\b|आश्रय|আশ্রয়|புகலிடம்|ఆశ్రయం|निवारा|આશ્રય|ಆಶ್ರಯ|അഭയകേന്ദ്രം|ਆਸਰਾ|ଆଶ୍ରୟ|پناہ گاہ/i.test(text)) {
     primaryIntent = 'shelter';
     dataCategory = 'LIVE_DATA';
-  } else if (/\b(risks?|hazards?|dangers?|threats?|heat maps?|vulnerab)/i.test(text)) {
+  } else if (/\b(risks?|hazards?|dangers?|threats?|heat maps?|vulnerab)\b|जोखिम|বিপদ|ஆபத்து|ప్రమాదం|धोका|જોખમ|ಅಪಾಯ|അപകടം|ਖ਼ਤਰਾ|ବିପଦ|خطرہ/i.test(text)) {
     primaryIntent = 'risk';
     dataCategory = 'LIVE_DATA';
-  } else if (/\b(alerts?|warnings?|advisories|advisory|sirens?|evacuations?)\b/i.test(text)) {
+  } else if (/\b(alerts?|warnings?|advisories|advisory|sirens?|evacuations?)\b|चेतावनी|সতর্কতা|எச்சரிக்கை|హెచ్చరిక|इशारा|ચેતવણી|ಎಚ್ಚರಿಕೆ|മുന്നറിയിപ്പ്|ਚੇਤਾਵਨੀ|ଚେତାବନୀ|وارننگ/i.test(text)) {
     primaryIntent = 'alert';
     dataCategory = 'LIVE_DATA';
-  } else if (/\b(incidents?|reports?|fires?|floods?|accidents?|collapsed|leaks?)\b/i.test(text) && !/what should|how to/i.test(text)) {
+  } else if (/\b(incidents?|reports?|fires?|floods?|accidents?|collapsed|leaks?)\b/i.test(text) && !/what should|how to|क्या करना/i.test(text)) {
     primaryIntent = 'incident';
     dataCategory = 'LIVE_DATA';
   } else if (/\b(resources?|supplies|supply|water|food|medical kit|rations?|blankets?)\b/i.test(text) && !/what should|how to|emergency kit/i.test(text)) {
     primaryIntent = 'resource';
     dataCategory = 'LIVE_DATA';
-  } else if (/\b(what should|how do|how to|prepare|emergency kit|protocol|safety tip|checklist|first aid|cpr|evacuat|guideline|dos and donts)\b/i.test(text)) {
+  } else if (/\b(what should|how do|how to|prepare|emergency kit|protocol|safety tip|checklist|first aid|cpr|evacuat|guideline|dos and donts)\b|क्या करना|কী করা|என்ன செய்ய|ఏమి చేయాలి|काय करावे|શું કરવું|ಏನು ಮಾಡಬೇಕು|എന്ത് ചെയ്യണം|ਕੀ ਕਰਨਾ|କଣ କରିବା|কি কৰা|کیا کرنا/i.test(text)) {
     primaryIntent = 'preparedness';
     dataCategory = 'GUIDANCE';
   }
 
   // Detect specific disaster type or topic for preparedness
   let disasterType = null;
-  if (/earthquake|tremor|quake/i.test(text)) disasterType = 'earthquake';
-  else if (/tsunami|coastal surge/i.test(text)) disasterType = 'tsunami';
-  else if (/flood|waterlog|drown|rising water/i.test(text)) disasterType = 'flood';
-  else if (/wildfire|forest fire|flame|smoke|fire/i.test(text)) disasterType = 'fire';
-  else if (/cyclone|hurricane|storm|typhoon|gale/i.test(text)) disasterType = 'cyclone';
-  else if (/landslide|mudslide|mudflow/i.test(text)) disasterType = 'landslide';
-  else if (/heatwave|heat stroke|hyperthermia|hot weather/i.test(text)) disasterType = 'heatwave';
-  else if (/cold|blizzard|frostbite|hypothermia|winter storm|snow/i.test(text)) disasterType = 'extreme_cold';
-  else if (/lightning|thunder/i.test(text)) disasterType = 'lightning';
-  else if (/collapse|rubble|structural failure|building collapse/i.test(text)) disasterType = 'building_collapse';
-  else if (/industrial|chemical|toxic|hazmat|gas leak|vapor cloud/i.test(text)) disasterType = 'chemical_emergency';
-  else if (/traffic|car crash|pileup|road accident|collision/i.test(text)) disasterType = 'road_accident';
-  else if (/stampede|crowd crush|crush|crowd/i.test(text)) disasterType = 'crowd_emergency';
+  if (/earthquake|tremor|quake|भूकंप|ഭൂകമ്പ|நிலநடுக்க|భూకంప|ভূমিকম্প|ધરતીકંપ|ಭೂಕಂಪ|زلزلہ|ভূঁইকঁপ|भुकम्प/i.test(text)) disasterType = 'earthquake';
+  else if (/tsunami|coastal surge|सुनामी|சுனாமி|సునామీ|સુનામી|ਤਸੁਨਾਮੀ/i.test(text)) disasterType = 'tsunami';
+  else if (/flood|waterlog|drown|rising water|बाढ़|বন্যা|வெள்ளம்|వరద|पूर|પૂર|ಪ್ರವಾಹ|വെള്ളപ്പൊക്കം|ਹੜ੍ਹ|ବନ୍ୟା|বানপানী|سیلاب/i.test(text)) disasterType = 'flood';
+  else if (/wildfire|forest fire|flame|smoke|fire|आग|আগুন|தீ|మంటలు|આગ|ಬೆಂಕಿ|തീ|ਅੱਗ|ନିଆଁ|জুই|آگ|अग्नि/i.test(text)) disasterType = 'fire';
+  else if (/cyclone|hurricane|storm|typhoon|gale|चक्रवात|ঘূর্ণিঝড়|புயல்|తుఫాను|वादळ|વાવાઝોડું|ಚಂಡಮಾರುತ|ചുഴലിക്കാറ്റ്|ਤੂਫ਼ਾਨ|ବାତ୍ୟା|طوفان/i.test(text)) disasterType = 'cyclone';
+  else if (/landslide|mudslide|mudflow|भूस्खलन|ভূমিধস|நிலச்சரிவு|కొండచరియలు|ધરતીધસારો|ಭೂಕುସಿತ/i.test(text)) disasterType = 'landslide';
+  else if (/heatwave|heat stroke|hyperthermia|hot weather|लू|উষ্ণপ্রবাহ|வெப்ப அலை|వడగాల్పులు|उष्णतेची लाट/i.test(text)) disasterType = 'heatwave';
+  else if (/cold|blizzard|frostbite|hypothermia|winter storm|snow|शीतलहर|ठंड/i.test(text)) disasterType = 'extreme_cold';
+  else if (/lightning|thunder|आकाशीय बिजली|বজ্রপাত|மின்னல்|పిడుగు|વીજળી/i.test(text)) disasterType = 'lightning';
+  else if (/collapse|rubble|structural failure|building collapse|इमारत गिरना|ভাঙন/i.test(text)) disasterType = 'building_collapse';
+  else if (/industrial|chemical|toxic|hazmat|gas leak|vapor cloud|गैस रिसाव|গ্যাস লিক/i.test(text)) disasterType = 'chemical_emergency';
+  else if (/traffic|car crash|pileup|road accident|collision|दुर्घटना|দুর্ঘটনা|விபத்து|ప్రమాదం/i.test(text)) disasterType = 'road_accident';
+  else if (/stampede|crowd crush|crush|crowd|भगदड़|পদদলিত/i.test(text)) disasterType = 'crowd_emergency';
   else if (/kit|bag|supplies|72 hour|go bag/i.test(text)) disasterType = 'emergency_kit';
-  else if (/evacuat/i.test(text)) disasterType = 'evacuation';
-  else if (/first aid|cpr|bleeding|tourniquet|bandage/i.test(text)) disasterType = 'first_aid';
+  else if (/evacuat|निकासी|উদ্ধার|வெளியேற்றம்|తరలింపు/i.test(text)) disasterType = 'evacuation';
+  else if (/first aid|cpr|bleeding|tourniquet|bandage|प्राथमिक उपचार|প্রাথমিক চিকিৎসা|முதலுதவி|ప్రథమ చికిత్స/i.test(text)) disasterType = 'first_aid';
   else if (/power outage|blackout|gas shutoff|electricity shutoff/i.test(text)) disasterType = 'power_outage';
   else if (/\b(elderly|infant|infants|baby|babies|pets? evacuation|pet care|service animals?|disabled|wheelchairs?)\b/i.test(text)) disasterType = 'vulnerable_care';
 
@@ -876,16 +904,64 @@ async function retrieveLiveContext(intentInfo, userRole, coordinates = null) {
   return context;
 }
 
+const REGIONAL_EMERGENCY_HEADINGS = {
+  hi: '⚠️ **तत्काल खतरा पहचाना गया — स्थानीय आपातकालीन सेवाएँ (112 / 101) डायल करें।**',
+  bn: '⚠️ **জরুরী বিপদ শনাক্ত হয়েছে — জরুরী পরিষেবা (112 / 101) ডায়াল করুন।**',
+  te: '⚠️ **తక్షణ ప్రమాదం గుర్తించబడింది — అత్యవసర సేవలను (112 / 101) డయల్ చేయండి.**',
+  mr: '⚠️ **तात्काळ धोका आढळला — स्थानिक आपत्कालीन सेवांना (112 / 101) कॉल करा.**',
+  ta: '⚠️ **உடனடி ஆபத்து கண்டறியப்பட்டது — அவசர சேவைகளை (112 / 101) அழைக்கவும்.**',
+  gu: '⚠️ **ત્વરિત જોખમ જણાયું — સ્થાનિક ઈમરજન્સી સેવાઓને (112 / 101) કૉલ કરો.**',
+  kn: '⚠️ **ತಕ್ಷಣದ ಅಪಾಯ ಪತ್ತೆಯಾಗಿದೆ — ತುರ್ತು ಸೇವೆಗಳಿಗೆ (112 / 101) ಕರೆ ಮಾಡಿ.**',
+  ml: '⚠️ **അടിയന്തിര അപകടം കണ്ടെത്തി — അടിയന്തിര സേവനങ്ങളിലേക്ക് (112 / 101) വിളിക്കുക.**',
+  pa: '⚠️ **ਤੁਰੰਤ ਖ਼ਤਰਾ ਪਛਾਣਿਆ ਗਿਆ — ਐਮਰਜੈਂਸੀ ਸੇਵਾਵਾਂ (112 / 101) ਨੂੰ ਕਾਲ ਕਰੋ।**',
+  or: '⚠️ **ତୁରନ୍ତ ବିପଦ ଚିହ୍ନଟ ହୋଇଛି — ଜରୁରୀକାଳୀନ ସେବା (112 / 101) କଲ୍ କରନ୍ତୁ।**',
+  as: '⚠️ **তাৎক্ষণিক বিপদ ধৰা পৰিছে — জৰুৰীকালীন সেৱা (112 / 101) লৈ কল কৰক।**',
+  ur: '⚠️ **فوری خطرہ محسوس کیا گیا — ایمرجنسی سروسز (112 / 101) پر کال کریں۔**',
+  sa: '⚠️ **आसन्नसंकटः ज्ञातः — आपातकालीनसेवायै (112 / 101) सम्पर्कं कुर्वन्तु।**',
+  ne: '⚠️ **तत्काल खतरा पहिचान गरियो — आपतकालीन सेवाहरू (112 / 101) कल गर्नुहोस्।**',
+  kok: '⚠️ **तात्काळ धोको मेळ्ळो — आपत्कालीन सेवांक (112 / 101) फोन करात.**',
+  ks: '⚠️ **فوری خطرٕ آو لبنہٕ — ایمرجنسی سروسز (112 / 101) رابطہ کٔریو۔**',
+  mai: '⚠️ **तत्काल खतरा पहचानल गेल — आपातकालीन सेवा (112 / 101) केँ फोन करू।**',
+  sd: '⚠️ **فوري خطرو درپيش آهي — هنگامي خدمتن (112 / 101) کي ڪال ڪريو۔**',
+  mni: '⚠️ **খুদোইথিবা থেংনরে — ইমার্জেন্সী সর্ভিসেসশিংদা (112 / 101) কোল তৌবিয়ু।**',
+};
+
+const REGIONAL_SHELTER_HEADINGS = {
+  hi: '🏛️ **निकटतम सुरक्षित आश्रय अनुशंसा**',
+  bn: '🏛️ **নিকটবর্তী নিরাপদ আশ্রয় সুপারিশ**',
+  te: '🏛️ **సమీప సురక్షిత ఆశ్రయ సిఫార్సు**',
+  mr: '🏛️ **जवळचे सुरक्षित निवारा शिफारस**',
+  ta: '🏛️ **அருகிலுள்ள பாதுகாப்பான புகலிட பரிந்துரை**',
+  gu: '🏛️ **નજીકના સુરક્ષિત આશ્રયની ભલામણ**',
+  kn: '🏛️ **ಹತ್ತಿರದ ಸುರಕ್ಷಿತ ಆಶ್ರಯ ಶಿಫಾರಸು**',
+  ml: '🏛️ **അടുത്തുള്ള സുരക്ഷിത അഭയകേന്ദ്ര ശുപാർശ**',
+  pa: '🏛️ **ਨੇੜਲੇ ਸੁਰੱਖਿਅਤ ਆਸਰੇ ਦੀ ਸਿਫ਼ਾਰਸ਼**',
+  or: '🏛️ **ନିକଟବର୍ତ୍ତୀ ସୁରକ୍ଷିତ ଆଶ୍ରୟ ସୁପାରିଶ**',
+  as: '🏛️ **নিকটৱৰ্তী সুৰক্ষিত আশ্ৰয় পৰামৰ্শ**',
+  ur: '🏛️ **قریبی محفوظ پناہ گاہ کی تجویز**',
+  sa: '🏛️ **निकटस्थं सुरक्षितम् आश्रयम्**',
+  ne: '🏛️ **नजिकको सुरक्षित आश्रय सिफारिस**',
+  kok: '🏛️ **लागचो सुरक्षीत निवारा शिफारस**',
+  ks: '🏛️ **نزدیٖک مَحفوظ پناہ گاہ**',
+  mai: '🏛️ **नजदीकी सुरक्षित आश्रय सिफारिश**',
+  sd: '🏛️ **ويجهي محفوظ پناهه گاهه جي سفارش**',
+  mni: '🏛️ **নাকনবা শেফ শেল্টার রিকমেন্দেসন**',
+};
+
 /**
  * Builds safe deterministic response in ASSISTANT LIMITED MODE
  */
-function generateDeterministicReply(message, intentInfo, context, userRole) {
+function generateDeterministicReply(message, intentInfo, context, userRole, language = 'en') {
   const actions = [];
   let reply = '';
+  const lang = (language || 'en').toLowerCase();
+  const emergencyHeading = REGIONAL_EMERGENCY_HEADINGS[lang];
+  const shelterHeading = REGIONAL_SHELTER_HEADINGS[lang];
 
   // 1. Immediate Life-Threatening Situation
   if (intentInfo.isEmergency) {
-    reply = `⚠️ **IMMEDIATE DANGER DETECTED**\n\n` +
+    const regionalBanner = emergencyHeading ? `${emergencyHeading}\n\n` : '';
+    reply = `${regionalBanner}⚠️ **IMMEDIATE DANGER DETECTED**\n\n` +
       `**1. Call Local Emergency Services Immediately (Dial 112 / 101 / 911).**\n` +
       `**2. If trapped or requiring rapid extraction, trigger your DisasterChain Emergency SOS Beacon below.**\n\n` +
       `**Essential Immediate Actions:**\n` +
@@ -970,7 +1046,8 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
   if (intentInfo.primaryIntent === 'shelter') {
     if (context.recommendedShelter) {
       const sh = context.recommendedShelter;
-      reply = `🏛️ **Optimal Safe Haven Recommendation**\n\n` +
+      const regionalBanner = shelterHeading ? `${shelterHeading}\n\n` : '';
+      reply = `${regionalBanner}🏛️ **Optimal Safe Haven Recommendation**\n\n` +
         `Based on live spatial telemetry and capacity load, the top candidate is:\n\n` +
         `• **Name:** ${sh.name}\n` +
         `• **Distance:** ~${sh.distanceKm} km from operational coordinates\n` +
@@ -1163,11 +1240,13 @@ function generateDeterministicReply(message, intentInfo, context, userRole) {
 /**
  * Generates an AI response using an external LLM provider if AI_API_KEY is configured
  */
-async function callExternalProvider(message, conversation, context, userRole) {
+async function callExternalProvider(message, conversation, context, userRole, language = 'en') {
   const apiKey = process.env.AI_API_KEY;
   if (!apiKey || apiKey.trim() === '') {
     return null;
   }
+
+  const langName = SUPPORTED_LANGUAGES[language] || 'English';
 
   const systemInstruction = `You are DISASTERCHAIN AI ASSISTANT, an emergency operations intelligence & safety assistant for the DisasterChain disaster management platform.
 Your visual theme is Warm Crisis Command.
@@ -1179,7 +1258,8 @@ Follow these strict policies:
 4. Keep emergency guidance concise, clear, and actionable. Use bullet points and bold formatting for critical steps.
 5. User role: ${userRole}. Do not expose private contact information, personal victim phone numbers, or reporter identities to unauthorized roles.
 6. Clearly distinguish between live system data and general safety guidance.
-7. If the user asks an off-topic question (jokes, poems, sports, coding), politely deflect back to disaster preparedness and safety operations.`;
+7. If the user asks an off-topic question (jokes, poems, sports, coding), politely deflect back to disaster preparedness and safety operations.
+8. Language Requirement: The user's active UI language is ${langName} (code: "${language}"). Provide your response in ${langName}. However, DO NOT alter, fabricate, or distort critical numeric values, emergency phone numbers (112, 101, 911), coordinates, or capacity figures.`;
 
   const compactContextStr = JSON.stringify({
     role: userRole,
@@ -1269,7 +1349,7 @@ Follow these strict policies:
 /**
  * Main AI Assistant Orchestration Entrypoint
  */
-async function processChat({ message, conversation = [], latitude = null, longitude = null, userRole = 'citizen', userId = null }) {
+async function processChat({ message, conversation = [], latitude = null, longitude = null, userRole = 'citizen', userId = null, language = 'en' }) {
   const intentInfo = analyzeIntent(message);
 
   // Retrieve live context from MongoDB/memoryStore
@@ -1280,14 +1360,14 @@ async function processChat({ message, conversation = [], latitude = null, longit
   let mode = 'LIMITED';
 
   if (process.env.AI_API_KEY && process.env.AI_API_KEY.trim().length > 0) {
-    reply = await callExternalProvider(message, conversation, context, userRole);
+    reply = await callExternalProvider(message, conversation, context, userRole, language);
     if (reply) {
       mode = 'LIVE';
     }
   }
 
   // Fallback to deterministic limited mode if no key or if external call failed
-  const deterministic = generateDeterministicReply(message, intentInfo, context, userRole);
+  const deterministic = generateDeterministicReply(message, intentInfo, context, userRole, language);
   if (!reply) {
     reply = deterministic.reply;
     mode = 'LIMITED';
@@ -1298,6 +1378,7 @@ async function processChat({ message, conversation = [], latitude = null, longit
 
   return {
     reply,
+    language: SUPPORTED_LANGUAGES[language] ? language : 'en',
     sources: context.sources.length > 0 ? context.sources : ['DisasterChain Safety Engine'],
     context: {
       mode,
@@ -1325,6 +1406,7 @@ module.exports = {
   retrieveLiveContext,
   generateDeterministicReply,
   PREPAREDNESS_GUIDES,
+  SUPPORTED_LANGUAGES,
   // Safe internal accessors
   getActiveSOS,
   getShelters,

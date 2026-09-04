@@ -1,27 +1,29 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
   const { user, isAdmin } = useAuth();
+  const { t } = useTranslation();
   const role = user?.role || 'citizen';
   const isPrivileged = role === 'responder' || role === 'ngo' || role === 'volunteer';
 
   const navItems = [
-    { label: 'Command HUD', path: '/dashboard', icon: 'activity', section: 'OPERATION' },
-    { label: 'Emergency SOS', path: '/sos', icon: 'sos', badge: 'LIVE', section: 'OPERATION' },
-    { label: 'Relief Shelters', path: '/shelters', icon: 'shelter', section: 'OPERATION' },
-    { label: 'Affected Areas', path: '/affected-areas', icon: 'map', section: 'OPERATION' },
-    { label: 'Crisis Alerts', path: '/alerts', icon: 'bell', section: 'OPERATION' },
-    { label: 'Hazard Reports', path: '/incidents', icon: 'warning', section: 'REPORTING' },
-    { label: 'My Submissions', path: '/my-reports', icon: 'report', section: 'REPORTING' },
-    { label: 'Emergency Facilities', path: '/resources', icon: 'hospital', section: 'SUPPLY' },
-    { label: 'Aid Donations', path: '/donations', icon: 'donations', section: 'SUPPLY' },
-    { label: 'Distribution Transit', path: '/resource-tracking', icon: 'logistics', section: 'SUPPLY' },
-    { label: 'Transparency Ledger', path: '/transparency', icon: 'ledger', section: 'AUDIT' },
-    { label: 'Safety Protocols', path: '/guides', icon: 'guide', section: 'SURVIVAL' },
-    { label: 'Offline Mode', path: '/offline', icon: 'offline', section: 'SURVIVAL' },
+    { label: t('nav.commandHud', 'Command HUD'), path: '/dashboard', icon: 'activity', section: 'OPERATION' },
+    { label: t('nav.emergencySos', 'Emergency SOS'), path: '/sos', icon: 'sos', badge: t('common.live', 'LIVE'), section: 'OPERATION' },
+    { label: t('nav.reliefShelters', 'Relief Shelters'), path: '/shelters', icon: 'shelter', section: 'OPERATION' },
+    { label: t('nav.affectedAreas', 'Affected Areas'), path: '/affected-areas', icon: 'map', section: 'OPERATION' },
+    { label: t('nav.crisisAlerts', 'Crisis Alerts'), path: '/alerts', icon: 'bell', section: 'OPERATION' },
+    { label: t('nav.hazardReports', 'Hazard Reports'), path: '/incidents', icon: 'warning', section: 'REPORTING' },
+    { label: t('nav.mySubmissions', 'My Submissions'), path: '/my-reports', icon: 'report', section: 'REPORTING' },
+    { label: t('nav.emergencyFacilities', 'Emergency Facilities'), path: '/resources', icon: 'hospital', section: 'SUPPLY' },
+    { label: t('nav.aidDonations', 'Aid Donations'), path: '/donations', icon: 'donations', section: 'SUPPLY' },
+    { label: t('nav.distributionTransit', 'Distribution Transit'), path: '/resource-tracking', icon: 'logistics', section: 'SUPPLY' },
+    { label: t('nav.transparencyLedger', 'Transparency Ledger'), path: '/transparency', icon: 'ledger', section: 'AUDIT' },
+    { label: t('nav.safetyProtocols', 'Safety Protocols'), path: '/guides', icon: 'guide', section: 'SURVIVAL' },
+    { label: t('nav.offlineMode', 'Offline Mode'), path: '/offline', icon: 'offline', section: 'SURVIVAL' },
   ];
 
   return (
@@ -46,7 +48,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
               }}
             >
               <Icon name="shield" size={16} color="var(--cyan)" />
-              <span>ADMIN COMMAND</span>
+              <span>{t('nav.adminCommand', 'ADMIN COMMAND')}</span>
             </NavLink>
           </div>
         )}
@@ -74,7 +76,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
 
         {/* Grouped Navigation Links */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <div className="rail-section-title">MISSION DIRECTORY</div>
+          <div className="rail-section-title">{t('nav.navigationMenu', 'MISSION DIRECTORY')}</div>
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -107,7 +109,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
             <span className="nav-icon-wrap">
               <Icon name="profile" size={17} />
             </span>
-            <span>Personnel Dossier</span>
+            <span>{t('nav.profile', 'Personnel Dossier')}</span>
           </NavLink>
         </div>
       </aside>
@@ -127,7 +129,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
           className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
         >
           <Icon name="bell" size={19} />
-          <span>Alerts</span>
+          <span>{t('common.warning', 'Alerts')}</span>
         </NavLink>
 
         {/* Floating Center SOS Beacon Button */}
@@ -136,7 +138,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
           onClick={onOpenSos}
           className="mobile-nav-beacon"
           aria-label="Emergency SOS Beacon"
-          title="Emergency SOS Dispatch"
+          title={t('nav.broadcastSos', 'Emergency SOS Dispatch')}
         >
           <Icon name="alert-circle" size={24} color="#ffffff" />
         </button>
@@ -146,7 +148,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
           className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
         >
           <Icon name="shelter" size={19} />
-          <span>Shelter</span>
+          <span>{t('shelters.shelterTitle', 'Shelter')}</span>
         </NavLink>
 
         <NavLink
@@ -154,7 +156,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
           className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
         >
           <Icon name="offline" size={19} />
-          <span>Offline</span>
+          <span>{t('nav.offlineMode', 'Offline')}</span>
         </NavLink>
       </nav>
     </>

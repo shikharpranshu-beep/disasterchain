@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import DisasterCommandMap from '../components/DisasterCommandMap';
 import Icon from '../components/Icons';
 import { fetchSosRequests, fetchShelters, fetchAffectedAreas } from '../services/api';
 
 const LandingPage = ({ onOpenSos }) => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [sosList, setSosList] = useState([]);
   const [shelters, setShelters] = useState([]);
   const [affectedAreas, setAffectedAreas] = useState([]);
@@ -116,7 +118,7 @@ const LandingPage = ({ onOpenSos }) => {
               id="hero-sos-btn"
             >
               <Icon name="alert-circle" size={18} color="#ffffff" />
-              <span>TRANSMIT DISTRESS SOS</span>
+              <span>{t('emergency.broadcast')}</span>
             </button>
 
             <Link
@@ -124,7 +126,7 @@ const LandingPage = ({ onOpenSos }) => {
               className="btn btn-primary btn-lg"
             >
               <Icon name="activity" size={18} />
-              <span>{isAuthenticated ? 'Enter Command HUD' : 'Sign In to Grid'}</span>
+              <span>{isAuthenticated ? t('common.command_hud', 'Enter Command HUD') : t('auth.loginBtn', 'Sign In to Grid')}</span>
             </Link>
           </div>
         </div>

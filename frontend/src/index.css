@@ -72,8 +72,8 @@
   --text-muted: #B9A495;
   --text-dim: #7C685B;
 
-  /* Font Families */
-  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Font Families with Indian regional script fallbacks */
+  --font-main: 'Plus Jakarta Sans', var(--font-i18n, inherit), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', 'Nirmala UI', 'Lohit Devanagari', 'Lohit Bengali', 'Lohit Tamil', 'Lohit Telugu', 'Lohit Gujarati', 'Lohit Kannada', 'Lohit Malayalam', 'Lohit Gurmukhi', 'Lohit Odia', 'Lohit Assamese', sans-serif;
   --font-display: 'Space Grotesk', var(--font-main);
   --font-mono: 'JetBrains Mono', monospace;
 
@@ -1066,3 +1066,45 @@ button, input, select, textarea {
     max-height: none !important;
   }
 }
+
+/* ==========================================================================
+   RTL MULTILINGUAL LAYOUT & ISOLATION
+   Support for Urdu (ur), Sindhi (sd), Kashmiri (ks)
+   ========================================================================== */
+
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .app-navbar {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .hud-telemetry {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .command-rail {
+  border-right: none;
+  border-left: 1px solid var(--border-subtle);
+}
+
+[dir="rtl"] .nav-icon-wrap {
+  margin-right: 0;
+  margin-left: 0.65rem;
+}
+
+[dir="rtl"] .btn {
+  flex-direction: row-reverse;
+}
+
+/* CRITICAL: Never invert or mirror geographical map tiles or controls */
+.leaflet-container,
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control {
+  direction: ltr !important;
+  text-align: left !important;
+}
+

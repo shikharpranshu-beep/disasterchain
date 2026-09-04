@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../i18n/i18n';
 import Icon from '../components/Icons';
 
 const OfflineEmergencyPage = () => {
+  const { t } = useTranslation();
   const [smsData, setSmsData] = useState({
     recipient: '112',
     messageType: 'Medical Assistance',
@@ -36,22 +38,22 @@ const OfflineEmergencyPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-critical">LOCAL AIR-GAP SURVIVAL MODE</span>
+            <span className="badge badge-critical">{t('offline.recoveryMode', 'LOCAL AIR-GAP SURVIVAL MODE')}</span>
             <span className="micro-label" style={{ color: 'var(--amber)' }}>
-              OFFLINE PRE-CACHED DIRECTIVES
+              {t('offline.offlineTitle', 'OFFLINE PRE-CACHED DIRECTIVES')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Low-Connectivity Emergency Telephony & SMS
+            {t('offline.offlineTitle', 'Low-Connectivity Emergency Telephony & SMS')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Zero-internet survival tools, direct GSM cellular calling, and standardized SMS distress dispatchers.
+            {t('offline.offlineSubtitle', 'Zero-internet survival tools, direct GSM cellular calling, and standardized SMS distress dispatchers.')}
           </p>
         </div>
 
         <div className="telemetry-chip" style={{ background: 'rgba(255, 46, 77, 0.15)', borderColor: 'var(--border-red)' }}>
           <span className="live-beacon-pulse critical" />
-          <span style={{ color: '#ffffff', fontWeight: 700 }}>CELLULAR READY</span>
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>{t('offline.localDataCached', 'CELLULAR READY')}</span>
         </div>
       </div>
 

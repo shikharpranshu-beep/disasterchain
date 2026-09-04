@@ -3,6 +3,7 @@ import { createSosRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Icon from './Icons';
 import offlineSyncService from '../services/offlineSyncService';
+import { useTranslation } from '../i18n/i18n';
 
 /**
  * SOS Operational Lifecycle States:
@@ -10,6 +11,7 @@ import offlineSyncService from '../services/offlineSyncService';
  */
 const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [sosState, setSosState] = useState('READY'); // 'IDLE' | 'READY' | 'LOCATING' | 'CONFIRMATION' | 'DISPATCHED' | 'RESOLVED'
   const [formData, setFormData] = useState({
@@ -187,7 +189,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
             </div>
             <div>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem', color: '#ffffff' }}>
-                EMERGENCY SOS BEACON
+                {t('emergency.sosTitle', 'EMERGENCY SOS BEACON')}
               </div>
               <div className="micro-label" style={{ color: '#ff6b81' }}>
                 STATE: {sosState}
@@ -421,19 +423,19 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
           <form onSubmit={proceedToConfirmation}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
               <div className="form-group">
-                <label className="form-label">Full Name / Caller</label>
+                <label className="form-label">{t('emergency.fullName', 'Full Name / Caller')}</label>
                 <input
                   type="text"
                   required
                   className="form-input"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Shikhar Sharma"
+                  placeholder={t('emergency.enterName', 'e.g. Shikhar Sharma')}
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Emergency Category</label>
+                <label className="form-label">{t('emergency.emergencyType', 'Emergency Category')}</label>
                 <select
                   className="form-select"
                   value={formData.emergencyType}
@@ -480,7 +482,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
 
             <div className="form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>Verified Location / Coordinates</label>
+                <label className="form-label" style={{ margin: 0 }}>{t('emergency.yourLocation', 'Verified Location / Coordinates')}</label>
                 <button
                   type="button"
                   onClick={triggerGpsAcquisition}
@@ -493,7 +495,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
                     cursor: 'pointer',
                   }}
                 >
-                  🛰️ Re-acquire GPS
+                  🛰️ {t('emergency.acquiringGps', 'Re-acquire GPS')}
                 </button>
               </div>
               <input
@@ -502,40 +504,40 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
                 className="form-input"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Coordinates or Building / Room Number"
+                placeholder={t('emergency.enterLocation', 'Coordinates or Building / Room Number')}
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Description of Distress</label>
+              <label className="form-label">{t('emergency.description', 'Description of Distress')}</label>
               <textarea
                 required
                 rows={3}
                 className="form-textarea"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe injuries, trapped individuals, fire conditions, or exact requirements..."
+                placeholder={t('emergency.protectAirway', 'Describe injuries, trapped individuals, fire conditions, or exact requirements...')}
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Contact Telephone / Radio</label>
+              <label className="form-label">{t('emergency.contactNumber', 'Contact Telephone / Radio')}</label>
               <input
                 type="text"
                 required
                 className="form-input"
                 value={formData.contact}
                 onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                placeholder="e.g. +91 98765 43210 or VHF Channel 14"
+                placeholder={t('emergency.enterContact', 'e.g. +91 98765 43210 or VHF Channel 14')}
               />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.75rem', marginTop: '1.25rem' }}>
               <button type="button" onClick={onClose} className="btn btn-secondary">
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </button>
               <button type="submit" className="btn btn-emergency">
-                Review & Broadcast Beacon →
+                {t('emergency.triggerSos', 'Review & Broadcast Beacon →')}
               </button>
             </div>
           </form>

@@ -217,8 +217,8 @@ export const fetchRiskHeatmap = async (params = {}) => {
 };
 
 // ================= AI EMERGENCY ASSISTANT API =================
-export const sendAIChatMessage = async ({ message, conversation, latitude, longitude } = {}) => {
-  const res = await api.post('/ai/chat', { message, conversation, latitude, longitude });
+export const sendAIChatMessage = async ({ message, conversation, latitude, longitude, language } = {}) => {
+  const res = await api.post('/ai/chat', { message, conversation, latitude, longitude, language });
   return res.data;
 };
 

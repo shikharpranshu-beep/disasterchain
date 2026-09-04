@@ -46,7 +46,20 @@ exports.handleAIChat = async (req, res) => {
         .slice(-6); // Max 6 recent messages
     }
 
-    // 5. Process through AI Assistant Service
+    // 5. Validate language against supported allowlist (fallback to English)
+    const SUPPORTED_LANG_CODES = [
+      'en', 'hi', 'bn', 'te', 'mr', 'ta', 'gu', 'kn', 'ml', 'pa',
+      'or', 'as', 'ur', 'sa', 'ne', 'kok', 'ks', 'mai', 'sd', 'mni'
+    ];
+    let selectedLanguage = 'en';
+    if (req.body.language && typeof req.body.language === 'string') {
+      const normalizedLang = req.body.language.trim().toLowerCase();
+      if (SUPPORTED_LANG_CODES.includes(normalizedLang)) {
+        selectedLanguage = normalizedLang;
+      }
+    }
+
+    // 6. Process through AI Assistant Service
     const result = await processChat({
       message: message.trim(),
       conversation: cleanConversation,
@@ -54,6 +67,7 @@ exports.handleAIChat = async (req, res) => {
       longitude: validLon,
       userRole,
       userId,
+      language: selectedLanguage,
     });
 
     return res.json({

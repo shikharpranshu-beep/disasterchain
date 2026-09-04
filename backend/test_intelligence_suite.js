@@ -257,7 +257,7 @@ async function runIntelligenceTestSuite() {
   // Test 4.6: Citizen Role Access Verification
   const jwt = require('jsonwebtoken');
   const citizenToken = jwt.sign(
-    { id: '507f1f77bcf86cd799439011', role: 'citizen', email: 'citizen@disasterchain.org' },
+    { id: 'demo-citizen-id-11111', role: 'citizen', email: 'citizen@disasterchain.org' },
     process.env.JWT_SECRET || 'disasterchain_secure_jwt_secret_2026',
     { expiresIn: '1h' }
   );
