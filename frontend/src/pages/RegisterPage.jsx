@@ -2,8 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const RegisterPage = () => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -111,13 +113,13 @@ const RegisterPage = () => {
           </div>
 
           <div className="micro-label" style={{ color: 'var(--mint)', marginBottom: '0.3rem' }}>
-            REGISTRATION BROADCASTED
+            {t('auth.verifyEmailTitle')}
           </div>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
-            Verification Dispatch Sent
+            {t('auth.verifyEmailTitle')}
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
-            A cryptographic verification link has been dispatched to <strong style={{ color: '#ffffff' }}>{registeredEmail}</strong>. Please check your inbox or spam folder.
+            {t('auth.verifyNotice')} <strong style={{ color: '#ffffff' }}>{registeredEmail}</strong>
           </p>
 
           {resendStatus && (
@@ -128,7 +130,7 @@ const RegisterPage = () => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
-              Proceed to Sign In
+              {t('auth.alreadyAccount')}
             </Link>
             <button
               type="button"
@@ -136,7 +138,7 @@ const RegisterPage = () => {
               disabled={resending}
               className="btn btn-secondary btn-sm"
             >
-              {resending ? 'Dispatching...' : 'Resend Verification Dispatch'}
+              {resending ? t('common.loading') : t('auth.sendResetLink')}
             </button>
           </div>
         </div>
@@ -167,13 +169,13 @@ const RegisterPage = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div className="micro-label" style={{ color: 'var(--cyan)', marginBottom: '0.25rem' }}>
-            PERSONNEL ENROLLMENT
+            {t('auth.registerSubtitle')}
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            Register Operator Account
+            {t('auth.registerTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
-            Join the DisasterChain emergency response and verification grid
+            {t('auth.registerSubtitle')}
           </p>
         </div>
 
@@ -185,7 +187,7 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Full Operator Name</label>
+            <label className="form-label">{t('auth.name')}</label>
             <input
               type="text"
               required
@@ -197,7 +199,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label">{t('auth.email')}</label>
             <input
               type="email"
               required
@@ -209,21 +211,21 @@ const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Operational Role</label>
+            <label className="form-label">{t('auth.role')}</label>
             <select
               className="form-select"
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
-              <option value="citizen">Citizen / Campus Resident</option>
-              <option value="volunteer">Volunteer Responder</option>
-              <option value="ngo">NGO Relief Coordinator</option>
-              <option value="responder">Frontline First Responder</option>
+              <option value="citizen">{t('auth.roleCitizen')}</option>
+              <option value="volunteer">{t('auth.roleVolunteer')}</option>
+              <option value="ngo">{t('auth.roleNgo')}</option>
+              <option value="responder">{t('auth.roleResponder')}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">{t('auth.password')}</label>
             <input
               type="password"
               required
@@ -254,7 +256,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Confirm Password</label>
+            <label className="form-label">{t('auth.confirmPassword')}</label>
             <input
               type="password"
               required
@@ -271,14 +273,14 @@ const RegisterPage = () => {
             className="btn btn-primary"
             style={{ width: '100%', marginTop: '0.5rem' }}
           >
-            {loading ? 'Registering Operator...' : 'Complete Enrollment →'}
+            {loading ? t('common.loading') : `${t('auth.registerBtn')} →`}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-          Already registered?{' '}
+          {t('auth.alreadyAccount')}{' '}
           <Link to="/login" style={{ color: 'var(--cyan)', fontWeight: 700 }}>
-            Sign In to Grid
+            {t('auth.loginBtn')}
           </Link>
         </div>
       </div>

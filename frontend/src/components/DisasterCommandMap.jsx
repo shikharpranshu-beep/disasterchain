@@ -9,6 +9,7 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import Icon from './Icons';
+import { useTranslation } from '../i18n/i18n';
 import {
   WORLD_COUNTRIES,
   WORLD_CITIES,
@@ -139,6 +140,7 @@ const DisasterCommandMapContent = ({
   onSelectEntity = () => {},
   onNavigate = () => {},
 }) => {
+  const { t } = useTranslation();
   const mapRef = useRef(null);
 
   // Safe prop arrays
@@ -372,26 +374,26 @@ const DisasterCommandMapContent = ({
             }}
           />
           <span style={{ fontWeight: 800, fontSize: '0.82rem', letterSpacing: '0.04em', color: '#ffffff' }}>
-            DISASTER MAP
+            {t('map.commandMap', 'DISASTER MAP')}
           </span>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
-            | LIVE OPERATIONAL INTELLIGENCE
+            | {t('dashboard.missionControl', 'LIVE OPERATIONAL INTELLIGENCE')}
           </span>
         </div>
 
         {/* Live Counters */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.72rem', fontWeight: 700 }}>
           <span style={{ color: 'var(--crimson)' }}>
-            SOS: <strong style={{ color: '#ffffff' }}>{activeSosList.length}</strong>
+            {t('map.activeSosLayer', 'SOS')}: <strong style={{ color: '#ffffff' }}>{activeSosList.length}</strong>
           </span>
           <span style={{ color: 'var(--amber)' }}>
-            INCIDENTS: <strong style={{ color: '#ffffff' }}>{safeIncidents.length}</strong>
+            {t('map.incidentsLayer', 'INCIDENTS')}: <strong style={{ color: '#ffffff' }}>{safeIncidents.length}</strong>
           </span>
           <span style={{ color: 'var(--safe)' }}>
-            SHELTERS: <strong style={{ color: '#ffffff' }}>{safeShelters.length}</strong>
+            {t('map.sheltersLayer', 'SHELTERS')}: <strong style={{ color: '#ffffff' }}>{safeShelters.length}</strong>
           </span>
           <span style={{ color: 'var(--orange-primary)' }}>
-            RISK ZONES: <strong style={{ color: '#ffffff' }}>{safeRiskZones.length}</strong>
+            {t('map.riskGridLayer', 'RISK ZONES')}: <strong style={{ color: '#ffffff' }}>{safeRiskZones.length}</strong>
           </span>
         </div>
       </div>
@@ -411,7 +413,7 @@ const DisasterCommandMapContent = ({
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="🔍 Search City or Country..."
+            placeholder={t('map.searchLocation', '🔍 Search City or Country...')}
             style={{
               width: '100%',
               background: 'rgba(18, 11, 8, 0.94)',
@@ -534,7 +536,7 @@ const DisasterCommandMapContent = ({
           }}
           title="Center Indian Subcontinent"
         >
-          🇮🇳 INDIA
+          🇮🇳 {t('map.presetIndia', 'INDIA')}
         </button>
 
         <button
@@ -549,7 +551,7 @@ const DisasterCommandMapContent = ({
           }}
           title="Global Overview"
         >
-          🌐 WORLD
+          🌐 {t('map.presetWorld', 'WORLD')}
         </button>
 
         <button
@@ -564,7 +566,7 @@ const DisasterCommandMapContent = ({
           }}
           title="Center My Location"
         >
-          📍 MY LOCATION
+          📍 {t('map.presetMyLocation', 'MY LOCATION')}
         </button>
 
         <button
@@ -580,7 +582,7 @@ const DisasterCommandMapContent = ({
           }}
           title="Fit bounds to all active emergency events"
         >
-          🎯 FIT ACTIVE INCIDENTS
+          🎯 {t('map.presetFitIncidents', 'FIT ACTIVE INCIDENTS')}
         </button>
       </div>
 
@@ -611,7 +613,7 @@ const DisasterCommandMapContent = ({
             cursor: 'pointer',
           }}
         >
-          🚨 SOS ({activeSosList.length})
+          🚨 {t('map.activeSosLayer', 'SOS')} ({activeSosList.length})
         </button>
 
         <button
@@ -628,7 +630,7 @@ const DisasterCommandMapContent = ({
             cursor: 'pointer',
           }}
         >
-          🏛️ SHELTERS ({safeShelters.length})
+          🏛️ {t('map.sheltersLayer', 'SHELTERS')} ({safeShelters.length})
         </button>
 
         <button
@@ -645,7 +647,7 @@ const DisasterCommandMapContent = ({
             cursor: 'pointer',
           }}
         >
-          ⚠️ INCIDENTS ({safeIncidents.length})
+          ⚠️ {t('map.incidentsLayer', 'INCIDENTS')} ({safeIncidents.length})
         </button>
 
         <button
@@ -662,7 +664,7 @@ const DisasterCommandMapContent = ({
             cursor: 'pointer',
           }}
         >
-          🔥 HAZARDS ({safeAreas.length})
+          🔥 {t('map.hazardsLayer', 'HAZARDS')} ({safeAreas.length})
         </button>
 
         <button
@@ -679,7 +681,7 @@ const DisasterCommandMapContent = ({
             cursor: 'pointer',
           }}
         >
-          🌡️ RISK GRID
+          🌡️ {t('map.riskGridLayer', 'RISK GRID')}
         </button>
       </div>
 
@@ -703,7 +705,7 @@ const DisasterCommandMapContent = ({
             fontWeight: 700,
           }}
         >
-          <span>Unable to load live operational data.</span>
+          <span>{t('common.error', 'Unable to load live operational data.')}</span>
           <button
             type="button"
             onClick={onRetry}
@@ -717,7 +719,7 @@ const DisasterCommandMapContent = ({
               cursor: 'pointer',
             }}
           >
-            ↻ RETRY
+            ↻ {t('common.retry', 'RETRY')}
           </button>
         </div>
       )}

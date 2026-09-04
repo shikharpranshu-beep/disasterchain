@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createIncident } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -143,11 +145,11 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
             </span>
 
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-              Hazard Incident Successfully Logged
+              {t('incidents.loggedSuccess', 'Hazard Incident Successfully Logged')}
             </h2>
 
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-              Your report has been queued on the crisis response triage board. Safety responders and facility teams have been notified.
+              {t('incidents.loggedDesc', 'Your report has been queued on the crisis response triage board. Safety responders and facility teams have been notified.')}
             </p>
 
             <div
@@ -165,29 +167,29 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Headline:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('common.title', 'Headline')}:</span>
                 <strong style={{ color: '#ffffff' }}>{submittedIncident.title}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Hazard Category:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('common.category', 'Hazard Category')}:</span>
                 <span style={{ color: '#818cf8', fontWeight: 700 }}>{submittedIncident.type}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Severity Level:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('common.severity', 'Severity Level')}:</span>
                 <span className={`badge badge-${submittedIncident.severity?.toLowerCase()}`}>{submittedIncident.severity}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Location:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('common.location', 'Location')}:</span>
                 <span style={{ color: 'var(--text-primary)' }}>{submittedIncident.location}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Initial Status:</span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('common.status', 'Initial Status')}:</span>
                 <span className="badge badge-warning">{submittedIncident.status || 'Pending Review'}</span>
               </div>
             </div>
 
             <button onClick={handleResetAndClose} className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }}>
-              Done & Return
+              {t('common.done', 'Done & Return')}
             </button>
           </div>
         ) : (
@@ -210,8 +212,8 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
                   <Icon name="warning" size={22} color="#f59e0b" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>Report Campus Hazard / Incident</h2>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Notify safety dispatch teams and log hazard ticket</div>
+                  <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>{t('incidents.reportIncident', 'Report Campus Hazard / Incident')}</h2>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{t('incidents.reportSubtitle', 'Notify safety dispatch teams and log hazard ticket')}</div>
                 </div>
               </div>
 
@@ -242,7 +244,7 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label className="form-label">Incident Headline *</label>
+                <label className="form-label">{t('incidents.incidentTitle', 'Incident Headline')} *</label>
                 <input
                   type="text"
                   required
@@ -255,7 +257,7 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
 
               <div className="grid-cols-2">
                 <div className="form-group">
-                  <label className="form-label">Hazard Category *</label>
+                  <label className="form-label">{t('common.category', 'Hazard Category')} *</label>
                   <select
                     className="form-select"
                     value={formData.type}
@@ -275,22 +277,22 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Severity Level *</label>
+                  <label className="form-label">{t('common.severity', 'Severity Level')} *</label>
                   <select
                     className="form-select"
                     value={formData.severity}
                     onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
                   >
-                    <option value="Low">🟢 Low (Maintenance inspection)</option>
-                    <option value="Medium">🟡 Medium (Potential hazard)</option>
-                    <option value="High">🟠 High (Immediate danger)</option>
-                    <option value="Critical">🔴 Critical (Life safety threat)</option>
+                    <option value="Low">🟢 Low ({t('common.low', 'Low')})</option>
+                    <option value="Medium">🟡 Medium ({t('common.medium', 'Medium')})</option>
+                    <option value="High">🟠 High ({t('common.high', 'High')})</option>
+                    <option value="Critical">🔴 Critical ({t('common.critical', 'Critical')})</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Detailed Description *</label>
+                <label className="form-label">{t('common.description', 'Detailed Description')} *</label>
                 <textarea
                   required
                   rows={3}
@@ -303,7 +305,7 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
 
               <div className="form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Exact Location / Sector *</label>
+                  <label className="form-label" style={{ margin: 0 }}>{t('common.location', 'Exact Location / Sector')} *</label>
                   <button
                     type="button"
                     onClick={handleDetectLocation}
@@ -317,7 +319,7 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
                     }}
                   >
                     <Icon name="map-pin" size={13} color={gpsStatus === 'detected' ? '#10b981' : '#818cf8'} />
-                    <span>{detectingGps ? 'Detecting GPS...' : gpsStatus === 'detected' ? 'GPS Locked \u2713' : 'Auto-Detect GPS'}</span>
+                    <span>{detectingGps ? t('emergency.detectingGps', 'Detecting GPS...') : gpsStatus === 'detected' ? `GPS Locked \u2713` : t('emergency.detectGps', 'Auto-Detect GPS')}</span>
                   </button>
                 </div>
                 <input
@@ -331,7 +333,7 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Photo Evidence URL (Optional)</label>
+                <label className="form-label">{t('incidents.photoUrl', 'Photo Evidence URL (Optional)')}</label>
                 <input
                   type="text"
                   className="form-input"
@@ -343,11 +345,11 @@ const IncidentModal = ({ isOpen, onClose, onIncidentSubmitted }) => {
 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
                 <button type="button" onClick={handleResetAndClose} className="btn btn-secondary" style={{ flex: 1 }}>
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button type="submit" disabled={loading} className="btn btn-primary" style={{ flex: 2 }}>
                   <Icon name="warning" size={17} />
-                  <span>{loading ? 'Submitting Hazard Report...' : 'Submit Incident Report'}</span>
+                  <span>{loading ? t('common.loading', 'Submitting Hazard Report...') : t('incidents.submitReport', 'Submit Incident Report')}</span>
                 </button>
               </div>
             </form>

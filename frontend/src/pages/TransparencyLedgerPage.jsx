@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchBlockchainTransactions } from '../services/api';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const TransparencyLedgerPage = () => {
+  const { t } = useTranslation();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -77,16 +79,16 @@ const TransparencyLedgerPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-info">CRYPTOGRAPHIC AUDIT TRAIL</span>
+            <span className="badge badge-info">{t('transparency.transparencyTitle')}</span>
             <span className="micro-label" style={{ color: 'var(--violet)' }}>
-              SHA-256 HASH CHAINING
+              {t('transparency.currentHash')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Public Transparency Ledger
+            {t('transparency.transparencyTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Immutable, mathematically grounded disaster relief audit trail verifying aid allocation and distributions.
+            {t('transparency.transparencySubtitle')}
           </p>
         </div>
 
@@ -95,34 +97,34 @@ const TransparencyLedgerPage = () => {
           className="btn btn-secondary btn-sm"
         >
           <Icon name="refresh-cw" size={14} />
-          <span>Sync Ledger</span>
+          <span>{t('common.refresh')}</span>
         </button>
       </div>
 
       {/* Telemetry KPI Metrics */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">MINTED AUDIT BLOCKS</span>
+          <span className="micro-label">{t('transparency.totalBlocks')}</span>
           <div className="telemetry-num violet">{records.length}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cryptographically chained</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('transparency.totalBlocks')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">VERIFIED RELIEF UNITS</span>
+          <span className="micro-label">{t('transparency.verifiedIntegrity')}</span>
           <div className="telemetry-num mint">{totalAllocations.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Verified items tracked</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('transparency.verifiedIntegrity')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">DONATION BLOCKS</span>
+          <span className="micro-label">{t('donations.makeDonation')}</span>
           <div className="telemetry-num cyan">{donationBlocksCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Intake allocations</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('donations.recentContributions')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">DISTRIBUTION BLOCKS</span>
+          <span className="micro-label">{t('resources.stage5')}</span>
           <div className="telemetry-num amber">{distributionBlocksCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Frontline deliveries</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('resources.stage5')}</div>
         </div>
       </div>
 
@@ -143,7 +145,7 @@ const TransparencyLedgerPage = () => {
           type="text"
           className="form-input"
           style={{ maxWidth: '320px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
-          placeholder="Search block hash, transaction ID, cargo..."
+          placeholder={t('common.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -154,9 +156,9 @@ const TransparencyLedgerPage = () => {
           value={filterEntity}
           onChange={(e) => setFilterEntity(e.target.value)}
         >
-          <option value="ALL">All Block Types</option>
-          <option value="Donation">Donation Intake</option>
-          <option value="Distribution">Transit & Distribution</option>
+          <option value="ALL">{t('common.all')}</option>
+          <option value="Donation">{t('donations.makeDonation')}</option>
+          <option value="Distribution">{t('resources.trackingTitle')}</option>
         </select>
       </div>
 
@@ -164,7 +166,7 @@ const TransparencyLedgerPage = () => {
       {loading && (
         <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
           <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
-          <span>Verifying cryptographic block hashes from MongoDB Atlas...</span>
+          <span>{t('common.syncing')}</span>
         </div>
       )}
 
@@ -177,8 +179,7 @@ const TransparencyLedgerPage = () => {
       {!loading && !error && filteredRecords.length === 0 && (
         <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⛓️</div>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Ledger Records Found</div>
-          <div style={{ fontSize: '0.82rem' }}>No cryptographic audit blocks match your search query.</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>{t('transparency.transparencyTitle')}</div>
         </div>
       )}
 
@@ -200,10 +201,10 @@ const TransparencyLedgerPage = () => {
                   {block.entityType?.toUpperCase() || 'TRANSACTION'}
                 </span>
                 <span className="micro-label" style={{ color: 'var(--mint)' }}>
-                  ✓ SHA-256 VERIFIED
+                  ✓ {t('transparency.verifiedIntegrity')}
                 </span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  BLOCK #{block.blockNumber || idx + 100}
+                  {t('transparency.blockHeight')} #{block.blockNumber || idx + 100}
                 </span>
               </div>
 
@@ -218,7 +219,7 @@ const TransparencyLedgerPage = () => {
                   {block.resourceName}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                  From: <strong style={{ color: '#ffffff' }}>{block.donorOrSource}</strong> ➔ To: <strong style={{ color: 'var(--cyan)' }}>{block.destination}</strong>
+                  {t('resources.sourceWarehouse')}: <strong style={{ color: '#ffffff' }}>{block.donorOrSource}</strong> ➔ {t('resources.destinationFacility')}: <strong style={{ color: 'var(--cyan)' }}>{block.destination}</strong>
                 </div>
               </div>
 
@@ -246,7 +247,7 @@ const TransparencyLedgerPage = () => {
               }}
             >
               <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
-                <span style={{ color: 'var(--text-muted)' }}>HASH: </span>
+                <span style={{ color: 'var(--text-muted)' }}>{t('transparency.currentHash')}: </span>
                 <span style={{ color: 'var(--cyan)' }}>
                   {block.blockHash || `0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069`}
                 </span>
@@ -259,7 +260,7 @@ const TransparencyLedgerPage = () => {
                   className="btn btn-ghost btn-sm"
                   style={{ fontSize: '0.7rem', padding: '2px 8px' }}
                 >
-                  {copiedId === (block.blockHash || block.transactionId) ? '✓ Copied' : 'Copy Hash'}
+                  {copiedId === (block.blockHash || block.transactionId) ? t('common.copied') : t('common.copy')}
                 </button>
                 <button
                   type="button"
@@ -267,7 +268,7 @@ const TransparencyLedgerPage = () => {
                   className="btn btn-secondary btn-sm"
                   style={{ fontSize: '0.7rem', padding: '2px 8px' }}
                 >
-                  Receipt
+                  {t('donations.viewReceipt')}
                 </button>
               </div>
             </div>

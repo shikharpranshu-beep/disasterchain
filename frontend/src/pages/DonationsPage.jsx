@@ -3,8 +3,10 @@ import { fetchDonations, createDonation } from '../services/api';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
 import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const DonationsPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -127,16 +129,16 @@ const DonationsPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-success">HUMANITARIAN RELIEF AID</span>
+            <span className="badge badge-success">{t('donations.donationsTitle')}</span>
             <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              IN-KIND CONTRIBUTIONS REGISTRY
+              {t('donations.makeDonation')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Emergency Aid Donations & Supplies
+            {t('donations.donationsTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Direct registration of trauma kits, emergency food rations, drinking water & relief cargo with cryptographic receipt proofs.
+            {t('donations.donationsSubtitle')}
           </p>
         </div>
 
@@ -145,34 +147,34 @@ const DonationsPage = () => {
           className="btn btn-primary"
         >
           <Icon name="plus" size={16} />
-          <span>Register Aid Donation</span>
+          <span>{t('donations.makeDonation')}</span>
         </button>
       </div>
 
       {/* Telemetry KPI Metrics */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">TOTAL RELIEF CARGO</span>
+          <span className="micro-label">{t('donations.recentContributions')}</span>
           <div className="telemetry-num mint">{totalQuantity.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Registered aid units</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('donations.recentContributions')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">AID CONSIGNMENTS</span>
+          <span className="micro-label">{t('resources.resourcesTitle')}</span>
           <div className="telemetry-num cyan">{donations.length}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dispatched shipments</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('dashboard.operationalAssets')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">CRYPTOGRAPHIC PROOFS</span>
+          <span className="micro-label">{t('transparency.totalBlocks')}</span>
           <div className="telemetry-num violet">{donations.length}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Verified on audit ledger</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('transparency.verifiedIntegrity')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">AUDIT INTEGRITY</span>
+          <span className="micro-label">{t('transparency.verifiedIntegrity')}</span>
           <div className="telemetry-num amber">100%</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tamper-evident verification</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('transparency.verifiedIntegrity')}</div>
         </div>
       </div>
 
@@ -193,7 +195,7 @@ const DonationsPage = () => {
           type="text"
           className="form-input"
           style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
-          placeholder="Search by donor, item, destination..."
+          placeholder={t('common.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -204,12 +206,12 @@ const DonationsPage = () => {
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
         >
-          <option value="ALL">All Aid Categories</option>
-          <option value="Medical Supplies">Medical Supplies</option>
-          <option value="Food & Water">Food & Water</option>
-          <option value="Emergency Power">Emergency Power</option>
-          <option value="Blankets & Shelter">Blankets & Shelter</option>
-          <option value="Rescue Equipment">Rescue Equipment</option>
+          <option value="ALL">{t('common.all')}</option>
+          <option value="Medical Supplies">{t('offline.ambulance')}</option>
+          <option value="Food & Water">{t('resources.resourcesTitle')}</option>
+          <option value="Emergency Power">{t('offline.batteryPower')}</option>
+          <option value="Blankets & Shelter">{t('shelters.sheltersTitle')}</option>
+          <option value="Rescue Equipment">{t('offline.fireBrigade')}</option>
         </select>
       </div>
 
@@ -217,7 +219,7 @@ const DonationsPage = () => {
       {loading && (
         <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
           <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
-          <span>Synchronizing donation manifests from MongoDB Atlas...</span>
+          <span>{t('common.syncing')}</span>
         </div>
       )}
 
@@ -230,8 +232,7 @@ const DonationsPage = () => {
       {!loading && !error && filteredDonations.length === 0 && (
         <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎁</div>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Donations Found</div>
-          <div style={{ fontSize: '0.82rem' }}>No relief aid records match the active query.</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>{t('donations.donationsTitle')}</div>
         </div>
       )}
 
@@ -252,10 +253,10 @@ const DonationsPage = () => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <span className="badge badge-success">
-                  {don.type?.toUpperCase() || 'RELIEF AID'}
+                  {don.type?.toUpperCase() || t('donations.donationsTitle')}
                 </span>
                 <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-                  {don.status || 'Verified'}
+                  {don.status || t('common.verified')}
                 </span>
               </div>
 
@@ -285,11 +286,11 @@ const DonationsPage = () => {
                   gap: '0.3rem',
                 }}
               >
-                <div>👤 Donor / Source: <strong style={{ color: '#ffffff' }}>{don.donor}</strong></div>
-                <div>📍 Destination: <strong style={{ color: 'var(--cyan)' }}>{don.destination}</strong></div>
+                <div>👤 {t('donations.donorName')}: <strong style={{ color: '#ffffff' }}>{don.donor}</strong></div>
+                <div>📍 {t('resources.destinationFacility')}: <strong style={{ color: 'var(--cyan)' }}>{don.destination}</strong></div>
                 {don.blockchainTransactionId && (
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--violet)' }}>
-                    TXN: {don.blockchainTransactionId}
+                    🔒 {t('donations.txHash')}: {don.blockchainTransactionId}
                   </div>
                 )}
               </div>
@@ -311,7 +312,7 @@ const DonationsPage = () => {
               className="btn btn-secondary btn-sm"
               style={{ width: '100%' }}
             >
-              🔒 View Cryptographic Receipt
+              🔒 {t('donations.viewReceipt')}
             </button>
           </div>
         ))}
@@ -343,8 +344,8 @@ const DonationsPage = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div>
-                <span className="micro-label" style={{ color: 'var(--cyan)' }}>HUMANITARIAN INTAKE</span>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>Log In-Kind Aid Donation</h3>
+                <span className="micro-label" style={{ color: 'var(--cyan)' }}>{t('resources.stage1')}</span>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>{t('donations.makeDonation')}</h3>
               </div>
               <button
                 onClick={() => setIsFormOpen(false)}
@@ -362,7 +363,7 @@ const DonationsPage = () => {
 
             <form onSubmit={handleDonationSubmit}>
               <div className="form-group">
-                <label className="form-label">Donor Name / Agency</label>
+                <label className="form-label">{t('donations.donorName')}</label>
                 <input
                   type="text"
                   required
@@ -374,22 +375,22 @@ const DonationsPage = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Relief Item Category</label>
+                <label className="form-label">{t('resources.itemCategory')}</label>
                 <select
                   className="form-select"
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                 >
-                  <option value="Medical Supplies">Medical Supplies</option>
-                  <option value="Food & Water">Food & Water</option>
-                  <option value="Emergency Power">Emergency Power</option>
-                  <option value="Blankets & Shelter">Blankets & Shelter</option>
-                  <option value="Rescue Equipment">Rescue Equipment</option>
+                  <option value="Medical Supplies">{t('offline.ambulance')}</option>
+                  <option value="Food & Water">{t('resources.resourcesTitle')}</option>
+                  <option value="Emergency Power">{t('offline.batteryPower')}</option>
+                  <option value="Blankets & Shelter">{t('shelters.sheltersTitle')}</option>
+                  <option value="Rescue Equipment">{t('offline.fireBrigade')}</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Item Description & Specifications</label>
+                <label className="form-label">{t('incidents.incidentDescription')}</label>
                 <input
                   type="text"
                   required
@@ -402,7 +403,7 @@ const DonationsPage = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div className="form-group">
-                  <label className="form-label">Quantity</label>
+                  <label className="form-label">{t('resources.quantity')}</label>
                   <input
                     type="number"
                     min="1"
@@ -414,7 +415,7 @@ const DonationsPage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Packaging Unit</label>
+                  <label className="form-label">{t('resources.unit')}</label>
                   <input
                     type="text"
                     required
@@ -427,7 +428,7 @@ const DonationsPage = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Destination Relief Hub</label>
+                <label className="form-label">{t('resources.destinationFacility')}</label>
                 <input
                   type="text"
                   required
@@ -444,14 +445,14 @@ const DonationsPage = () => {
                   onClick={() => setIsFormOpen(false)}
                   className="btn btn-secondary"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="btn btn-primary"
                 >
-                  {submitting ? 'Minting Block...' : 'Submit & Mint Proof'}
+                  {submitting ? t('common.syncing') : t('donations.confirmDonation')}
                 </button>
               </div>
             </form>

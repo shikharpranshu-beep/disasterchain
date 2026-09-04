@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPreparednessGuides } from '../services/api';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const DisasterGuidesPage = () => {
+  const { t } = useTranslation();
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDisaster, setSelectedDisaster] = useState('Earthquake');
@@ -79,16 +81,16 @@ const DisasterGuidesPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-info">SURVIVAL OPERATIONAL MANUALS</span>
+            <span className="badge badge-info">{t('guides.guidesTitle')}</span>
             <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              CIVIL PROTECTION DIRECTIVES
+              {t('guides.guidesSubtitle')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Disaster Survival Protocols & Guides
+            {t('guides.guidesTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Immediate life-safety actions, step-by-step mitigation procedures & offline survival checklist.
+            {t('guides.guidesSubtitle')}
           </p>
         </div>
       </div>
@@ -128,7 +130,7 @@ const DisasterGuidesPage = () => {
           type="text"
           className="form-input"
           style={{ maxWidth: '240px', padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-          placeholder="Search safety manual..."
+          placeholder={t('common.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -138,7 +140,7 @@ const DisasterGuidesPage = () => {
       {loading && (
         <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
           <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
-          <span>Loading survival directives from database...</span>
+          <span>{t('common.loading')}</span>
         </div>
       )}
 
@@ -151,7 +153,7 @@ const DisasterGuidesPage = () => {
                 <span style={{ fontSize: '2rem' }}>{currentGuide.icon || '⚠️'}</span>
                 <div>
                   <div className="micro-label" style={{ color: 'var(--cyan)' }}>
-                    TACTICAL PROTOCOL • {currentGuide.disasterType.toUpperCase()}
+                    {t('guides.guidesTitle')} • {currentGuide.disasterType.toUpperCase()}
                   </div>
                   <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 800, color: '#ffffff' }}>
                     {currentGuide.title || `${currentGuide.disasterType} Safety Protocol`}
@@ -167,10 +169,10 @@ const DisasterGuidesPage = () => {
           {/* Phase Navigation Tabs */}
           <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.85rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
             {[
-              { id: 'immediate', label: '🚨 WHAT TO DO FIRST' },
-              { id: 'during', label: 'DURING HAZARD' },
-              { id: 'after', label: 'AFTER / EVACUATION' },
-              { id: 'checklist', label: 'SURVIVAL KIT CHECKLIST' },
+              { id: 'immediate', label: `🚨 ${t('guides.immediateAction')}` },
+              { id: 'during', label: t('guides.whatToDo') },
+              { id: 'after', label: t('guides.evacuationGuidelines') },
+              { id: 'checklist', label: t('guides.emergencyKit') },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -198,7 +200,7 @@ const DisasterGuidesPage = () => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, color: '#ff6b81', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
                   <span>⚡</span>
-                  <span>IMMEDIATE LIFE-SAVING DIRECTIVES (FIRST 60 SECONDS)</span>
+                  <span>{t('guides.immediateAction')}</span>
                 </div>
                 <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', lineHeight: 1.6 }}>
                   {currentGuide.immediateAction || 'Drop to ground, cover your head and neck under sturdy shelter, hold on firmly until movement ceases. If outdoors, move to an open area away from power lines and collapsing structures.'}
@@ -217,7 +219,7 @@ const DisasterGuidesPage = () => {
                 >
                   <div style={{ fontWeight: 800, color: 'var(--mint)', fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span>✓</span>
-                    <span>ESSENTIAL DO'S</span>
+                    <span>{t('guides.whatToDo')}</span>
                   </div>
                   <ul style={{ paddingLeft: '1.2rem', color: 'var(--text-secondary)', fontSize: '0.84rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {currentGuide.dos?.map((item, i) => (
@@ -236,7 +238,7 @@ const DisasterGuidesPage = () => {
                 >
                   <div style={{ fontWeight: 800, color: 'var(--crimson)', fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span>✕</span>
-                    <span>CRITICAL DON'TS</span>
+                    <span>{t('guides.whatNotToDo')}</span>
                   </div>
                   <ul style={{ paddingLeft: '1.2rem', color: 'var(--text-secondary)', fontSize: '0.84rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {currentGuide.donts?.map((item, i) => (
@@ -251,7 +253,7 @@ const DisasterGuidesPage = () => {
           {/* Tab 2: DURING HAZARD */}
           {activeTab === 'during' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Protective Actions During the Incident</h3>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>{t('guides.whatToDo')}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {currentGuide.during?.map((step, idx) => (
                   <div
@@ -281,7 +283,7 @@ const DisasterGuidesPage = () => {
           {/* Tab 3: AFTER HAZARD / EVACUATION */}
           {activeTab === 'after' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Aftermath & Safe Evacuation Procedures</h3>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>{t('guides.evacuationGuidelines')}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {currentGuide.after?.map((step, idx) => (
                   <div
@@ -312,9 +314,9 @@ const DisasterGuidesPage = () => {
           {activeTab === 'checklist' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Survival Grab-and-Go Bag Checklist</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>{t('guides.emergencyKit')}</h3>
                 <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-                  PERSISTED LOCALLY FOR OFFLINE
+                  {t('offline.offlineActive')}
                 </span>
               </div>
 

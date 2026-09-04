@@ -38,32 +38,32 @@ const OfflineEmergencyPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-critical">{t('offline.recoveryMode', 'LOCAL AIR-GAP SURVIVAL MODE')}</span>
+            <span className="badge badge-critical">{t('offline.recoveryMode')}</span>
             <span className="micro-label" style={{ color: 'var(--amber)' }}>
-              {t('offline.offlineTitle', 'OFFLINE PRE-CACHED DIRECTIVES')}
+              {t('offline.offlineCachedDirectives')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            {t('offline.offlineTitle', 'Low-Connectivity Emergency Telephony & SMS')}
+            {t('offline.offlineTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            {t('offline.offlineSubtitle', 'Zero-internet survival tools, direct GSM cellular calling, and standardized SMS distress dispatchers.')}
+            {t('offline.offlineSubtitle')}
           </p>
         </div>
 
         <div className="telemetry-chip" style={{ background: 'rgba(255, 46, 77, 0.15)', borderColor: 'var(--border-red)' }}>
           <span className="live-beacon-pulse critical" />
-          <span style={{ color: '#ffffff', fontWeight: 700 }}>{t('offline.localDataCached', 'CELLULAR READY')}</span>
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>{t('offline.cellularReady')}</span>
         </div>
       </div>
 
       {/* Emergency Hotlines Large-Button Grid */}
       <div className="grid-cols-4">
         {[
-          { name: 'National Emergency', num: '112', icon: '🚨', color: 'var(--crimson)', desc: 'Police, Ambulance & Fire' },
-          { name: 'Fire & Rescue Brigade', num: '101', icon: '🚒', color: 'var(--amber)', desc: 'Fire Hazard & Extrication' },
-          { name: 'Ambulance / Trauma', num: '108', icon: '🚑', color: 'var(--cyan)', desc: 'Emergency Medical Service' },
-          { name: 'NDRF Disaster Force', num: '1078', icon: '🏛️', color: 'var(--mint)', desc: 'National Disaster Triage' },
+          { name: t('offline.nationalEmergency'), num: '112', icon: '🚨', color: 'var(--crimson)', desc: t('offline.nationalEmergencyDesc') },
+          { name: t('offline.fireBrigade'), num: '101', icon: '🚒', color: 'var(--amber)', desc: t('offline.fireBrigadeDesc') },
+          { name: t('offline.ambulanceTrauma'), num: '108', icon: '🚑', color: 'var(--cyan)', desc: t('offline.ambulanceTraumaDesc') },
+          { name: t('offline.ndrfForce'), num: '1078', icon: '🏛️', color: 'var(--mint)', desc: t('offline.ndrfForceDesc') },
         ].map((line) => (
           <div
             key={line.num}
@@ -92,7 +92,7 @@ const OfflineEmergencyPage = () => {
               className="btn btn-emergency"
               style={{ width: '100%', fontSize: '0.85rem', padding: '0.55rem' }}
             >
-              📞 Direct Call {line.num}
+              📞 {t('common.directCall')} {line.num}
             </a>
           </div>
         ))}
@@ -103,17 +103,17 @@ const OfflineEmergencyPage = () => {
         {/* Left: SMS Emergency Dispatch Generator */}
         <div className="spatial-panel" style={{ padding: '1.75rem', background: 'rgba(11, 17, 30, 0.88)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem' }}>
-            <span className="badge badge-info">CELLULAR SMS</span>
+            <span className="badge badge-info">{t('offline.cellularSms')}</span>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
-              Standardized SMS Distress Generator
+              {t('offline.smsDistressTitle')}
             </h3>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
-            When 4G/5G data is severed, standard GSM SMS can pass through high network congestion.
+            {t('offline.smsDistressDesc')}
           </p>
 
           <div className="form-group">
-            <label className="form-label">Recipient Hotline Number</label>
+            <label className="form-label">{t('offline.recipientHotline')}</label>
             <input
               type="text"
               className="form-input"
@@ -123,32 +123,32 @@ const OfflineEmergencyPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Emergency Category</label>
+            <label className="form-label">{t('offline.emergencyCategory')}</label>
             <select
               className="form-select"
               value={smsData.messageType}
               onChange={(e) => setSmsData({ ...smsData, messageType: e.target.value })}
             >
-              <option value="Medical Assistance">Medical Assistance / Trauma</option>
-              <option value="Trapped in Collapse">Trapped in Collapse / Structure</option>
-              <option value="Fire Hazard">Fire Hazard / Smoke</option>
-              <option value="Rising Flood Water">Rising Flood Water</option>
+              <option value="Medical Assistance">{t('offline.catMedical')}</option>
+              <option value="Trapped in Collapse">{t('offline.catCollapse')}</option>
+              <option value="Fire Hazard">{t('offline.catFire')}</option>
+              <option value="Rising Flood Water">{t('offline.catFlood')}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Last Known Location / Floor</label>
+            <label className="form-label">{t('offline.lastLocation')}</label>
             <input
               type="text"
               className="form-input"
               value={smsData.location}
               onChange={(e) => setSmsData({ ...smsData, location: e.target.value })}
-              placeholder="e.g. Science Complex 3rd floor room 304"
+              placeholder={t('offline.locationPlaceholder')}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Critical Situation Summary</label>
+            <label className="form-label">{t('offline.situationSummary')}</label>
             <textarea
               rows={2}
               className="form-textarea"
@@ -180,7 +180,7 @@ const OfflineEmergencyPage = () => {
               className="btn btn-secondary"
               style={{ fontSize: '0.8rem' }}
             >
-              {copiedSms ? '✓ Copied' : '📋 Copy Text Payload'}
+              {copiedSms ? t('common.copied') : t('offline.copyPayload')}
             </button>
 
             <a
@@ -188,7 +188,7 @@ const OfflineEmergencyPage = () => {
               className="btn btn-primary"
               style={{ fontSize: '0.8rem', textAlign: 'center' }}
             >
-              ✉️ Open Native SMS App
+              ✉️ {t('offline.openSmsApp')}
             </a>
           </div>
         </div>
@@ -196,32 +196,32 @@ const OfflineEmergencyPage = () => {
         {/* Right: Instant Air-Gap Safety Rules */}
         <div className="spatial-panel" style={{ padding: '1.75rem', background: 'rgba(11, 17, 30, 0.88)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem' }}>
-            <span className="badge badge-warning">OFFLINE PROTOCOLS</span>
+            <span className="badge badge-warning">{t('offline.offlineProtocols')}</span>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
-              Essential Survival Directives
+              {t('offline.survivalDirectivesTitle')}
             </h3>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
-            Critical instructions that remain active even if all telecommunications fail.
+            {t('offline.survivalDirectivesDesc')}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {[
               {
-                title: 'Conserve Mobile Battery Power',
-                text: 'Enable Battery Saver / Low Power Mode, set brightness to minimum, disable Bluetooth and GPS background scanning when not acquiring coordinates.',
+                title: t('offline.directive1Title'),
+                text: t('offline.directive1Text'),
               },
               {
-                title: 'Emergency Sound Signalling',
-                text: 'Use a whistle (3 short blasts indicates SOS) or rhythmically bang on metal pipes/beams. Shouting drains oxygen and can inhale dangerous toxic particulates.',
+                title: t('offline.directive2Title'),
+                text: t('offline.directive2Text'),
               },
               {
-                title: 'Water Purification & Rationing',
-                text: 'Boil water for at least 1 full minute if power is available. Store potable drinking water in sealed containers; avoid tap water if flood inundation occurs.',
+                title: t('offline.directive3Title'),
+                text: t('offline.directive3Text'),
               },
               {
-                title: 'Check Structural Gas & Electrical Lines',
-                text: 'If you smell sulfur/gas, DO NOT operate light switches or match flames. Shut off main gas valves and evacuate immediately into open air.',
+                title: t('offline.directive4Title'),
+                text: t('offline.directive4Text'),
               },
             ].map((rule, idx) => (
               <div

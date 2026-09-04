@@ -3,8 +3,10 @@ import { fetchAffectedAreas } from '../services/api';
 import DisasterMap from '../components/DisasterMap';
 import AreaDetailModal from '../components/AreaDetailModal';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const AffectedAreasPage = () => {
+  const { t } = useTranslation();
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -71,16 +73,16 @@ const AffectedAreasPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-warning">GIS IMPACT ZONING</span>
+            <span className="badge badge-warning">{t('affectedAreas.areasTitle')}</span>
             <span className="micro-label" style={{ color: 'var(--amber)' }}>
-              HAZARD FOOTPRINT MONITORING
+              {t('dashboard.monitoredZones')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Affected Hazard Zones & Live GIS Map
+            {t('affectedAreas.areasTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Geospatial containment boundaries, severity classifications & population risk assessment.
+            {t('affectedAreas.areasSubtitle')}
           </p>
         </div>
 
@@ -89,34 +91,34 @@ const AffectedAreasPage = () => {
           className="btn btn-secondary btn-sm"
         >
           <Icon name="refresh-cw" size={14} />
-          <span>Sync GIS</span>
+          <span>{t('common.refresh')}</span>
         </button>
       </div>
 
       {/* Telemetry KPI Metrics */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">MONITORED ZONES</span>
+          <span className="micro-label">{t('affectedAreas.monitoredZones')}</span>
           <div className="telemetry-num amber">{areas.length}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{activeSectorsCount} Active impact sectors</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{activeSectorsCount} {t('common.active')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">CRITICAL SECTORS</span>
+          <span className="micro-label">{t('common.critical')}</span>
           <div className="telemetry-num crimson">{criticalZones}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Evacuation orders active</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('affectedAreas.evacuationMandatory')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">POPULATION AT RISK</span>
+          <span className="micro-label">{t('affectedAreas.affectedPeople')}</span>
           <div className="telemetry-num cyan">{totalCasualties.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Citizens inside risk zones</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('affectedAreas.affectedPeople')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">ACTIVE SOS BEACONS</span>
+          <span className="micro-label">{t('emergency.emergencySos')}</span>
           <div className="telemetry-num mint">{totalActiveSos}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Distress calls from zones</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('emergency.activeDistressCalls')}</div>
         </div>
       </div>
 
@@ -147,7 +149,7 @@ const AffectedAreasPage = () => {
           type="text"
           className="form-input"
           style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
-          placeholder="Search zones, hazard type..."
+          placeholder={t('common.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -159,10 +161,10 @@ const AffectedAreasPage = () => {
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="ALL">All Statuses</option>
-            <option value="Active">Active Hazard</option>
-            <option value="Monitoring">Monitoring</option>
-            <option value="Contained">Contained</option>
+            <option value="ALL">{t('common.all')}</option>
+            <option value="Active">{t('common.active')}</option>
+            <option value="Monitoring">{t('dashboard.systemStatus')}</option>
+            <option value="Contained">{t('common.resolved')}</option>
           </select>
 
           <select
@@ -171,11 +173,11 @@ const AffectedAreasPage = () => {
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
           >
-            <option value="ALL">All Severities</option>
-            <option value="Critical">Critical Threat</option>
-            <option value="High">High Severity</option>
-            <option value="Medium">Medium Severity</option>
-            <option value="Low">Low / Advisory</option>
+            <option value="ALL">{t('alerts.allSeverities')}</option>
+            <option value="Critical">{t('common.critical')}</option>
+            <option value="High">{t('common.high')}</option>
+            <option value="Medium">{t('common.medium')}</option>
+            <option value="Low">{t('common.low')}</option>
           </select>
         </div>
       </div>
@@ -184,7 +186,7 @@ const AffectedAreasPage = () => {
       {loading && (
         <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
           <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
-          <span>Synchronizing affected hazard zones from MongoDB Atlas...</span>
+          <span>{t('common.syncing')}</span>
         </div>
       )}
 
@@ -197,8 +199,7 @@ const AffectedAreasPage = () => {
       {!loading && !error && filteredAreas.length === 0 && (
         <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚠️</div>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Hazard Zones Found</div>
-          <div style={{ fontSize: '0.82rem' }}>No impact perimeters match the specified filters.</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>{t('affectedAreas.monitoredZones')}</div>
         </div>
       )}
 
@@ -220,10 +221,10 @@ const AffectedAreasPage = () => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                 <span className={`badge ${area.severity === 'Critical' ? 'badge-critical' : 'badge-warning'}`}>
-                  {area.severity?.toUpperCase()} SEVERITY
+                  {area.severity?.toUpperCase()} {t('common.severity')}
                 </span>
                 <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-                  {area.status || 'Active'}
+                  {area.status || t('common.active')}
                 </span>
               </div>
 
@@ -247,13 +248,13 @@ const AffectedAreasPage = () => {
                 }}
               >
                 <div>
-                  <div className="micro-label">POPULATION RISK</div>
+                  <div className="micro-label">{t('affectedAreas.affectedPeople')}</div>
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, color: '#ffffff', fontSize: '1.05rem' }}>
                     {(Number(area.affectedPeople) || 0).toLocaleString()}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div className="micro-label">ACTIVE SOS</div>
+                  <div className="micro-label">{t('emergency.emergencySos')}</div>
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--crimson)', fontSize: '1.05rem' }}>
                     {area.activeSOS || 0}
                   </div>
@@ -267,7 +268,7 @@ const AffectedAreasPage = () => {
               className="btn btn-secondary btn-sm"
               style={{ width: '100%' }}
             >
-              Inspect Zone Perimeter →
+              {t('affectedAreas.inspectZone')} →
             </button>
           </div>
         ))}

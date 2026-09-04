@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchResources } from '../services/api';
 import ResourceDetailModal from '../components/ResourceDetailModal';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const EmergencyResourcesPage = () => {
+  const { t } = useTranslation();
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,16 +76,16 @@ const EmergencyResourcesPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-info">CRITICAL INFRASTRUCTURE</span>
+            <span className="badge badge-info">{t('resources.resourcesTitle')}</span>
             <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              VERIFIED RESCUE NETWORK
+              {t('common.verified')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Emergency Resources & Facilities
+            {t('resources.resourcesTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Verified directory of trauma centers, fire stations, disaster relief depots & emergency coordination desks.
+            {t('resources.resourcesSubtitle')}
           </p>
         </div>
 
@@ -92,34 +94,34 @@ const EmergencyResourcesPage = () => {
           className="btn btn-secondary btn-sm"
         >
           <Icon name="refresh-cw" size={14} />
-          <span>Sync Facilities</span>
+          <span>{t('common.refresh')}</span>
         </button>
       </div>
 
       {/* Telemetry KPI Metrics */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">OPERATIONAL HUBS</span>
+          <span className="micro-label">{t('common.operational')}</span>
           <div className="telemetry-num cyan">{operationalCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Of {resources.length} registered centers</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{operationalCount} / {resources.length}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">TRAUMA & HOSPITALS</span>
+          <span className="micro-label">{t('offline.ambulance')}</span>
           <div className="telemetry-num crimson">{hospitalCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Emergency medical facilities</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('offline.ambulanceDesc')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">FIRE & RESCUE</span>
+          <span className="micro-label">{t('offline.fireBrigade')}</span>
           <div className="telemetry-num amber">{fireCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Hazard mitigation bases</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('offline.fireBrigadeDesc')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">RELIEF WAREHOUSES</span>
+          <span className="micro-label">{t('resources.sourceWarehouse')}</span>
           <div className="telemetry-num mint">{reliefHubCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Food and aid supply depots</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('resources.resourcesTitle')}</div>
         </div>
       </div>
 
@@ -140,7 +142,7 @@ const EmergencyResourcesPage = () => {
           type="text"
           className="form-input"
           style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
-          placeholder="Search by facility name, address, phone..."
+          placeholder={t('common.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -152,12 +154,12 @@ const EmergencyResourcesPage = () => {
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="ALL">All Facility Types</option>
-            <option value="Hospital">Hospitals & Trauma Units</option>
-            <option value="Fire Station">Fire & Rescue Stations</option>
-            <option value="Police Station">Police & Security Desks</option>
-            <option value="Relief Center">Relief & Food Centers</option>
-            <option value="Disaster Management Office">Emergency Command Desks</option>
+            <option value="ALL">{t('common.all')}</option>
+            <option value="Hospital">{t('offline.ambulance')}</option>
+            <option value="Fire Station">{t('offline.fireBrigade')}</option>
+            <option value="Police Station">{t('offline.nationalEmergency')}</option>
+            <option value="Relief Center">{t('resources.sourceWarehouse')}</option>
+            <option value="Disaster Management Office">{t('dashboard.missionControl')}</option>
           </select>
 
           <select
@@ -166,11 +168,11 @@ const EmergencyResourcesPage = () => {
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="ALL">All Operational States</option>
-            <option value="Operational">Operational</option>
-            <option value="Available">Available</option>
-            <option value="Limited">Limited Capacity</option>
-            <option value="Standby">Standby</option>
+            <option value="ALL">{t('common.status')}</option>
+            <option value="Operational">{t('common.operational')}</option>
+            <option value="Available">{t('shelters.availableSafeHavens')}</option>
+            <option value="Limited">{t('common.warning')}</option>
+            <option value="Standby">{t('common.pending')}</option>
           </select>
         </div>
       </div>
@@ -179,7 +181,7 @@ const EmergencyResourcesPage = () => {
       {loading && (
         <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
           <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
-          <span>Synchronizing emergency facilities from MongoDB Atlas...</span>
+          <span>{t('common.syncing')}</span>
         </div>
       )}
 
@@ -192,8 +194,7 @@ const EmergencyResourcesPage = () => {
       {!loading && !error && filteredResources.length === 0 && (
         <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🏥</div>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Emergency Facilities Found</div>
-          <div style={{ fontSize: '0.82rem' }}>No operational resources match your filter criteria.</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>{t('resources.resourcesTitle')}</div>
         </div>
       )}
 
@@ -217,7 +218,7 @@ const EmergencyResourcesPage = () => {
                   {res.type?.toUpperCase()}
                 </span>
                 <span className={`micro-label ${res.status === 'Operational' ? 'mint' : 'amber'}`}>
-                  ● {res.status || 'OPERATIONAL'}
+                  ● {res.status || t('common.operational')}
                 </span>
               </div>
 
@@ -230,7 +231,7 @@ const EmergencyResourcesPage = () => {
               </div>
 
               <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem', lineHeight: 1.4 }}>
-                {res.description || 'Designated civil emergency support and dispatch facility.'}
+                {res.description || t('resources.resourcesSubtitle')}
               </div>
             </div>
 
@@ -248,7 +249,7 @@ const EmergencyResourcesPage = () => {
                 className="btn btn-primary btn-sm"
                 style={{ fontSize: '0.75rem' }}
               >
-                Inspect Center
+                {t('common.viewDetails')}
               </button>
             </div>
           </div>

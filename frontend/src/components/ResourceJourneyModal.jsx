@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const ResourceJourneyModal = ({ isOpen = true, onClose, resourceData, item }) => {
+  const { t } = useTranslation();
   const targetData = resourceData || item;
   if ((isOpen !== undefined && !isOpen) || !targetData) return null;
 
@@ -19,7 +21,7 @@ const ResourceJourneyModal = ({ isOpen = true, onClose, resourceData, item }) =>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
           <div>
             <span className="badge badge-blockchain" style={{ marginBottom: '0.4rem' }}>
-              ⛓️ RESOURCE JOURNEY TRACKER
+              ⛓️ {t('resources.resourceJourney', 'RESOURCE JOURNEY TRACKER')}
             </span>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 800 }}>
               {targetData.resourceName || 'Relief Supplies'}
@@ -107,7 +109,7 @@ const ResourceJourneyModal = ({ isOpen = true, onClose, resourceData, item }) =>
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <span style={{ color: '#818cf8', fontWeight: 700 }}>⛓️ Immutable Verification Proof:</span>
+            <span style={{ color: '#818cf8', fontWeight: 700 }}>⛓️ {t('transparency.proof', 'Immutable Verification Proof:')}</span>
           </div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#c7d2fe', wordBreak: 'break-all' }}>
             {targetData.blockchainTransactionId || '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'}
@@ -115,7 +117,7 @@ const ResourceJourneyModal = ({ isOpen = true, onClose, resourceData, item }) =>
         </div>
 
         <button onClick={onClose} className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }}>
-          Close Journey View
+          {t('common.close', 'Close Journey View')}
         </button>
       </div>
     </div>

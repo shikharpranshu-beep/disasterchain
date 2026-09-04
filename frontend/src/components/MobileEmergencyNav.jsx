@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 /**
@@ -13,6 +14,7 @@ import Icon from './Icons';
  * - REPORT (field hazard submission)
  */
 const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
+  const { t } = useTranslation();
   const location = useLocation();
 
   // Hide on authentication and landing pages
@@ -65,7 +67,7 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
           })}
         >
           <Icon name="map-pin" size={18} />
-          <span>MAP</span>
+          <span>{t('nav.map', 'MAP')}</span>
         </NavLink>
 
         {/* 2. ALERTS */}
@@ -85,7 +87,7 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
           })}
         >
           <Icon name="bell" size={18} />
-          <span>ALERTS</span>
+          <span>{t('nav.alerts', 'ALERTS')}</span>
         </NavLink>
 
         {/* 3. CENTER HIGHLIGHTED: SOS */}
@@ -115,7 +117,7 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
           aria-label="Broadcast Emergency SOS"
         >
           <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>🚨</span>
-          <span style={{ fontSize: '0.62rem', letterSpacing: '0.04em' }}>SOS</span>
+          <span style={{ fontSize: '0.62rem', letterSpacing: '0.04em' }}>{t('nav.emergencySos', 'SOS')}</span>
         </button>
 
         {/* 4. SHELTER */}
@@ -135,7 +137,7 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
           })}
         >
           <Icon name="home" size={18} />
-          <span>SHELTER</span>
+          <span>{t('nav.shelters', 'SHELTER')}</span>
         </NavLink>
 
         {/* 5. REPORT HAZARD */}
@@ -161,7 +163,7 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
           aria-label="Report Hazard Incident"
         >
           <Icon name="warning" size={18} color="var(--amber)" />
-          <span>REPORT</span>
+          <span>{t('incidents.reportIncident', 'REPORT')}</span>
         </button>
       </nav>
 

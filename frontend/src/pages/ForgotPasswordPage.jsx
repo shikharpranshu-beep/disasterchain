@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const ForgotPasswordPage = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -67,13 +69,13 @@ const ForgotPasswordPage = () => {
             <Icon name="key" size={24} color="#ffffff" />
           </div>
           <div className="micro-label" style={{ color: 'var(--amber)', marginBottom: '0.25rem' }}>
-            CREDENTIAL RECOVERY
+            {t('auth.forgotPasswordTitle')}
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            Recover Operator Key
+            {t('auth.forgotPasswordTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
-            Provide your registered email to receive a password reset token
+            {t('auth.forgotPasswordSubtitle')}
           </p>
         </div>
 
@@ -87,19 +89,19 @@ const ForgotPasswordPage = () => {
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📨</div>
             <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem', marginBottom: '0.35rem' }}>
-              Reset Link Dispatched
+              {t('auth.verifyNotice')}
             </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
               {message}
             </p>
             <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
-              Return to Sign In
+              {t('auth.alreadyAccount')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">Registered Email Address</label>
+              <label className="form-label">{t('auth.email')}</label>
               <input
                 type="email"
                 required
@@ -116,15 +118,15 @@ const ForgotPasswordPage = () => {
               className="btn btn-primary"
               style={{ width: '100%', marginTop: '0.5rem' }}
             >
-              {loading ? 'Dispatching...' : 'Dispatch Reset Token →'}
+              {loading ? t('common.loading') : `${t('auth.sendResetLink')} →`}
             </button>
           </form>
         )}
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-          Remembered credentials?{' '}
+          {t('auth.alreadyAccount')}{' '}
           <Link to="/login" style={{ color: 'var(--cyan)', fontWeight: 700 }}>
-            Sign In
+            {t('auth.loginBtn')}
           </Link>
         </div>
       </div>

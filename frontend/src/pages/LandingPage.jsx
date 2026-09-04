@@ -32,12 +32,12 @@ const LandingPage = ({ onOpenSos }) => {
   }, []);
 
   const hazardCategories = [
-    { title: 'Earthquake', icon: '🏚️', desc: 'Seismic tremor precautions, structural safety & Drop-Cover-Hold protocols.' },
-    { title: 'Flood Inundation', icon: '🌊', desc: 'Water level monitoring, drinking water purification & evacuation vectors.' },
-    { title: 'Fire & Chemical', icon: '🔥', desc: 'Rapid smoke evacuation, building egress mapping & hazardous zone avoidance.' },
-    { title: 'Severe Cyclone', icon: '🌀', desc: 'High-velocity wind shelter, structural bracing & meteorological warnings.' },
-    { title: 'Landslide Risk', icon: '⛰️', desc: 'Slope failure telemetry, geological mudflow alerts & escape routing.' },
-    { title: 'Extreme Heatwave', icon: '☀️', desc: 'Severe hyperthermia prevention, hydration points & community cooling hubs.' },
+    { title: t('landing.earthquakeTitle'), icon: '🏚️', desc: t('landing.earthquakeDesc') },
+    { title: t('landing.floodTitle'), icon: '🌊', desc: t('landing.floodDesc') },
+    { title: t('landing.fireTitle'), icon: '🔥', desc: t('landing.fireDesc') },
+    { title: t('landing.cycloneTitle'), icon: '🌀', desc: t('landing.cycloneDesc') },
+    { title: t('landing.landslideTitle'), icon: '⛰️', desc: t('landing.landslideDesc') },
+    { title: t('landing.heatwaveTitle'), icon: '☀️', desc: t('landing.heatwaveDesc') },
   ];
 
   return (
@@ -54,7 +54,7 @@ const LandingPage = ({ onOpenSos }) => {
           fontFamily: 'var(--font-mono)',
         }}
       >
-        ⚠️ <strong>ACADEMIC PROTOCOL:</strong> DisasterChain is an emergency response & cryptographic relief transparency system. In immediate danger, call <strong>112</strong> / <strong>101</strong>.
+        ⚠️ <strong>{t('landing.academicDisclaimer')} 112 / 101.</strong>
       </div>
 
       {/* Hero Section */}
@@ -77,7 +77,7 @@ const LandingPage = ({ onOpenSos }) => {
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.85rem', background: 'rgba(255, 107, 44, 0.08)', border: '1px solid var(--border-highlight)', borderRadius: 'var(--radius-xs)', marginBottom: '1.25rem' }}>
             <span className="live-beacon-pulse" />
             <span className="micro-label" style={{ color: 'var(--orange-primary)' }}>
-              REAL-TIME EMERGENCY CRISIS OPERATIONS
+              {t('landing.realtimeOpsBadge')}
             </span>
           </div>
 
@@ -92,9 +92,9 @@ const LandingPage = ({ onOpenSos }) => {
               color: '#ffffff',
             }}
           >
-            Mission-Critical Response.<br />
+            {t('landing.heroTitle1')}<br />
             <span style={{ background: 'linear-gradient(135deg, var(--orange-primary) 0%, #FF8A3D 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Cryptographic Integrity.
+              {t('landing.heroTitle2')}
             </span>
           </h1>
 
@@ -107,7 +107,7 @@ const LandingPage = ({ onOpenSos }) => {
               maxWidth: '560px',
             }}
           >
-            DisasterChain connects real-time GPS distress signaling, live shelter occupancy rings, real-time crisis command intelligence, and immutable SHA-256 relief supply tracking into a unified civil defense network.
+            {t('landing.heroSubtitle')}
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
@@ -118,7 +118,7 @@ const LandingPage = ({ onOpenSos }) => {
               id="hero-sos-btn"
             >
               <Icon name="alert-circle" size={18} color="#ffffff" />
-              <span>{t('emergency.broadcast')}</span>
+              <span>{t('landing.broadcastSos')}</span>
             </button>
 
             <Link
@@ -126,7 +126,7 @@ const LandingPage = ({ onOpenSos }) => {
               className="btn btn-primary btn-lg"
             >
               <Icon name="activity" size={18} />
-              <span>{isAuthenticated ? t('common.command_hud', 'Enter Command HUD') : t('auth.loginBtn', 'Sign In to Grid')}</span>
+              <span>{isAuthenticated ? t('common.enterCommandHud') : t('landing.signInToGrid')}</span>
             </Link>
           </div>
         </div>
@@ -179,26 +179,26 @@ const LandingPage = ({ onOpenSos }) => {
         <div className="grid-cols-4">
           {[
             {
-              title: 'Satellite SOS Beacon',
-              desc: 'High-accuracy browser GPS telemetry and emergency distress triage routed immediately to frontline responders.',
+              title: t('landing.pillarSosTitle'),
+              desc: t('landing.pillarSosDesc'),
               icon: '🚨',
               color: 'var(--crimson)',
             },
             {
-              title: 'Live Geospatial Intel',
-              desc: 'Interactive 2D operational command grid visualizing distress spikes, impact perimeters, and safe haven clusters in real-time.',
+              title: t('landing.pillarIntelTitle'),
+              desc: t('landing.pillarIntelDesc'),
               icon: '🗺️',
               color: 'var(--orange-primary)',
             },
             {
-              title: '5-Stage Supply Chain',
-              desc: 'End-to-end relief logistics progression from source intake and inspection through transit and shelter distribution.',
+              title: t('landing.pillarSupplyTitle'),
+              desc: t('landing.pillarSupplyDesc'),
               icon: '📦',
               color: 'var(--amber)',
             },
             {
-              title: 'SHA-256 Audit Trail',
-              desc: 'Cryptographically hashed donation and distribution records ensuring complete public auditability with zero tampering.',
+              title: t('landing.pillarAuditTitle'),
+              desc: t('landing.pillarAuditDesc'),
               icon: '⛓️',
               color: 'var(--violet)',
             },
@@ -228,31 +228,31 @@ const LandingPage = ({ onOpenSos }) => {
       <section style={{ background: 'rgba(7, 11, 19, 0.95)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)', padding: '2rem 1.5rem' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
           <div>
-            <div className="micro-label" style={{ color: 'var(--crimson)' }}>CIVIL DEFENSE HOTLINES</div>
-            <div style={{ fontWeight: 800, fontSize: '1.25rem', color: '#ffffff' }}>Direct Emergency Telephony</div>
+            <div className="micro-label" style={{ color: 'var(--crimson)' }}>{t('landing.civilDefenseHotlines')}</div>
+            <div style={{ fontWeight: 800, fontSize: '1.25rem', color: '#ffffff' }}>{t('landing.directEmergencyTelephony')}</div>
           </div>
 
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <div>
-              <div className="micro-label">NATIONAL EMERGENCY</div>
+              <div className="micro-label">{t('offline.nationalEmergency')}</div>
               <a href="tel:112" style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--crimson)' }}>
                 112
               </a>
             </div>
             <div>
-              <div className="micro-label">FIRE BRIGADE</div>
+              <div className="micro-label">{t('offline.fireBrigade')}</div>
               <a href="tel:101" style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--amber)' }}>
                 101
               </a>
             </div>
             <div>
-              <div className="micro-label">AMBULANCE</div>
+              <div className="micro-label">{t('offline.ambulanceTrauma')}</div>
               <a href="tel:108" style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--cyan)' }}>
                 108
               </a>
             </div>
             <div>
-              <div className="micro-label">NDRF DISASTER FORCE</div>
+              <div className="micro-label">{t('offline.ndrfForce')}</div>
               <a href="tel:1078" style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--mint)' }}>
                 1078
               </a>
@@ -265,10 +265,10 @@ const LandingPage = ({ onOpenSos }) => {
       <section style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '3.5rem 1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div className="micro-label" style={{ color: 'var(--cyan)', marginBottom: '0.4rem' }}>
-            PREPAREDNESS & CIVIL MITIGATION
+            {t('landing.preparednessMitigation')}
           </div>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, color: '#ffffff' }}>
-            Tactical Survival Directives by Hazard
+            {t('landing.tacticalSurvivalDirectives')}
           </h2>
         </div>
 
@@ -294,7 +294,7 @@ const LandingPage = ({ onOpenSos }) => {
                   {cat.desc}
                 </p>
                 <Link to="/guides" style={{ fontSize: '0.76rem', color: 'var(--cyan)', fontWeight: 700, marginTop: '0.5rem', display: 'inline-block' }}>
-                  View Protocol →
+                  {t('landing.viewProtocol')}
                 </Link>
               </div>
             </div>
@@ -305,7 +305,7 @@ const LandingPage = ({ onOpenSos }) => {
       {/* Footer */}
       <footer style={{ background: 'var(--bg-void)', borderTop: '1px solid var(--border-subtle)', padding: '2rem 1.5rem', textAlign: 'center' }}>
         <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-          DisasterChain Emergency Network v2.6 • Cryptographic Crisis Response Platform
+          {t('landing.footerText')}
         </div>
       </footer>
     </div>

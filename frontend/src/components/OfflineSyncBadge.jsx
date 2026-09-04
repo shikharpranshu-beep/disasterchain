@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import offlineSyncService from '../services/offlineSyncService';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 /**
@@ -7,6 +8,7 @@ import Icon from './Icons';
  * Renders status states: ONLINE | OFFLINE | SYNCING | SYNCED | PENDING
  */
 const OfflineSyncBadge = () => {
+  const { t } = useTranslation();
   const [syncState, setSyncState] = useState(offlineSyncService.getState());
 
   useEffect(() => {
@@ -26,7 +28,7 @@ const OfflineSyncBadge = () => {
     switch (syncState.status) {
       case 'OFFLINE':
         return {
-          label: 'OFFLINE MODE',
+          label: t('common.offline', 'OFFLINE MODE'),
           color: '#E53935',
           bg: 'rgba(229, 57, 53, 0.15)',
           border: 'rgba(229, 57, 53, 0.4)',
@@ -35,7 +37,7 @@ const OfflineSyncBadge = () => {
         };
       case 'SYNCING':
         return {
-          label: 'SYNCING DISPATCHES...',
+          label: t('common.syncing', 'SYNCING DISPATCHES...'),
           color: '#FF8A3D',
           bg: 'rgba(255, 138, 61, 0.15)',
           border: 'rgba(255, 138, 61, 0.4)',
@@ -44,7 +46,7 @@ const OfflineSyncBadge = () => {
         };
       case 'SYNCED':
         return {
-          label: 'DISPATCHES SYNCED',
+          label: t('common.synced', 'DISPATCHES SYNCED'),
           color: '#84CC16',
           bg: 'rgba(132, 204, 22, 0.15)',
           border: 'rgba(132, 204, 22, 0.4)',
@@ -53,7 +55,7 @@ const OfflineSyncBadge = () => {
         };
       case 'PENDING':
         return {
-          label: `${syncState.pendingCount} QUEUED (PENDING)`,
+          label: `${syncState.pendingCount} ${t('common.pending', 'QUEUED (PENDING)')}`,
           color: '#F59E0B',
           bg: 'rgba(245, 158, 11, 0.15)',
           border: 'rgba(245, 158, 11, 0.4)',
@@ -63,7 +65,7 @@ const OfflineSyncBadge = () => {
       case 'ONLINE':
       default:
         return {
-          label: 'NETWORK SYNCED',
+          label: t('common.online', 'NETWORK SYNCED'),
           color: '#84CC16',
           bg: 'rgba(132, 204, 22, 0.08)',
           border: 'rgba(132, 204, 22, 0.25)',

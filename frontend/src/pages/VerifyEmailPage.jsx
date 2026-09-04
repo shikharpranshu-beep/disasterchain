@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import Icon from '../components/Icons';
 
 const VerifyEmailPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = (searchParams.get('token') || '').trim();
 
@@ -83,10 +85,10 @@ const VerifyEmailPage = () => {
           <div>
             <div className="live-beacon-pulse" style={{ width: 32, height: 32, margin: '0 auto 1.5rem' }} />
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
-              Validating Dispatch Token...
+              {t('auth.validatingToken', 'Validating Dispatch Token...')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              Communicating with security authority to verify your cryptographic signature.
+              {t('auth.validatingDesc', 'Communicating with security authority to verify your cryptographic signature.')}
             </p>
           </div>
         ) : verified ? (
@@ -110,17 +112,17 @@ const VerifyEmailPage = () => {
             </div>
 
             <div className="micro-label" style={{ color: 'var(--mint)', marginBottom: '0.3rem' }}>
-              CLEARANCE CONFIRMED
+              {t('auth.clearanceConfirmed', 'CLEARANCE CONFIRMED')}
             </div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
-              Identity Successfully Verified
+              {t('auth.identityVerified', 'Identity Successfully Verified')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '1.75rem' }}>
-              Your operator credentials have been authenticated. You now possess active clearance on DisasterChain.
+              {t('auth.identityVerifiedDesc', 'Your operator credentials have been authenticated. You now possess active clearance on DisasterChain.')}
             </p>
 
             <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
-              Proceed to Sign In →
+              {t('auth.proceedToSignIn', 'Proceed to Sign In →')}
             </Link>
           </div>
         ) : (
@@ -143,13 +145,13 @@ const VerifyEmailPage = () => {
             </div>
 
             <div className="micro-label" style={{ color: 'var(--crimson)', marginBottom: '0.3rem' }}>
-              VERIFICATION REJECTED
+              {t('auth.verificationRejected', 'VERIFICATION REJECTED')}
             </div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
-              Token Invalid or Expired
+              {t('auth.tokenInvalid', 'Token Invalid or Expired')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
-              {error || 'This verification token is no longer recognized by the cryptographic security grid.'}
+              {error || t('auth.tokenInvalidDesc', 'This verification token is no longer recognized by the cryptographic security grid.')}
             </p>
 
             {resendMessage && (
@@ -160,7 +162,7 @@ const VerifyEmailPage = () => {
 
             <form onSubmit={handleResend} style={{ textAlign: 'left', marginBottom: '1.25rem' }}>
               <div className="form-group">
-                <label className="form-label">Request Fresh Verification Dispatch</label>
+                <label className="form-label">{t('auth.requestFreshToken', 'Request Fresh Verification Dispatch')}</label>
                 <input
                   type="email"
                   required
@@ -176,12 +178,12 @@ const VerifyEmailPage = () => {
                 className="btn btn-secondary btn-sm"
                 style={{ width: '100%' }}
               >
-                {resending ? 'Dispatching...' : 'Resend Verification Token'}
+                {resending ? t('common.loading', 'Dispatching...') : t('auth.resendBtn', 'Resend Verification Token')}
               </button>
             </form>
 
             <Link to="/login" style={{ color: 'var(--cyan)', fontSize: '0.82rem' }}>
-              Return to Sign In
+              {t('auth.returnToSignIn', 'Return to Sign In')}
             </Link>
           </div>
         )}

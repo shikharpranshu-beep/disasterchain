@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { fetchSosRequests, fetchIncidents } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const MyReportsPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [sosList, setSosList] = useState([]);
   const [incidents, setIncidents] = useState([]);
@@ -17,6 +19,8 @@ const MyReportsPage = () => {
     try {
       const [allSos, allInc] = await Promise.all([fetchSosRequests(), fetchIncidents()]);
 
+      let mySos = [];
+      let myInc = [];
       // Filter strictly by authenticated user's ID or name
       if (user?._id || user?.name) {
         const userId = user?._id?.toString();
@@ -29,9 +33,6 @@ const MyReportsPage = () => {
           (i) => (userId && (i.reportedBy === userId || i.reportedBy?._id?.toString() === userId)) ||
                  (userName && i.reporterName?.toLowerCase().trim() === userName)
         );
-      } else {
-        mySos = [];
-        myInc = [];
       }
 
       setSosList(mySos);
@@ -54,14 +55,14 @@ const MyReportsPage = () => {
         <div>
           <div className="badge badge-indigo" style={{ marginBottom: '0.4rem' }}>
             <Icon name="user" size={13} color="#818cf8" />
-            <span>MY EMERGENCY TICKETS &bull; {user?.name || 'CITIZEN LOG'}</span>
+            <span>{t('incidents.reportedBy')}: {user?.name || t('auth.roleCitizen')}</span>
           </div>
           <h1 className="page-header-title">
             <Icon name="report" size={26} color="var(--accent-indigo)" />
-            <span>My Submitted Reports & SOS Signals</span>
+            <span>{t('incidents.fieldReports')} & {t('emergency.broadcastSos')}</span>
           </h1>
           <p className="page-header-subtitle">
-            Track real-time status and response updates for your emergency requests and hazard tickets
+            {t('incidents.incidentsSubtitle')}
           </p>
         </div>
       </div>
@@ -84,7 +85,7 @@ const MyReportsPage = () => {
           }}
         >
           <Icon name="sos" size={16} />
-          <span>My SOS Signals ({sosList.length})</span>
+          <span>{t('emergency.emergencySos')} ({sosList.length})</span>
         </button>
 
         <button
@@ -96,7 +97,7 @@ const MyReportsPage = () => {
           }}
         >
           <Icon name="warning" size={16} />
-          <span>My Hazard Tickets ({incidents.length})</span>
+          <span>{t('incidents.fieldReports')} ({incidents.length})</span>
         </button>
       </div>
 
@@ -113,7 +114,7 @@ const MyReportsPage = () => {
               margin: '0 auto 1rem',
             }}
           />
-          <div>Loading your reports...</div>
+          <div>{t('common.loading')}</div>
         </div>
       )}
 
@@ -129,8 +130,8 @@ const MyReportsPage = () => {
           {sosList.length === 0 ? (
             <div className="glass-card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🚨</div>
-              <h3 style={{ color: '#ffffff', fontWeight: 700 }}>No SOS Signals Broadcasted</h3>
-              <p style={{ fontSize: '0.85rem' }}>You have not submitted any emergency SOS signals.</p>
+              <h3 style={{ color: '#ffffff', fontWeight: 700 }}>{t('emergency.emergencySos')}</h3>
+              <p style={{ fontSize: '0.85rem' }}>{t('dashboard.operationalBriefing')}</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -145,7 +146,7 @@ const MyReportsPage = () => {
                       <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>&bull; {sos.emergencyType}</span>
                     </div>
                     <span className="badge badge-warning" style={{ fontSize: '0.78rem' }}>
-                      Status: {sos.status}
+                      {t('common.status')}: {sos.status}
                     </span>
                   </div>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '0.75rem', lineHeight: 1.5 }}>
@@ -154,9 +155,9 @@ const MyReportsPage = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <Icon name="map-pin" size={13} color="#818cf8" />
-                      <span>Location: <strong style={{ color: 'var(--text-primary)' }}>{sos.location}</strong></span>
+                      <span>{t('alerts.sector')}: <strong style={{ color: 'var(--text-primary)' }}>{sos.location}</strong></span>
                     </span>
-                    <span>Contact: {sos.contact}</span>
+                    <span>{t('common.contact')}: {sos.contact}</span>
                   </div>
                 </div>
               ))}
@@ -171,8 +172,8 @@ const MyReportsPage = () => {
           {incidents.length === 0 ? (
             <div className="glass-card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚡</div>
-              <h3 style={{ color: '#ffffff', fontWeight: 700 }}>No Hazard Tickets Reported</h3>
-              <p style={{ fontSize: '0.85rem' }}>You have not reported any campus hazard incidents yet.</p>
+              <h3 style={{ color: '#ffffff', fontWeight: 700 }}>{t('incidents.noIncidents')}</h3>
+              <p style={{ fontSize: '0.85rem' }}>{t('incidents.incidentsSubtitle')}</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -186,7 +187,7 @@ const MyReportsPage = () => {
                       <span className={`badge badge-${inc.severity?.toLowerCase()}`}>{inc.severity}</span>
                     </div>
                     <span className="badge badge-info" style={{ fontSize: '0.78rem' }}>
-                      Status: {inc.status}
+                      {t('common.status')}: {inc.status}
                     </span>
                   </div>
                   <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0.25rem 0', color: '#ffffff' }}>{inc.title}</h3>
@@ -195,7 +196,7 @@ const MyReportsPage = () => {
                   </p>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <Icon name="map-pin" size={13} color="#818cf8" />
-                    <span>Location: <strong style={{ color: 'var(--text-primary)' }}>{inc.location}</strong></span>
+                    <span>{t('alerts.sector')}: <strong style={{ color: 'var(--text-primary)' }}>{inc.location}</strong></span>
                   </div>
                 </div>
               ))}

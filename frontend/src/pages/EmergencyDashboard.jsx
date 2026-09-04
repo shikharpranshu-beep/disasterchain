@@ -20,8 +20,10 @@ import {
   fetchRiskHeatmap,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 
 const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const isResponderOrAdmin = user?.role === 'admin' || user?.role === 'responder';
   const [dashboardMode, setDashboardMode] = useState('STANDARD'); // 'STANDARD' | 'MISSION_CONTROL'
@@ -216,7 +218,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
   }, [resources]);
 
   // Operational threat condition
-  const threatTier = criticalSosCount > 3 ? 'TIER 1 — CRITICAL RESPONSE' : criticalSosCount > 0 ? 'TIER 2 — ELEVATED HAZARD' : 'TIER 3 — NOMINAL MONITORING';
+  const threatTier = criticalSosCount > 3 ? t('dashboard.tier1Critical') : criticalSosCount > 0 ? t('dashboard.tier2Elevated') : t('dashboard.tier3Nominal');
   const threatColor = criticalSosCount > 3 ? 'var(--crimson)' : criticalSosCount > 0 ? 'var(--amber)' : 'var(--mint)';
 
   const handleViewOnMap = (item) => {
@@ -260,10 +262,10 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           />
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', color: '#ffffff' }}>
-              CRISIS OPERATIONS CENTER
+              {t('dashboard.crisisOpsCenter')}
             </div>
             <div className="micro-label" style={{ color: threatColor }}>
-              {threatTier} • {activeSosCount} ACTIVE DISTRESS SIGNALS
+              {threatTier} • {activeSosCount} {t('dashboard.activeDistressSignals')}
             </div>
           </div>
         </div>
@@ -294,7 +296,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                   color: dashboardMode === 'STANDARD' ? '#040812' : 'var(--text-secondary)',
                 }}
               >
-                TACTICAL VIEW
+                {t('dashboard.tacticalView')}
               </button>
               <button
                 type="button"
@@ -312,7 +314,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                   gap: '4px',
                 }}
               >
-                <span>🛡️ MISSION CONTROL</span>
+                <span>🛡️ {t('dashboard.missionControl')}</span>
               </button>
             </div>
           )}
@@ -342,7 +344,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
               title="Generate AI operational situation briefing"
             >
               <Icon name="bot" size={15} color="var(--orange-primary)" />
-              <span>AI SITUATION BRIEF</span>
+              <span>{t('dashboard.operationalBriefing')}</span>
             </button>
           )}
 
@@ -352,7 +354,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             className="btn btn-secondary btn-sm"
           >
             <Icon name="warning" size={15} color="var(--amber)" />
-            <span>Report Hazard</span>
+            <span>{t('dashboard.reportHazard')}</span>
           </button>
 
           <button
@@ -361,7 +363,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             className="btn btn-emergency btn-sm"
           >
             <Icon name="alert-circle" size={15} color="#ffffff" />
-            <span>Broadcast SOS</span>
+            <span>{t('dashboard.activeDistressSignals')}</span>
           </button>
         </div>
       </div>
@@ -390,10 +392,10 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
             <div>
               <div className="micro-label" style={{ color: 'var(--cyan)' }}>
-                PRIORITY TRIAGE ENGINE
+                {t('dashboard.realTimeCrisisTriage')}
               </div>
               <div style={{ fontWeight: 800, fontSize: '0.98rem', color: '#ffffff' }}>
-                CRISIS INTELLIGENCE ({intelligenceList.length})
+                {t('dashboard.crisisIntelligenceBrief')} ({intelligenceList.length})
               </div>
             </div>
             <span className="live-beacon-pulse critical" title="Live priority calculations from MongoDB Atlas" />
@@ -416,11 +418,11 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           >
             <span style={{ color: '#E53935', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span className="live-beacon-pulse critical" style={{ width: 6, height: 6 }} />
-              CRITICAL: {intelligenceSummary.critical}
+              {t('common.critical').toUpperCase()}: {intelligenceSummary.critical}
             </span>
-            <span style={{ color: '#F97316' }}>HIGH: {intelligenceSummary.high}</span>
-            <span style={{ color: '#F59E0B' }}>MEDIUM: {intelligenceSummary.medium}</span>
-            <span style={{ color: '#FFD166' }}>LOW: {intelligenceSummary.low}</span>
+            <span style={{ color: '#F97316' }}>{t('common.high').toUpperCase()}: {intelligenceSummary.high}</span>
+            <span style={{ color: '#F59E0B' }}>{t('common.medium').toUpperCase()}: {intelligenceSummary.medium}</span>
+            <span style={{ color: '#FFD166' }}>{t('common.low').toUpperCase()}: {intelligenceSummary.low}</span>
           </div>
 
           {/* Priority Level Filter Chips */}
@@ -435,6 +437,16 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           >
             {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map((filter) => {
               const isActive = activePriorityFilter === filter;
+              const filterLabel = filter === 'ALL'
+                ? t('common.all').toUpperCase()
+                : filter === 'CRITICAL'
+                ? t('common.critical').toUpperCase()
+                : filter === 'HIGH'
+                ? t('common.high').toUpperCase()
+                : filter === 'MEDIUM'
+                ? t('common.medium').toUpperCase()
+                : t('common.low').toUpperCase();
+
               return (
                 <button
                   key={filter}
@@ -453,7 +465,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {filter}
+                  {filterLabel}
                 </button>
               );
             })}
@@ -1153,66 +1165,66 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
         {/* 1. SOS Signals */}
         <div className="telemetry-widget">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">ACTIVE DISTRESS</span>
+            <span className="micro-label">{t('dashboard.activeDistressSignals')}</span>
             <span className="live-beacon-pulse critical" />
           </div>
           <div className="telemetry-num crimson">
             {activeSosCount}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>Critical: {criticalSosCount}</span>
-            <Link to="/sos" style={{ color: 'var(--cyan)' }}>Dispatch Feed →</Link>
+            <span>{t('common.critical')}: {criticalSosCount}</span>
+            <Link to="/sos" style={{ color: 'var(--cyan)' }}>{t('common.viewAll')} →</Link>
           </div>
         </div>
 
         {/* 2. Shelter Capacity */}
         <div className="telemetry-widget">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">AVAILABLE BEDS</span>
+            <span className="micro-label">{t('dashboard.openBeds').toUpperCase()}</span>
             <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>
-              {shelters.length} Shelters
+              {shelters.length} {t('nav.reliefShelters')}
             </span>
           </div>
           <div className="telemetry-num cyan">
             {availableBeds.toLocaleString()}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>Total Cap: {totalShelterCapacity.toLocaleString()}</span>
-            <Link to="/shelters" style={{ color: 'var(--cyan)' }}>View Facilities →</Link>
+            <span>{t('shelters.totalCapacity')}: {totalShelterCapacity.toLocaleString()}</span>
+            <Link to="/shelters" style={{ color: 'var(--cyan)' }}>{t('common.viewDetails')} →</Link>
           </div>
         </div>
 
         {/* 3. Hazard Impact Zones */}
         <div className="telemetry-widget">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">IMPACT ZONES</span>
+            <span className="micro-label">{t('affectedAreas.monitoredZones').toUpperCase()}</span>
             <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
-              {affectedAreas.length} Zones
+              {affectedAreas.length} {t('common.active')}
             </span>
           </div>
           <div className="telemetry-num amber">
             {totalAffectedPeople.toLocaleString()}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>People in Risk Area</span>
-            <Link to="/affected-areas" style={{ color: 'var(--cyan)' }}>Hazard Map →</Link>
+            <span>{t('dashboard.affectedPopulation')}</span>
+            <Link to="/affected-areas" style={{ color: 'var(--cyan)' }}>{t('common.viewMap')} →</Link>
           </div>
         </div>
 
         {/* 4. Cryptographic Blockchain Ledger */}
         <div className="telemetry-widget">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">TRANSPARENCY LEDGER</span>
+            <span className="micro-label">{t('transparency.transparencyTitle').toUpperCase()}</span>
             <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
-              Verified
+              {t('common.verified')}
             </span>
           </div>
           <div className="telemetry-num mint">
             {blockchainRecords.length}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>Mined Blocks</span>
-            <Link to="/transparency" style={{ color: 'var(--cyan)' }}>Audit Trail →</Link>
+            <span>{t('transparency.totalBlocks')}</span>
+            <Link to="/transparency" style={{ color: 'var(--cyan)' }}>{t('dashboard.viewFullLedger')} →</Link>
           </div>
         </div>
       </div>

@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchAlerts } from '../services/api';
 import AlertDetailModal from '../components/AlertDetailModal';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const AlertsPage = () => {
+  const { t } = useTranslation();
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -85,16 +87,16 @@ const AlertsPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-critical">EMERGENCY BROADCAST STREAM</span>
+            <span className="badge badge-critical">{t('alerts.activeBroadcasts')}</span>
             <span className="micro-label" style={{ color: 'var(--amber)' }}>
-              PRIORITY THREAT INTEL
+              {t('alerts.advisory')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Civil Defense Emergency Alerts
+            {t('alerts.alertsTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            High-priority operational warnings, severe weather directives & disaster containment advisories.
+            {t('alerts.alertsSubtitle')}
           </p>
         </div>
 
@@ -103,34 +105,34 @@ const AlertsPage = () => {
           className="btn btn-secondary btn-sm"
         >
           <Icon name="refresh-cw" size={14} />
-          <span>Sync Feed</span>
+          <span>{t('common.refresh')}</span>
         </button>
       </div>
 
       {/* Telemetry KPI Metrics */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">ACTIVE BROADCASTS</span>
+          <span className="micro-label">{t('alerts.activeBroadcasts')}</span>
           <div className="telemetry-num crimson">{activeCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Broadcasting live to all sectors</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('alerts.activeBroadcasts')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">CRITICAL THREATS</span>
+          <span className="micro-label">{t('alerts.criticalEmergencyBroadcasts')}</span>
           <div className="telemetry-num amber">{criticalCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Immediate evacuation / protective action</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.critical')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">WARNING ADVISORIES</span>
+          <span className="micro-label">{t('alerts.advisoryAlerts')}</span>
           <div className="telemetry-num cyan">{warningCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Hazard caution advised</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.warning')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">MONITORED BULLETINS</span>
+          <span className="micro-label">{t('alerts.advisory')}</span>
           <div className="telemetry-num mint">{advisoryCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>General civil defense notices</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('alerts.advisory')}</div>
         </div>
       </div>
 
@@ -151,7 +153,7 @@ const AlertsPage = () => {
           type="text"
           className="form-input"
           style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
-          placeholder="Search alerts by title, location, text..."
+          placeholder={t('common.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -163,9 +165,9 @@ const AlertsPage = () => {
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="ALL">All Broadcasts</option>
-            <option value="ACTIVE">Live / Active Only</option>
-            <option value="EXPIRED">Historical / Expired</option>
+            <option value="ALL">{t('common.all')}</option>
+            <option value="ACTIVE">{t('common.active')}</option>
+            <option value="EXPIRED">{t('common.inactive')}</option>
           </select>
 
           <select
@@ -174,11 +176,11 @@ const AlertsPage = () => {
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
           >
-            <option value="ALL">All Threat Tiers</option>
-            <option value="Critical">Critical Threat</option>
-            <option value="Danger">Danger</option>
-            <option value="Warning">Warning</option>
-            <option value="Info">Informational</option>
+            <option value="ALL">{t('alerts.allSeverities')}</option>
+            <option value="Critical">{t('common.critical')}</option>
+            <option value="Danger">{t('common.danger')}</option>
+            <option value="Warning">{t('common.warning')}</option>
+            <option value="Info">{t('alerts.advisory')}</option>
           </select>
         </div>
       </div>
@@ -187,7 +189,7 @@ const AlertsPage = () => {
       {loading && (
         <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
           <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
-          <span>Synchronizing active broadcasts from MongoDB Atlas...</span>
+          <span>{t('common.syncing')}</span>
         </div>
       )}
 
@@ -200,8 +202,7 @@ const AlertsPage = () => {
       {!loading && !error && filteredAlerts.length === 0 && (
         <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📡</div>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Emergency Broadcasts Found</div>
-          <div style={{ fontSize: '0.82rem' }}>No active emergency alerts match the specified filter criteria.</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>{t('alerts.noActiveAlerts')}</div>
         </div>
       )}
 
@@ -227,17 +228,17 @@ const AlertsPage = () => {
                     {alt.severity?.toUpperCase() || 'ADVISORY'}
                   </span>
                   <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-                    TYPE: {alt.type || 'CIVIL PROTECTION'}
+                    TYPE: {alt.type || t('common.emergency')}
                   </span>
                   {expired && (
                     <span className="badge" style={{ background: 'rgba(100, 116, 139, 0.2)', color: 'var(--text-muted)' }}>
-                      EXPIRED
+                      {t('common.inactive')}
                     </span>
                   )}
                 </div>
 
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  📡 BROADCASTED: {new Date(alt.createdAt).toLocaleString()}
+                  📡 {t('alerts.issuedAt')}: {new Date(alt.createdAt).toLocaleString()}
                 </div>
               </div>
 
@@ -264,7 +265,7 @@ const AlertsPage = () => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  <span>📍 Impact Location:</span>
+                  <span>📍 {t('alerts.sector')}:</span>
                   <strong style={{ color: '#ffffff' }}>{alt.location}</strong>
                 </div>
 
@@ -273,7 +274,7 @@ const AlertsPage = () => {
                   onClick={() => setSelectedAlert(alt)}
                   className="btn btn-primary btn-sm"
                 >
-                  View Full Directives →
+                  {t('common.viewDetails')} →
                 </button>
               </div>
             </div>

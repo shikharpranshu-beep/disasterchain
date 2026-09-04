@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchSosRequests, createSosRequest } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const SosPage = ({ onOpenSos, refreshKey }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const [sosList, setSosList] = useState([]);
@@ -176,22 +178,22 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
         >
           <Icon name="alert-circle" size={36} color="#ffffff" />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', fontWeight: 800, color: '#ffffff', marginTop: 2 }}>
-            SOS BEACON
+            {t('emergency.emergencySos')}
           </span>
         </div>
 
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-critical">LIVE DISTRESS GRID</span>
+            <span className="badge badge-critical">{t('emergency.activeDistressCalls')}</span>
             <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              STATE: {beaconState}
+              {t('common.status')}: {beaconState}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.85rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
-            Emergency SOS Dispatch Console
+            {t('emergency.emergencySos')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', maxWidth: '780px' }}>
-            Direct satellite and terrestrial distress telemetry for life-threatening situations, trapped individuals, and urgent disaster triage.
+            {t('emergency.disasterDescription')}
           </p>
         </div>
       </div>
@@ -209,27 +211,27 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
       {/* Telemetry Metric Cards */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">ACTIVE DISTRESS</span>
+          <span className="micro-label">{t('emergency.activeDistressCalls')}</span>
           <div className="telemetry-num crimson">{activeCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Signals pending assistance</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('emergency.activeDistressCalls')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">CRITICAL PRIORITY</span>
+          <span className="micro-label">{t('common.critical')}</span>
           <div className="telemetry-num amber">{criticalCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Immediate life-safety triage</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.critical')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">TRIAGE PENDING</span>
+          <span className="micro-label">{t('common.pending')}</span>
           <div className="telemetry-num cyan">{pendingCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Awaiting responder dispatch</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.pending')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">RESOLVED RESCUES</span>
+          <span className="micro-label">{t('common.resolved')}</span>
           <div className="telemetry-num mint">{resolvedCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Successfully evacuated</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.resolved')}</div>
         </div>
       </div>
 
@@ -237,8 +239,8 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
       <div className="spatial-panel" style={{ background: 'rgba(9, 14, 25, 0.92)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div>
-            <span className="micro-label" style={{ color: 'var(--cyan)' }}>DIRECT SATELLITE DISPATCH</span>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>Transmit Emergency Distress Signal</h3>
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>{t('emergency.broadcastSos')}</span>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>{t('emergency.broadcastSos')}</h3>
           </div>
 
           <button
@@ -246,7 +248,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
             onClick={handleAcquireGps}
             className="btn btn-secondary btn-sm"
           >
-            🛰️ {beaconState === 'LOCATING' ? 'Acquiring GPS...' : 'Acquire GPS Position'}
+            🛰️ {beaconState === 'LOCATING' ? t('common.loading') : t('emergency.acquireGps')}
           </button>
         </div>
 
@@ -260,7 +262,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
           <div style={{ padding: '1.25rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--border-mint)', borderRadius: 'var(--radius-sm)', textAlign: 'center' }}>
             <div style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>✅</div>
             <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem', marginBottom: '0.25rem' }}>
-              DISTRESS BEACON BROADCAST CONFIRMED
+              {t('emergency.sosSuccess')}
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--cyan)', marginBottom: '0.75rem' }}>
               SIGNAL ID: {dispatchedReceipt.requestId || dispatchedReceipt._id}
@@ -269,14 +271,14 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
               onClick={() => { setBeaconState('READY'); setDispatchedReceipt(null); }}
               className="btn btn-primary btn-sm"
             >
-              Reset Dispatch Terminal
+              {t('common.refresh')}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmitBeacon}>
             <div className="grid-cols-3">
               <div className="form-group">
-                <label className="form-label">Caller Name</label>
+                <label className="form-label">{t('auth.name')}</label>
                 <input
                   type="text"
                   required
@@ -288,39 +290,39 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Emergency Category</label>
+                <label className="form-label">{t('offline.emergencyCategory')}</label>
                 <select
                   className="form-select"
                   value={formData.emergencyType}
                   onChange={(e) => setFormData({ ...formData, emergencyType: e.target.value })}
                 >
-                  <option value="Medical Emergency">Medical Emergency</option>
-                  <option value="Severe Trauma / Bleeding">Severe Trauma / Bleeding</option>
-                  <option value="Fire Hazard / Trapped">Fire Hazard / Trapped</option>
-                  <option value="Structural Collapse">Structural Collapse</option>
-                  <option value="Water Inundation / Flood">Water Inundation / Flood</option>
-                  <option value="Hazardous Gas / Chemical">Hazardous Gas / Chemical</option>
+                  <option value="Medical Emergency">{t('offline.catMedical')}</option>
+                  <option value="Severe Trauma / Bleeding">{t('offline.catTrauma')}</option>
+                  <option value="Fire Hazard / Trapped">{t('offline.catFire')}</option>
+                  <option value="Structural Collapse">{t('offline.catCollapse')}</option>
+                  <option value="Water Inundation / Flood">{t('offline.catFlood')}</option>
+                  <option value="Hazardous Gas / Chemical">{t('offline.catHazardous')}</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Severity Level</label>
+                <label className="form-label">{t('common.severity')}</label>
                 <select
                   className="form-select"
                   value={formData.severity}
                   onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
                 >
-                  <option value="Critical">🔴 Critical (Life Threat)</option>
-                  <option value="High">🟠 High (Urgent)</option>
-                  <option value="Medium">🟡 Medium (Moderate)</option>
-                  <option value="Low">🟢 Low (Advisory)</option>
+                  <option value="Critical">🔴 {t('common.critical')}</option>
+                  <option value="High">🟠 {t('common.high')}</option>
+                  <option value="Medium">🟡 {t('common.medium')}</option>
+                  <option value="Low">🟢 {t('common.low')}</option>
                 </select>
               </div>
             </div>
 
             <div className="grid-cols-2">
               <div className="form-group">
-                <label className="form-label">Location / Verified Coordinates</label>
+                <label className="form-label">{t('emergency.currentLocation')}</label>
                 <input
                   type="text"
                   required
@@ -332,7 +334,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Contact Telephone / Radio</label>
+                <label className="form-label">{t('offline.hotlineNumber')}</label>
                 <input
                   type="text"
                   required
@@ -345,7 +347,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Distress Description</label>
+              <label className="form-label">{t('incidents.incidentDescription')}</label>
               <textarea
                 required
                 rows={2}
@@ -362,7 +364,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
                 disabled={beaconState === 'LOCATING'}
                 className="btn btn-emergency"
               >
-                {beaconState === 'LOCATING' ? 'Transmitting...' : '🚨 Transmit Distress Beacon'}
+                {beaconState === 'LOCATING' ? t('common.loading') : `🚨 ${t('emergency.confirmSos')}`}
               </button>
             </div>
           </form>
@@ -375,7 +377,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
             <span className="micro-label" style={{ color: 'var(--crimson)' }}>DATABASE FEED</span>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>Active Emergency Distress Registry</h3>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>{t('emergency.activeSosSignals')}</h3>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
@@ -383,7 +385,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
               type="text"
               className="form-input"
               style={{ width: '200px', padding: '0.4rem 0.75rem', fontSize: '0.78rem' }}
-              placeholder="Search caller, ID, place..."
+              placeholder={t('common.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -394,11 +396,11 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
             >
-              <option value="ALL">All Severities</option>
-              <option value="Critical">Critical</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="ALL">{t('alerts.allSeverities')}</option>
+              <option value="Critical">{t('common.critical')}</option>
+              <option value="High">{t('common.high')}</option>
+              <option value="Medium">{t('common.medium')}</option>
+              <option value="Low">{t('common.low')}</option>
             </select>
 
             <select
@@ -407,11 +409,11 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="ALL">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Assigned">Assigned</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Resolved">Resolved</option>
+              <option value="ALL">{t('common.status')}</option>
+              <option value="Pending">{t('common.pending')}</option>
+              <option value="Assigned">{t('common.active')}</option>
+              <option value="In Progress">{t('common.active')}</option>
+              <option value="Resolved">{t('common.resolved')}</option>
             </select>
           </div>
         </div>
@@ -420,7 +422,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
         {loading && (
           <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
             <div className="live-beacon-pulse" style={{ width: 20, height: 20, margin: '0 auto 1rem' }} />
-            <span>Loading live SOS distress signals from MongoDB Atlas...</span>
+            <span>{t('common.syncing')}</span>
           </div>
         )}
 
@@ -433,8 +435,8 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
         {!loading && !error && filteredList.length === 0 && (
           <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--text-muted)' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🛡️</div>
-            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>No Active SOS Distress Signals Found</div>
-            <div style={{ fontSize: '0.8rem' }}>No emergency distress calls match the active query parameters.</div>
+            <div style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>{t('emergency.emergencySos')}</div>
+            <div style={{ fontSize: '0.8rem' }}>{t('dashboard.operationalBriefing')}</div>
           </div>
         )}
 
@@ -455,7 +457,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
                   {item.severity}
                 </span>
                 <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-                  {item.status || 'Pending'}
+                  {item.status || t('common.pending')}
                 </span>
               </div>
 
@@ -468,8 +470,8 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
               </div>
 
               <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                <div>📍 Location: <span style={{ color: 'var(--text-primary)' }}>{item.location}</span></div>
-                <div>👤 Caller: <span style={{ color: 'var(--text-primary)' }}>{item.name}</span> ({item.contact})</div>
+                <div>📍 {t('alerts.sector')}: <span style={{ color: 'var(--text-primary)' }}>{item.location}</span></div>
+                <div>👤 {t('auth.name')}: <span style={{ color: 'var(--text-primary)' }}>{item.name}</span> ({item.contact})</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--cyan-dim)' }}>
                   ID: {item.requestId || item._id}
                 </div>

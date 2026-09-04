@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
+  const { t } = useTranslation();
   const targetShelter = shelter || item;
   if ((isOpen !== undefined && !isOpen) || !targetShelter) return null;
 
@@ -39,7 +41,7 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
                 }`}
                 style={{ fontSize: '0.72rem' }}
               >
-                {isClosed ? 'TEMPORARILY CLOSED' : isFull ? '🔴 CAPACITY FULL' : '🟢 OPEN & AVAILABLE'}
+                {isClosed ? t('shelters.closed', 'TEMPORARILY CLOSED') : isFull ? `🔴 ${t('shelters.full', 'CAPACITY FULL')}` : `🟢 ${t('shelters.open', 'OPEN & AVAILABLE')}`}
               </span>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                 ID: <strong style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>{targetShelter._id?.substring(0, 8) || 'SH-104'}</strong>
@@ -123,10 +125,10 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Live Capacity Load
+              {t('shelters.capacity', 'Live Capacity Load')}
             </span>
             <span style={{ fontSize: '1.1rem', fontWeight: 800, color: isFull ? 'var(--crimson)' : 'var(--mint)' }}>
-              {percent}% Full
+              {percent}% {t('shelters.capacityRate', 'Full')}
             </span>
           </div>
 
@@ -145,15 +147,15 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', textAlign: 'center' }}>
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem', borderRadius: 'var(--radius-xs)' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>TOTAL BEDS</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{t('shelters.capacity', 'TOTAL BEDS')}</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>{capacity}</div>
             </div>
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem', borderRadius: 'var(--radius-xs)' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>OCCUPIED</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{t('shelters.occupancy', 'OCCUPIED')}</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-secondary)' }}>{occupancy}</div>
             </div>
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.5rem', borderRadius: 'var(--radius-xs)' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>VACANT / OPEN</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{t('shelters.availableBeds', 'VACANT / OPEN')}</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: isFull ? 'var(--crimson)' : 'var(--mint)' }}>{availableBeds}</div>
             </div>
           </div>
@@ -162,7 +164,7 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
         {/* Facilities & Amenities Checklist */}
         <div style={{ marginBottom: '1.25rem' }}>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.6rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-            Verified Emergency Amenities & Facilities
+            {t('shelters.facilities', 'Verified Emergency Amenities & Facilities')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.5rem' }}>
             {targetShelter.facilities && targetShelter.facilities.length > 0 ? (
@@ -187,7 +189,7 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
               ))
             ) : (
               <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                Standard emergency bedding, food, and water provided.
+                {t('shelters.standardFacilities', 'Standard emergency bedding, food, and water provided.')}
               </div>
             )}
           </div>
@@ -206,11 +208,11 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
             lineHeight: 1.5,
           }}
         >
-          <strong style={{ color: '#38bdf8' }}>ℹ️ Check-In & Safety Instructions:</strong>
+          <strong style={{ color: '#38bdf8' }}>ℹ️ {t('guides.immediateActions', 'Check-In & Safety Instructions:')}</strong>
           <ul style={{ paddingLeft: '1.15rem', marginTop: '0.35rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <li>Present Student ID or Government Identification at front desk security.</li>
-            <li>Medical triage station available at Entrance Hall B.</li>
-            <li>Children, elderly, and injured individuals receive priority bed placement.</li>
+            <li>{t('shelters.instruction1', 'Present Student ID or Government Identification at front desk security.')}</li>
+            <li>{t('shelters.instruction2', 'Medical triage station available at Entrance Hall B.')}</li>
+            <li>{t('shelters.instruction3', 'Children, elderly, and injured individuals receive priority bed placement.')}</li>
           </ul>
         </div>
 
@@ -228,7 +230,7 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
         >
           <div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              DIRECT SHELTER HOTLINE
+              {t('shelters.contactPhone', 'DIRECT SHELTER HOTLINE')}
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Icon name="phone" size={16} color="#38bdf8" />
@@ -243,7 +245,7 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
               style={{ padding: '0.6rem 1.15rem' }}
             >
               <Icon name="phone" size={15} />
-              <span>Call Shelter</span>
+              <span>{t('shelters.contactPhone', 'Call Shelter')}</span>
             </a>
 
             <a
@@ -254,7 +256,7 @@ const ShelterDetailModal = ({ isOpen = true, onClose, shelter, item }) => {
               style={{ padding: '0.6rem 1.15rem' }}
             >
               <Icon name="compass" size={15} />
-              <span>Get Directions</span>
+              <span>{t('shelters.getDirections', 'Get Directions')}</span>
             </a>
           </div>
         </div>

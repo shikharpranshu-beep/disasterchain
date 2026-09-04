@@ -3,8 +3,10 @@ import { useLocation } from 'react-router-dom';
 import { fetchShelters } from '../services/api';
 import ShelterDetailModal from '../components/ShelterDetailModal';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const SheltersPage = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const incidentTitle = searchParams.get('incident') || location.state?.incidentTitle;
@@ -119,16 +121,16 @@ const SheltersPage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-info">CIVIL DEFENSE SAFE HAVENS</span>
+            <span className="badge badge-info">{t('nav.reliefShelters').toUpperCase()}</span>
             <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              LIVE OCCUPANCY TELEMETRY
+              {t('shelters.capacityRate').toUpperCase()}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Emergency Relief Shelters
+            {t('shelters.shelterTitle')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Verified safe havens, real-time bed capacity rings, and emergency support facilities.
+            {t('shelters.shelterSubtitle')}
           </p>
         </div>
 
@@ -138,34 +140,34 @@ const SheltersPage = () => {
           title="Refresh live shelter metrics"
         >
           <Icon name="refresh-cw" size={14} />
-          <span>Sync Capacity</span>
+          <span>{t('common.refresh')}</span>
         </button>
       </div>
 
       {/* Telemetry KPI Metrics */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">AVAILABLE BEDS</span>
+          <span className="micro-label">{t('shelters.availableBeds').toUpperCase()}</span>
           <div className="telemetry-num cyan">{totalAvailableBeds.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ready for immediate intake</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.open')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">SYSTEM CAPACITY</span>
+          <span className="micro-label">{t('shelters.totalCapacity').toUpperCase()}</span>
           <div className="telemetry-num mint">{totalCapacity.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total shelter capacity</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('shelters.totalCapacity')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">ACTIVE SAFE HAVENS</span>
+          <span className="micro-label">{t('shelters.availableSafeHavens').toUpperCase()}</span>
           <div className="telemetry-num amber">{openSheltersCount} / {shelters.length}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Facilities with open intake</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.active')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">AVG OCCUPANCY</span>
+          <span className="micro-label">{t('shelters.capacityRate').toUpperCase()}</span>
           <div className="telemetry-num crimson">{avgOccupancyRate}%</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Regional bed utilization</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('shelters.occupancy')}</div>
         </div>
       </div>
 
@@ -188,27 +190,27 @@ const SheltersPage = () => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
               <span className="badge badge-success" style={{ fontSize: '0.68rem', fontWeight: 800 }}>
-                ⭐ RECOMMENDED FOR CURRENT INCIDENT
+                ⭐ {t('shelters.optimalSafeHaven')}
               </span>
               <span className="micro-label" style={{ color: 'var(--mint)' }}>
-                {incidentTitle ? `CONTEXT: ${incidentTitle.toUpperCase()}` : 'OPTIMAL SAFE HAVEN'}
+                {incidentTitle ? `CONTEXT: ${incidentTitle.toUpperCase()}` : t('shelters.optimalSafeHaven')}
               </span>
             </div>
             <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#ffffff' }}>
               {recommendedShelter.name}
             </div>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              📍 {recommendedShelter.address} • Contact: {recommendedShelter.phone}
+              📍 {recommendedShelter.address} • {t('common.contact')}: {recommendedShelter.phone}
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', color: 'var(--cyan)' }}>
-                {recommendedShelter.capacity - recommendedShelter.occupancy} BEDS
+                {recommendedShelter.capacity - recommendedShelter.occupancy} {t('shelters.openBedsAvailable')}
               </div>
               <div className="micro-label" style={{ color: 'var(--text-muted)' }}>
-                Available of {recommendedShelter.capacity}
+                {t('shelters.totalCapacity')}: {recommendedShelter.capacity}
               </div>
             </div>
 
@@ -216,7 +218,7 @@ const SheltersPage = () => {
               onClick={() => setSelectedShelter(recommendedShelter)}
               className="btn btn-primary btn-sm"
             >
-              Inspect Facility →
+              {t('shelters.inspectFacility')} →
             </button>
           </div>
         </div>
@@ -239,7 +241,7 @@ const SheltersPage = () => {
           type="text"
           className="form-input"
           style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
-          placeholder="Search shelters by name, address, amenity..."
+          placeholder={t('shelters.searchShelters')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -251,10 +253,10 @@ const SheltersPage = () => {
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="ALL">All Statuses</option>
-            <option value="Available">Open & Available</option>
-            <option value="Full">Full Capacity</option>
-            <option value="Standby">Standby</option>
+            <option value="ALL">{t('shelters.allStatuses')}</option>
+            <option value="Available">{t('common.open')}</option>
+            <option value="Full">{t('shelters.fullShelterNotice')}</option>
+            <option value="Standby">{t('common.pending')}</option>
           </select>
 
           <select
@@ -263,11 +265,10 @@ const SheltersPage = () => {
             value={filterFacility}
             onChange={(e) => setFilterFacility(e.target.value)}
           >
-            <option value="ALL">All Amenities</option>
-            <option value="Medical">Medical Support</option>
-            <option value="Food">Food / Rations</option>
-            <option value="Water">Drinking Water</option>
-            <option value="Power">Power Backup</option>
+            <option value="ALL">{t('shelters.facilities')}</option>
+            <option value="Medical">{t('shelters.medicalFacility')}</option>
+            <option value="Food">{t('shelters.foodSupply')}</option>
+            <option value="Power">{t('shelters.powerBackup')}</option>
           </select>
         </div>
       </div>

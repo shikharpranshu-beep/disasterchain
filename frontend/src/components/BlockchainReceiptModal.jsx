@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const BlockchainReceiptModal = ({ isOpen = true, onClose, record, item }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const targetRecord = record || item;
 
@@ -34,9 +36,9 @@ const BlockchainReceiptModal = ({ isOpen = true, onClose, record, item }) => {
               <Icon name="blockchain" size={20} color="#818cf8" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Cryptographic Blockchain Record</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>{t('transparency.proof', 'Cryptographic Blockchain Record')}</h2>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                DisasterChain Prototype Audit Ledger
+                {t('transparency.ledgerSubtitle', 'DisasterChain Prototype Audit Ledger')}
               </div>
             </div>
           </div>
@@ -67,10 +69,10 @@ const BlockchainReceiptModal = ({ isOpen = true, onClose, record, item }) => {
           </div>
           <div>
             <div style={{ color: '#34d399', fontWeight: 700, fontSize: '0.9rem' }}>
-              Cryptographically Verified & Immutable
+              {t('transparency.verifiedImmutable', 'Cryptographically Verified & Immutable')}
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
-              SHA-256 block hash integrity validated across network audit nodes.
+              {t('transparency.hashIntegrity', 'SHA-256 block hash integrity validated across network audit nodes.')}
             </div>
           </div>
         </div>
@@ -110,7 +112,7 @@ const BlockchainReceiptModal = ({ isOpen = true, onClose, record, item }) => {
                 style={{ fontSize: '0.72rem', padding: '0.15rem 0.5rem', color: copied ? '#34d399' : '#818cf8' }}
               >
                 <Icon name={copied ? 'check' : 'copy'} size={13} />
-                <span>{copied ? 'Copied!' : 'Copy Hash'}</span>
+                <span>{copied ? t('common.copied', 'Copied!') : t('transparency.copyHash', 'Copy Hash')}</span>
               </button>
             </div>
             <div style={{ color: '#38bdf8', wordBreak: 'break-all', fontSize: '0.78rem', background: 'rgba(0,0,0,0.35)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
@@ -149,7 +151,7 @@ const BlockchainReceiptModal = ({ isOpen = true, onClose, record, item }) => {
         </div>
 
         <button onClick={onClose} className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }}>
-          Close Audit Proof
+          {t('common.close', 'Close Audit Proof')}
         </button>
       </div>
     </div>

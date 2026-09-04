@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const EmergencyAlertBanner = ({ alerts = [] }) => {
+  const { t } = useTranslation();
   // Filter only active, non-expired alerts
   const validActiveAlerts = (alerts || []).filter((a) => {
     if (!a.active) return false;
@@ -73,12 +75,12 @@ const EmergencyAlertBanner = ({ alerts = [] }) => {
                 letterSpacing: '0.05em',
               }}
             >
-              {activeAlert.severity} ADVISORY
+              {activeAlert.severity} {t('alerts.title', 'ADVISORY')}
             </span>
             <strong style={{ fontSize: '0.98rem', fontWeight: 800 }}>{activeAlert.title}</strong>
           </div>
           <div style={{ fontSize: '0.84rem', opacity: 0.95, marginTop: '0.2rem' }}>
-            Affected Sector: <strong>{activeAlert.location}</strong> &bull; Stay tuned to broadcast instructions
+            {t('alerts.affectedLocation', 'Affected Sector:')} <strong>{activeAlert.location}</strong> &bull; {t('alerts.stayTuned', 'Stay tuned to broadcast instructions')}
           </div>
         </div>
       </div>
@@ -95,7 +97,7 @@ const EmergencyAlertBanner = ({ alerts = [] }) => {
           padding: '0.5rem 1.1rem',
         }}
       >
-        <span>View Safety Protocol</span>
+        <span>{t('alerts.viewProtocol', 'View Safety Protocol')}</span>
         <Icon name="arrow-up-right" size={15} />
       </Link>
     </div>

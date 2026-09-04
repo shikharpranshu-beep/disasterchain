@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 /**
@@ -15,6 +16,7 @@ const MapLocationPanel = ({
   onOpenSos,
   onNavigate,
 }) => {
+  const { t } = useTranslation();
   if (!entity) return null;
 
   const riskColor =
@@ -135,39 +137,39 @@ const MapLocationPanel = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="micro-label" style={{ color: 'var(--text-secondary)' }}>
-            DISASTERCHAIN STATUS
+            {t('dashboard.systemStatus', 'DISASTERCHAIN STATUS')}
           </div>
           <div style={{ fontWeight: 800, fontSize: '0.75rem', color: riskColor }}>
             {telemetry?.riskLevel ? `${telemetry.riskLevel} RISK` : 'OPERATIONAL'}
           </div>
         </div>
         <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ffffff', marginTop: '3px' }}>
-          {telemetry?.hasActiveCrisis ? 'Active Emergency Sector' : 'Normal Baseline Monitoring'}
+          {telemetry?.hasActiveCrisis ? t('emergency.activeCrisis', 'Active Emergency Sector') : t('emergency.normalMonitoring', 'Normal Baseline Monitoring')}
         </div>
       </div>
 
       {/* Telemetry Metrics Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1.25rem' }}>
         <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
-          <div className="micro-label" style={{ color: 'var(--crimson)' }}>ACTIVE SOS</div>
+          <div className="micro-label" style={{ color: 'var(--crimson)' }}>{t('map.activeSosLayer', 'ACTIVE SOS')}</div>
           <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
             {telemetry?.sosCount ?? 0}
           </div>
         </div>
         <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
-          <div className="micro-label" style={{ color: 'var(--orange-primary)' }}>INCIDENTS</div>
+          <div className="micro-label" style={{ color: 'var(--orange-primary)' }}>{t('map.incidentsLayer', 'INCIDENTS')}</div>
           <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
             {telemetry?.incidentCount ?? 0}
           </div>
         </div>
         <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
-          <div className="micro-label" style={{ color: 'var(--safe)' }}>SAFE SHELTERS</div>
+          <div className="micro-label" style={{ color: 'var(--safe)' }}>{t('map.sheltersLayer', 'SAFE SHELTERS')}</div>
           <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
             {telemetry?.shelterCount ?? 0}
           </div>
         </div>
         <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
-          <div className="micro-label" style={{ color: 'var(--amber)' }}>ALERTS</div>
+          <div className="micro-label" style={{ color: 'var(--amber)' }}>{t('alerts.title', 'ALERTS')}</div>
           <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
             {telemetry?.alertCount ?? 0}
           </div>
@@ -186,7 +188,7 @@ const MapLocationPanel = ({
             style={{ width: '100%', justifyContent: 'center' }}
           >
             <Icon name="shelter" size={14} />
-            <span>VIEW NEARBY SHELTERS ({telemetry?.shelterCount ?? 0})</span>
+            <span>{t('shelters.viewNearby', 'VIEW NEARBY SHELTERS')} ({telemetry?.shelterCount ?? 0})</span>
           </button>
         )}
 
@@ -200,7 +202,7 @@ const MapLocationPanel = ({
             style={{ width: '100%', justifyContent: 'center', borderColor: 'var(--crimson)', color: 'var(--crimson)' }}
           >
             <Icon name="incident" size={14} color="var(--crimson)" />
-            <span>VIEW FIELD INCIDENTS ({telemetry?.incidentCount ?? 0})</span>
+            <span>{t('incidents.viewField', 'VIEW FIELD INCIDENTS')} ({telemetry?.incidentCount ?? 0})</span>
           </button>
         )}
 
@@ -215,7 +217,7 @@ const MapLocationPanel = ({
                 style={{ width: '100%', justifyContent: 'center', textDecoration: 'none' }}
               >
                 <Icon name="mapPin" size={14} />
-                <span>GET DIRECTIONS ↗</span>
+                <span>{t('shelters.getDirections', 'GET DIRECTIONS ↗')}</span>
               </a>
             )}
             {onOpenShelter && (
@@ -225,7 +227,7 @@ const MapLocationPanel = ({
                 className="btn btn-secondary btn-sm"
                 style={{ width: '100%', justifyContent: 'center' }}
               >
-                <span>VIEW FACILITY DOSSIER</span>
+                <span>{t('shelters.viewFacilityDossier', 'VIEW FACILITY DOSSIER')}</span>
               </button>
             )}
           </>
@@ -239,7 +241,7 @@ const MapLocationPanel = ({
             style={{ width: '100%', justifyContent: 'center' }}
           >
             <Icon name="warning" size={14} />
-            <span>OPEN SOS COMMAND AUDIT</span>
+            <span>{t('sos.openCommandAudit', 'OPEN SOS COMMAND AUDIT')}</span>
           </button>
         )}
 
@@ -251,7 +253,7 @@ const MapLocationPanel = ({
             style={{ width: '100%', justifyContent: 'center' }}
           >
             <Icon name="incident" size={14} />
-            <span>VIEW INCIDENT REPORT</span>
+            <span>{t('incidents.viewReport', 'VIEW INCIDENT REPORT')}</span>
           </button>
         )}
       </div>

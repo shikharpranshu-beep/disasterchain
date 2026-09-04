@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { updateIncidentStatus } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusUpdated }) => {
+  const { t } = useTranslation();
   const targetIncident = incident || item;
   const { user } = useAuth();
   const isAdminOrResponder = user?.role === 'admin' || user?.role === 'responder';
@@ -51,10 +53,10 @@ const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusU
                 {targetIncident.incidentId || 'INC-LOGGED'}
               </span>
               <span className={`badge badge-${targetIncident.severity?.toLowerCase()}`}>
-                {targetIncident.severity} SEVERITY
+                {targetIncident.severity} {t('common.severity', 'SEVERITY')}
               </span>
               <span className="badge badge-neutral">
-                STATUS: {currentStatus}
+                {t('common.status', 'STATUS')}: {currentStatus}
               </span>
             </div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', lineHeight: 1.3 }}>
@@ -70,7 +72,7 @@ const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusU
         {/* Category & Description */}
         <div style={{ marginBottom: '1.25rem' }}>
           <div style={{ fontSize: '0.84rem', color: '#818cf8', fontWeight: 700, marginBottom: '0.4rem' }}>
-            Category: {targetIncident.type}
+            {t('common.category', 'Category:')} {targetIncident.type}
           </div>
           <div
             style={{
@@ -105,7 +107,7 @@ const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusU
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <Icon name="map-pin" size={16} color="#818cf8" />
             <span style={{ fontSize: '0.86rem', color: '#ffffff' }}>
-              <strong>Location: </strong> {targetIncident.location}
+              <strong>{t('common.location', 'Location:')} </strong> {targetIncident.location}
             </span>
           </div>
 
@@ -117,7 +119,7 @@ const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusU
             style={{ fontSize: '0.78rem' }}
           >
             <Icon name="compass" size={13} color="#38bdf8" />
-            <span>Maps View</span>
+            <span>{t('shelters.getDirections', 'Maps View')}</span>
           </a>
         </div>
 
@@ -132,11 +134,11 @@ const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusU
           }}
         >
           <div style={{ background: 'rgba(15, 24, 44, 0.7)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Reported By: </span>
+            <span style={{ color: 'var(--text-muted)' }}>{t('incidents.reportedBy', 'Reported By:')} </span>
             <strong style={{ color: '#ffffff' }}>{targetIncident.reporterName || 'Anonymous Student'}</strong>
           </div>
           <div style={{ background: 'rgba(15, 24, 44, 0.7)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Submitted: </span>
+            <span style={{ color: 'var(--text-muted)' }}>{t('incidents.submittedAt', 'Submitted:')} </span>
             <strong style={{ color: '#ffffff' }}>
               {new Date(targetIncident.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
             </strong>
@@ -155,7 +157,7 @@ const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusU
             }}
           >
             <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#a5b4fc', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-              🛡️ Responder / Admin Status Management
+              🛡️ {t('admin.adminTitle', 'Responder / Admin Status Management')}
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -181,7 +183,7 @@ const IncidentDetailModal = ({ isOpen = true, onClose, incident, item, onStatusU
         )}
 
         <button onClick={onClose} className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }}>
-          Close Ticket
+          {t('common.close', 'Close Ticket')}
         </button>
       </div>
     </div>

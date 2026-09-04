@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import StatCard from '../components/StatCard';
 import BlockchainReceiptModal from '../components/BlockchainReceiptModal';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 import {
   fetchSosRequests,
   updateSosStatus,
@@ -21,6 +22,7 @@ import {
 } from '../services/api';
 
 const AdminDashboard = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sos' | 'incidents' | 'shelters' | 'alerts' | 'donations' | 'blockchain' | 'users'
   const [sosList, setSosList] = useState([]);
   const [shelters, setShelters] = useState([]);
@@ -184,14 +186,14 @@ const AdminDashboard = () => {
         <div>
           <div className="badge badge-blockchain" style={{ marginBottom: '0.4rem' }}>
             <Icon name="shield" size={13} color="var(--accent-indigo)" />
-            <span>DISASTER RESPONSE COMMAND CONSOLE</span>
+            <span>{t('dashboard.missionControl', 'DISASTER RESPONSE COMMAND CONSOLE')}</span>
           </div>
           <h1 className="page-header-title">
             <Icon name="admin" size={26} color="var(--accent-indigo)" />
-            <span>Administrator Management Portal</span>
+            <span>{t('admin.adminTitle', 'Administrator Management Portal')}</span>
           </h1>
           <p className="page-header-subtitle">
-            Coordinate SOS rescue dispatch, review hazard reports, broadcast emergency alerts & log blockchain relief shipments
+            {t('admin.adminSubtitle', 'Coordinate SOS rescue dispatch, review hazard reports, broadcast emergency alerts & log blockchain relief shipments')}
           </p>
         </div>
       </div>
@@ -223,14 +225,14 @@ const AdminDashboard = () => {
         }}
       >
         {[
-          { id: 'overview', label: 'System Analytics', icon: 'activity' },
-          { id: 'sos', label: `Manage SOS (${sosList.length})`, icon: 'sos' },
-          { id: 'incidents', label: `Review Hazards (${incidents.length})`, icon: 'warning' },
-          { id: 'shelters', label: `Shelters (${shelters.length})`, icon: 'home' },
-          { id: 'alerts', label: 'Broadcast Alerts', icon: 'bell' },
-          { id: 'donations', label: 'Log Aid & Donations', icon: 'box' },
-          { id: 'blockchain', label: `Blockchain Ledger (${blockchainRecords.length})`, icon: 'ledger' },
-          { id: 'users', label: `User Directory (${users.length})`, icon: 'user' },
+          { id: 'overview', label: t('admin.systemHealth', 'System Analytics'), icon: 'activity' },
+          { id: 'sos', label: `${t('nav.emergencySos', 'Manage SOS')} (${sosList.length})`, icon: 'sos' },
+          { id: 'incidents', label: `${t('nav.incidentReports', 'Review Hazards')} (${incidents.length})`, icon: 'warning' },
+          { id: 'shelters', label: `${t('nav.shelters', 'Shelters')} (${shelters.length})`, icon: 'home' },
+          { id: 'alerts', label: t('alerts.broadcastAlert', 'Broadcast Alerts'), icon: 'bell' },
+          { id: 'donations', label: t('donations.title', 'Log Aid & Donations'), icon: 'box' },
+          { id: 'blockchain', label: `${t('transparency.blockchainVerified', 'Blockchain Ledger')} (${blockchainRecords.length})`, icon: 'ledger' },
+          { id: 'users', label: `${t('admin.userManagement', 'User Directory')} (${users.length})`, icon: 'user' },
         ].map((tab) => {
           const isTabActive = activeTab === tab.id;
           return (
@@ -256,28 +258,28 @@ const AdminDashboard = () => {
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
             <StatCard
-              title="Total SOS Distress"
+              title={t('emergency.activeCrisis', 'Total SOS Distress')}
               value={sosList.length}
               subtitle={`${sosList.filter((s) => s.status === 'Pending').length} Pending Dispatch`}
               icon="sos"
               color="red"
             />
             <StatCard
-              title="Hazard Tickets"
+              title={t('incidents.fieldReports', 'Hazard Tickets')}
               value={incidents.length}
               subtitle={`${incidents.filter((i) => i.status === 'Pending').length} Pending Inspection`}
               icon="warning"
               color="amber"
             />
             <StatCard
-              title="Shelter Capacity"
+              title={t('shelters.capacity', 'Shelter Capacity')}
               value={`${shelters.reduce((a, s) => a + (s.occupancy || 0), 0)} / ${shelters.reduce((a, s) => a + (s.capacity || 0), 0)}`}
               subtitle={`${shelters.length} Total Registered Shelters`}
               icon="home"
               color="cyan"
             />
             <StatCard
-              title="Blockchain Blocks"
+              title={t('transparency.blockchainVerified', 'Blockchain Blocks')}
               value={blockchainRecords.length}
               subtitle="100% Cryptographic Verification"
               icon="blockchain"
@@ -292,7 +294,7 @@ const AdminDashboard = () => {
               title="Click to view and approve pending users"
             >
               <StatCard
-                title="Pending Verifications"
+                title={t('admin.pendingVerifications', 'Pending Verifications')}
                 value={users.filter((u) => !u.isVerified).length}
                 subtitle={`${users.filter((u) => !u.isVerified).length} Awaiting Approval →`}
                 icon="user"

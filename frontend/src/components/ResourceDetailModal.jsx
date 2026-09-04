@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 
 const ResourceDetailModal = ({ isOpen = true, onClose, resource, item }) => {
+  const { t } = useTranslation();
   const targetResource = resource || item;
   if ((isOpen !== undefined && !isOpen) || !targetResource) return null;
 
@@ -103,7 +105,7 @@ const ResourceDetailModal = ({ isOpen = true, onClose, resource, item }) => {
             style={{ fontSize: '0.78rem' }}
           >
             <Icon name="compass" size={13} color="#38bdf8" />
-            <span>Navigate</span>
+            <span>{t('shelters.getDirections', 'Navigate')}</span>
           </a>
         </div>
 
@@ -121,7 +123,7 @@ const ResourceDetailModal = ({ isOpen = true, onClose, resource, item }) => {
         >
           <div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              DIRECT EMERGENCY LINE
+              {t('emergency.hotlines', 'DIRECT EMERGENCY LINE')}
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#38bdf8' }}>
               {targetResource.phone}
@@ -134,7 +136,7 @@ const ResourceDetailModal = ({ isOpen = true, onClose, resource, item }) => {
             style={{ padding: '0.6rem 1.25rem' }}
           >
             <Icon name="phone" size={15} />
-            <span>Call Facility Now</span>
+            <span>{t('shelters.contactPhone', 'Call Facility Now')}</span>
           </a>
         </div>
       </div>

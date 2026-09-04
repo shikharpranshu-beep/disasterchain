@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import { fetchSosRequests, fetchIncidents, updateUserProfile, updateNotificationPreferences } from '../services/api';
 import Icon from '../components/Icons';
 
 const ProfilePage = () => {
+  const { t } = useTranslation();
   const { user, logout, isAdmin, isVerified, refreshUser } = useAuth();
   const navigate = useNavigate();
 
@@ -139,16 +141,16 @@ const ProfilePage = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-info">PERSONNEL DOSSIER</span>
+            <span className="badge badge-info">{t('profile.personalDetails', 'PERSONNEL DOSSIER')}</span>
             <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-              IDENTITY & ROLE CLEARANCE
+              {t('profile.stationRole', 'IDENTITY & ROLE CLEARANCE')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Operator Identity & Security Clearance
+            {t('profile.profileTitle', 'Operator Identity & Security Clearance')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Verified credentials, operational activity history, and authentication parameters.
+            {t('profile.profileSubtitle', 'Verified credentials, operational activity history, and authentication parameters.')}
           </p>
         </div>
 
@@ -158,7 +160,7 @@ const ProfilePage = () => {
           style={{ borderColor: 'var(--border-red)', color: '#ff8597' }}
         >
           <Icon name="logout" size={14} />
-          <span>Sign Out of Grid</span>
+          <span>{t('auth.logoutBtn', 'Sign Out of Grid')}</span>
         </button>
       </div>
 
@@ -196,12 +198,12 @@ const ProfilePage = () => {
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
               <span className="badge badge-info" style={{ textTransform: 'uppercase' }}>
-                ROLE: {user?.role || 'CITIZEN'}
+                {t('profile.stationRole', 'ROLE:')} {user?.role || 'CITIZEN'}
               </span>
               {isVerified ? (
-                <span className="badge badge-success">✓ EMAIL VERIFIED</span>
+                <span className="badge badge-success">✓ {t('common.verified', 'EMAIL VERIFIED')}</span>
               ) : (
-                <span className="badge badge-warning">UNVERIFIED</span>
+                <span className="badge badge-warning">{t('common.unverified', 'UNVERIFIED')}</span>
               )}
             </div>
           </div>
@@ -241,7 +243,7 @@ const ProfilePage = () => {
               className="btn btn-primary"
               style={{ width: '100%', textAlign: 'center' }}
             >
-              Launch Admin Command Center →
+              {t('admin.adminTitle', 'Launch Admin Command Center')} →
             </Link>
           )}
         </div>
@@ -255,21 +257,21 @@ const ProfilePage = () => {
               onClick={() => setActiveTab('sos')}
               className={`btn ${activeTab === 'sos' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             >
-              My SOS Distresses ({sosList.length})
+              {t('profile.activeAssignments', 'My SOS Distresses')} ({sosList.length})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('incidents')}
               className={`btn ${activeTab === 'incidents' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             >
-              My Hazard Reports ({incidents.length})
+              {t('incidents.myReports', 'My Hazard Reports')} ({incidents.length})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('settings')}
               className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             >
-              Dossier Settings
+              {t('profile.personalDetails', 'Dossier Settings')}
             </button>
           </div>
 
@@ -278,13 +280,13 @@ const ProfilePage = () => {
             <div>
               {loadingActivity ? (
                 <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)' }}>
-                  Loading distress activity...
+                  {t('common.loading', 'Loading distress activity...')}
                 </div>
               ) : sosList.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🛡️</div>
-                  <div style={{ fontWeight: 700, color: '#ffffff' }}>No Active SOS Signals Registered</div>
-                  <div style={{ fontSize: '0.8rem' }}>You have not broadcasted any emergency distress calls.</div>
+                  <div style={{ fontWeight: 700, color: '#ffffff' }}>{t('sos.noActive', 'No Active SOS Signals Registered')}</div>
+                  <div style={{ fontSize: '0.8rem' }}>{t('sos.noActiveDesc', 'You have not broadcasted any emergency distress calls.')}</div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -324,13 +326,13 @@ const ProfilePage = () => {
             <div>
               {loadingActivity ? (
                 <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)' }}>
-                  Loading incident activity...
+                  {t('common.loading', 'Loading incident activity...')}
                 </div>
               ) : incidents.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
                   <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
-                  <div style={{ fontWeight: 700, color: '#ffffff' }}>No Hazard Tickets Filed</div>
-                  <div style={{ fontSize: '0.8rem' }}>You have not submitted any campus hazard reports.</div>
+                  <div style={{ fontWeight: 700, color: '#ffffff' }}>{t('incidents.noIncidents', 'No Hazard Tickets Filed')}</div>
+                  <div style={{ fontSize: '0.8rem' }}>{t('incidents.noIncidentsDesc', 'You have not submitted any campus hazard reports.')}</div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -371,7 +373,7 @@ const ProfilePage = () => {
               {/* Personnel Form */}
               <form onSubmit={handleUpdateName}>
                 <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#ffffff', marginBottom: '0.75rem' }}>
-                  Personnel Dossier Details
+                  {t('profile.personalDetails', 'Personnel Dossier Details')}
                 </div>
 
                 {nameSuccess && (
@@ -387,7 +389,7 @@ const ProfilePage = () => {
                 )}
 
                 <div className="form-group">
-                  <label className="form-label">Full Operator Name</label>
+                  <label className="form-label">{t('auth.name', 'Full Operator Name')}</label>
                   <input
                     type="text"
                     required
@@ -398,7 +400,7 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Registered Email (Read-Only)</label>
+                  <label className="form-label">{t('auth.email', 'Registered Email (Read-Only)')}</label>
                   <input
                     type="email"
                     disabled
@@ -414,7 +416,7 @@ const ProfilePage = () => {
                   className="btn btn-primary"
                   style={{ marginTop: '0.5rem' }}
                 >
-                  {savingName ? 'Saving...' : 'Save Dossier Changes'}
+                  {savingName ? t('common.loading', 'Saving...') : t('profile.updateProfile', 'Save Dossier Changes')}
                 </button>
               </form>
 

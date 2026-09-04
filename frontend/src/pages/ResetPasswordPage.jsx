@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../i18n/i18n';
 import Icon from '../components/Icons';
 
 const ResetPasswordPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = (searchParams.get('token') || '').trim();
 
@@ -62,13 +64,13 @@ const ResetPasswordPage = () => {
         <div className="spatial-panel spatial-panel-critical" style={{ maxWidth: '460px', width: '100%', padding: '2.5rem', textAlign: 'center' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
-            Invalid Recovery Token
+            {t('auth.invalidRecoveryToken', 'Invalid Recovery Token')}
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-            The password reset link is invalid or missing required verification parameters.
+            {t('auth.invalidTokenDesc', 'The password reset link is invalid or missing required verification parameters.')}
           </p>
           <Link to="/forgot-password" className="btn btn-primary" style={{ width: '100%' }}>
-            Request New Recovery Link
+            {t('auth.requestNewLink', 'Request New Recovery Link')}
           </Link>
         </div>
       </div>
@@ -113,13 +115,13 @@ const ResetPasswordPage = () => {
             <Icon name="key" size={24} color="#ffffff" />
           </div>
           <div className="micro-label" style={{ color: 'var(--cyan)', marginBottom: '0.25rem' }}>
-            CREDENTIAL RESET
+            {t('auth.credentialReset', 'CREDENTIAL RESET')}
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            Set New Operator Key
+            {t('auth.resetPasswordTitle', 'Set New Operator Key')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
-            Establish strong password credentials for grid authentication
+            {t('auth.resetSubtitle', 'Establish strong password credentials for grid authentication')}
           </p>
         </div>
 
@@ -133,19 +135,19 @@ const ResetPasswordPage = () => {
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
             <div style={{ fontSize: '2.25rem', marginBottom: '0.5rem' }}>✅</div>
             <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.2rem', marginBottom: '0.35rem' }}>
-              Key Re-established Successfully
+              {t('auth.keyResetSuccess', 'Key Re-established Successfully')}
             </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Your operator credentials have been updated and synchronized with the security grid.
+              {t('auth.credentialsUpdated', 'Your operator credentials have been updated and synchronized with the security grid.')}
             </p>
             <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
-              Proceed to Grid Sign In
+              {t('auth.proceedToSignIn', 'Proceed to Grid Sign In')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">New Password</label>
+              <label className="form-label">{t('auth.newPassword', 'New Password')}</label>
               <input
                 type="password"
                 required
@@ -159,24 +161,24 @@ const ResetPasswordPage = () => {
             {/* Criteria Checklist */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', marginBottom: '1rem', fontSize: '0.72rem', fontFamily: 'var(--font-mono)' }}>
               <span style={{ color: passwordCriteria.hasLength ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasLength ? '✓' : '○'} 8+ Characters
+                {passwordCriteria.hasLength ? '✓' : '○'} {t('auth.criteriaLength', '8+ Characters')}
               </span>
               <span style={{ color: passwordCriteria.hasUpper ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasUpper ? '✓' : '○'} Uppercase
+                {passwordCriteria.hasUpper ? '✓' : '○'} {t('auth.criteriaUpper', 'Uppercase')}
               </span>
               <span style={{ color: passwordCriteria.hasLower ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasLower ? '✓' : '○'} Lowercase
+                {passwordCriteria.hasLower ? '✓' : '○'} {t('auth.criteriaLower', 'Lowercase')}
               </span>
               <span style={{ color: passwordCriteria.hasNumber ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasNumber ? '✓' : '○'} Number
+                {passwordCriteria.hasNumber ? '✓' : '○'} {t('auth.criteriaNumber', 'Number')}
               </span>
               <span style={{ color: passwordCriteria.hasSpecial ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasSpecial ? '✓' : '○'} Special Char
+                {passwordCriteria.hasSpecial ? '✓' : '○'} {t('auth.criteriaSpecial', 'Special Char')}
               </span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Confirm New Password</label>
+              <label className="form-label">{t('auth.confirmPassword', 'Confirm New Password')}</label>
               <input
                 type="password"
                 required
@@ -193,7 +195,7 @@ const ResetPasswordPage = () => {
               className="btn btn-primary"
               style={{ width: '100%', marginTop: '0.5rem' }}
             >
-              {loading ? 'Re-establishing...' : 'Update Operator Password →'}
+              {loading ? t('common.loading', 'Re-establishing...') : t('auth.resetBtn', 'Update Operator Password →')}
             </button>
           </form>
         )}

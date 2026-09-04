@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchIncidents } from '../services/api';
 import IncidentDetailModal from '../components/IncidentDetailModal';
 import Icon from '../components/Icons';
+import { useTranslation } from '../i18n/i18n';
 
 const IncidentReportsPage = ({ onOpenIncident }) => {
+  const { t } = useTranslation();
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -82,16 +84,16 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-warning">FIELD OPERATIONS</span>
+            <span className="badge badge-warning">{t('dashboard.missionControl')}</span>
             <span className="micro-label" style={{ color: 'var(--amber)' }}>
-              HAZARD REPORTING & TRIAGE
+              {t('incidents.incidentsTitle')}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
-            Campus Hazard & Incident Ledger
+            {t('incidents.fieldReports')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Ground-truth incident logging, fire and electrical hazards, structural damage & verified triage.
+            {t('incidents.incidentsSubtitle')}
           </p>
         </div>
 
@@ -101,34 +103,34 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
           id="incident-report-new-btn"
         >
           <Icon name="plus" size={16} />
-          <span>Report New Hazard</span>
+          <span>{t('incidents.reportIncident')}</span>
         </button>
       </div>
 
       {/* Telemetry KPI Metrics */}
       <div className="grid-cols-4">
         <div className="telemetry-widget">
-          <span className="micro-label">TOTAL REPORTS</span>
+          <span className="micro-label">{t('incidents.fieldReports')}</span>
           <div className="telemetry-num amber">{incidents.length}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Logged hazard records</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('incidents.recentIncidents')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">CRITICAL PRIORITY</span>
+          <span className="micro-label">{t('common.critical')}</span>
           <div className="telemetry-num crimson">{criticalCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>High-risk safety hazards</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.critical')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">UNDER TRIAGE</span>
+          <span className="micro-label">{t('common.pending')}</span>
           <div className="telemetry-num cyan">{pendingCount + underReviewCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Under review or inspection</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.pending')}</div>
         </div>
 
         <div className="telemetry-widget">
-          <span className="micro-label">RESOLVED HAZARDS</span>
+          <span className="micro-label">{t('common.resolved')}</span>
           <div className="telemetry-num mint">{resolvedCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Repaired & verified safe</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.resolved')}</div>
         </div>
       </div>
 
@@ -149,7 +151,7 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
           type="text"
           className="form-input"
           style={{ maxWidth: '280px', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
-          placeholder="Search by ID, title, location..."
+          placeholder={t('incidents.searchIncidents')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -161,10 +163,10 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
-            <option value="ALL">All Statuses</option>
-            <option value="Pending">Pending Triage</option>
-            <option value="Under Review">Under Review</option>
-            <option value="Resolved">Resolved</option>
+            <option value="ALL">{t('incidents.filterStatus')}</option>
+            <option value="Pending">{t('common.pending')}</option>
+            <option value="Under Review">{t('incidents.verificationStatus')}</option>
+            <option value="Resolved">{t('common.resolved')}</option>
           </select>
 
           <select
@@ -173,11 +175,11 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
           >
-            <option value="ALL">All Severities</option>
-            <option value="Critical">Critical</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
+            <option value="ALL">{t('alerts.allSeverities')}</option>
+            <option value="Critical">{t('common.critical')}</option>
+            <option value="High">{t('common.high')}</option>
+            <option value="Medium">{t('common.medium')}</option>
+            <option value="Low">{t('common.low')}</option>
           </select>
         </div>
       </div>
@@ -186,7 +188,7 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
       {loading && (
         <div style={{ textAlign: 'center', padding: '3.5rem 0', color: 'var(--text-muted)' }}>
           <div className="live-beacon-pulse" style={{ width: 22, height: 22, margin: '0 auto 1rem' }} />
-          <span>Synchronizing hazard incident reports from MongoDB Atlas...</span>
+          <span>{t('common.syncing')}</span>
         </div>
       )}
 
@@ -199,8 +201,7 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
       {!loading && !error && filteredIncidents.length === 0 && (
         <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
-          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>No Incidents Found</div>
-          <div style={{ fontSize: '0.82rem' }}>No hazard reports match your current filter parameters.</div>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ffffff' }}>{t('incidents.noIncidents')}</div>
         </div>
       )}
 
@@ -225,7 +226,7 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
                   {inc.severity}
                 </span>
                 <span className="micro-label" style={{ color: 'var(--cyan)' }}>
-                  {inc.status || 'Pending'}
+                  {inc.status || t('common.pending')}
                 </span>
               </div>
 
@@ -250,8 +251,8 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
                   gap: '0.3rem',
                 }}
               >
-                <div>📍 Location: <span style={{ color: 'var(--text-primary)' }}>{inc.location}</span></div>
-                <div>🏷️ Hazard Type: <span style={{ color: 'var(--cyan)' }}>{inc.type}</span></div>
+                <div>📍 {t('alerts.sector')}: <span style={{ color: 'var(--text-primary)' }}>{inc.location}</span></div>
+                <div>🏷️ {t('incidents.incidentType')}: <span style={{ color: 'var(--cyan)' }}>{inc.type}</span></div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                   ID: {inc.incidentId || inc._id} • {new Date(inc.createdAt).toLocaleDateString()}
                 </div>
@@ -264,7 +265,7 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
               className="btn btn-secondary btn-sm"
               style={{ width: '100%' }}
             >
-              Inspect Hazard Ticket →
+              {t('common.viewDetails')} →
             </button>
           </div>
         ))}
