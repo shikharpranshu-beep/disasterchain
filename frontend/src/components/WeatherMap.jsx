@@ -397,11 +397,11 @@ export default function WeatherMap({
         >
           <MapController center={mapCenter} zoom={mapZoom} />
 
-          {/* CartoDB Dark Matter base tiles */}
+          {/* 100% Free, Public OpenStreetMap Tile Layer - Zero-Cost & No API Key Required */}
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-            maxZoom={18}
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
           />
 
           {/* RainViewer Live Radar Overlay */}
