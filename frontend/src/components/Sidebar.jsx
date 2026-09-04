@@ -4,9 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/i18n';
 import { usePWA } from '../context/PWAContext';
 import Icon from './Icons';
+import LanguageSelector from './LanguageSelector';
+import NetworkStatusIndicator from './NetworkStatusIndicator';
 
 const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation();
   const { isInstallable, isInstalled, promptInstall } = usePWA();
   const role = user?.role || 'citizen';
@@ -238,7 +240,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
           className="btn btn-emergency"
           style={{
             width: '100%',
-            marginBottom: '1rem',
+            marginBottom: '0.85rem',
             minHeight: '48px',
             justifyContent: 'center',
             fontSize: '0.9rem',
@@ -248,6 +250,84 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
           <Icon name="alert-circle" size={18} color="#ffffff" />
           <span>EMERGENCY SOS</span>
         </button>
+
+        {/* Mobile Drawer Auth Shortcuts */}
+        {!isAuthenticated ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1rem' }}>
+            <NavLink
+              to="/login"
+              onClick={onClose}
+              className="btn btn-secondary"
+              style={{
+                minHeight: '44px',
+                justifyContent: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+            >
+              <Icon name="login" size={16} />
+              <span>Sign In</span>
+            </NavLink>
+            <NavLink
+              to="/register"
+              onClick={onClose}
+              className="btn btn-primary"
+              style={{
+                minHeight: '44px',
+                justifyContent: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+              }}
+            >
+              <span>Register</span>
+            </NavLink>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              padding: '0.5rem 0.75rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span className="badge badge-info" style={{ textTransform: 'capitalize', fontSize: '0.7rem' }}>
+                {user?.role || 'Citizen'}
+              </span>
+              <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#ffffff' }}>
+                {user?.name || 'User'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                logout();
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#ef4444',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                minHeight: '36px',
+              }}
+            >
+              <Icon name="logout" size={15} />
+              <span>Exit</span>
+            </button>
+          </div>
+        )}
 
         {/* Grouped Nav Items for Mobile Drawer */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', overflowY: 'auto', flex: 1 }}>
@@ -350,6 +430,22 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
               </button>
             </div>
           )}
+          {/* Mobile Language and Tactical Network Panel */}
+          <div
+            style={{
+              marginTop: '1.25rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.75rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <LanguageSelector />
+            <NetworkStatusIndicator />
+          </div>
         </div>
       </aside>
     </>

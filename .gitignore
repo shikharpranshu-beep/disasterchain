@@ -28,3 +28,7 @@ android/app/build/
 android/.gradle/
 *.keystore
 android/app-release-unsigned*.apk
+
+# Test artifacts
+edge_temp_profile/
+frontend/scripts/edge_temp_profile/

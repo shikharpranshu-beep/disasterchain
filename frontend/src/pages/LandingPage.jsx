@@ -131,17 +131,17 @@ const LandingPage = ({ onOpenSos }) => {
           maxWidth: '1080px',
           width: '100%',
           margin: '0 auto',
-          padding: '3rem 1.25rem 4rem',
+          padding: '2rem 1.25rem 3.5rem',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           boxSizing: 'border-box',
           textAlign: 'center',
         }}
       >
         {/* Title and Subtitle */}
-        <div style={{ marginBottom: '2.25rem', maxWidth: '640px' }}>
+        <div style={{ marginBottom: '1.75rem', maxWidth: '640px' }}>
           <div
             style={{
               display: 'inline-flex',
@@ -155,7 +155,7 @@ const LandingPage = ({ onOpenSos }) => {
               fontSize: '0.78rem',
               fontWeight: 700,
               letterSpacing: '0.05em',
-              marginBottom: '1rem',
+              marginBottom: '0.85rem',
             }}
           >
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
@@ -168,7 +168,7 @@ const LandingPage = ({ onOpenSos }) => {
               fontWeight: 900,
               letterSpacing: '-0.03em',
               lineHeight: 1.15,
-              margin: '0 0 0.75rem',
+              margin: '0 0 0.65rem',
               color: '#ffffff',
             }}
           >
@@ -189,7 +189,7 @@ const LandingPage = ({ onOpenSos }) => {
         </div>
 
         {/* Primary CTA: EMERGENCY SOS */}
-        <div style={{ width: '100%', maxWidth: '440px', marginBottom: '1.25rem' }}>
+        <div style={{ width: '100%', maxWidth: '440px', marginBottom: '0.75rem' }}>
           <button
             type="button"
             onClick={onOpenSos}
@@ -211,6 +211,7 @@ const LandingPage = ({ onOpenSos }) => {
               justifyContent: 'center',
               gap: '0.65rem',
               boxShadow: '0 10px 30px rgba(239, 68, 68, 0.45), 0 2px 6px rgba(0, 0, 0, 0.5)',
+              touchAction: 'manipulation',
               transition: 'transform 0.15s ease, box-shadow 0.15s ease',
             }}
             onMouseEnter={(e) => {
@@ -227,6 +228,49 @@ const LandingPage = ({ onOpenSos }) => {
           </button>
         </div>
 
+        {/* Public Login Button (Immediately Discoverable Before Auth) */}
+        {!isAuthenticated && (
+          <div style={{ width: '100%', maxWidth: '440px', marginBottom: '1.25rem' }}>
+            <Link
+              to="/login"
+              id="landing-hero-login-btn"
+              className="landing-hero-login-btn"
+              aria-label="Sign In or Log In to DisasterChain"
+              style={{
+                width: '100%',
+                minHeight: '46px',
+                background: 'rgba(255, 255, 255, 0.07)',
+                border: '1px solid rgba(255, 255, 255, 0.22)',
+                borderRadius: '12px',
+                color: '#ffffff',
+                fontSize: '0.96rem',
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.22)';
+              }}
+            >
+              <span>🔐</span>
+              <span>Sign In / Log In</span>
+            </Link>
+          </div>
+        )}
+
         {/* Secondary Actions */}
         <div
           style={{
@@ -236,7 +280,7 @@ const LandingPage = ({ onOpenSos }) => {
             gap: '0.75rem',
             width: '100%',
             maxWidth: '520px',
-            marginBottom: '3rem',
+            marginBottom: '2.5rem',
           }}
         >
           <Link

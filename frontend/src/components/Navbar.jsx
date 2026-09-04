@@ -98,90 +98,107 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
 
       {/* Right Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        {/* Global Tactical Network Status Indicator */}
-        <NetworkStatusIndicator />
-
-        {/* Multilingual 20-Language Selector */}
-        <LanguageSelector />
-
-        {/* Urgent Emergency Beacon Button (Desktop & Tablet) */}
+        {/* Urgent Emergency Beacon Button (Always Visible, Mobile & Desktop) */}
         <button
           type="button"
           onClick={onOpenSos}
           className="btn btn-emergency btn-sm navbar-sos-action"
           id="navbar-sos-btn"
-          style={{ letterSpacing: '0.04em' }}
+          aria-label="Broadcast Emergency SOS"
+          style={{
+            letterSpacing: '0.04em',
+            minHeight: '44px',
+            minWidth: '44px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.4rem',
+            padding: '0 0.85rem',
+            fontWeight: 800,
+          }}
         >
-          <Icon name="alert-circle" size={16} color="#ffffff" />
+          <Icon name="alert-circle" size={17} color="#ffffff" />
           <span>{t('nav.broadcastSos', 'SOS')}</span>
         </button>
 
-        {/* Low-Connectivity Mode Switcher (Desktop only) */}
-        <Link
-          to="/offline"
-          className="btn btn-secondary btn-sm navbar-offline-btn"
-          title={t('offline.offlineModeTitle', 'Offline & Survivability Mode')}
-        >
-          <Icon name="wifi-off" size={15} color="var(--primary)" />
-          <span style={{ fontSize: '0.78rem' }}>{t('nav.offlineMode', 'Offline')}</span>
-        </Link>
+        {/* Desktop Extras: Hidden on mobile & tablet viewports (< 900px) */}
+        <div className="navbar-desktop-extras" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Global Tactical Network Status Indicator */}
+          <NetworkStatusIndicator />
 
-        {/* User Status / Authentication */}
-        {isAuthenticated ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Link
-              to="/profile"
-              className="btn btn-ghost btn-sm"
-              style={{ padding: '0.35rem 0.55rem' }}
-              title="User Profile"
-            >
-              <span className="badge badge-info" style={{ textTransform: 'capitalize', fontSize: '0.68rem' }}>
-                {user?.role || 'Citizen'}
-              </span>
-              <span className="navbar-username" style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.82rem' }}>
-                {user?.name?.split(' ')[0] || 'User'}
-              </span>
-            </Link>
+          {/* Multilingual 20-Language Selector */}
+          <LanguageSelector />
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="btn btn-ghost btn-sm"
-              title={t('nav.logout', 'Sign Out')}
-              style={{ color: 'var(--text-muted)', padding: '0.4rem' }}
-            >
-              <Icon name="logout" size={16} />
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <Link to="/login" className="btn btn-ghost btn-sm" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}>
-              {t('nav.login', 'Sign In')}
-            </Link>
-            <Link to="/register" className="btn btn-primary btn-sm" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}>
-              {t('nav.register', 'Register')}
-            </Link>
-          </div>
-        )}
+          {/* Low-Connectivity Mode Switcher */}
+          <Link
+            to="/offline"
+            className="btn btn-secondary btn-sm navbar-offline-btn"
+            title={t('offline.offlineModeTitle', 'Offline & Survivability Mode')}
+            style={{ minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+          >
+            <Icon name="wifi-off" size={15} color="var(--primary)" />
+            <span style={{ fontSize: '0.78rem' }}>{t('nav.offlineMode', 'Offline')}</span>
+          </Link>
+
+          {/* User Status / Authentication */}
+          {isAuthenticated ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Link
+                to="/profile"
+                className="btn btn-ghost btn-sm"
+                style={{ padding: '0.35rem 0.55rem', minHeight: '40px' }}
+                title="User Profile"
+              >
+                <span className="badge badge-info" style={{ textTransform: 'capitalize', fontSize: '0.68rem' }}>
+                  {user?.role || 'Citizen'}
+                </span>
+                <span className="navbar-username" style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.82rem' }}>
+                  {user?.name?.split(' ')[0] || 'User'}
+                </span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="btn btn-ghost btn-sm"
+                title={t('nav.logout', 'Sign Out')}
+                style={{ color: 'var(--text-muted)', padding: '0.4rem', minHeight: '40px', minWidth: '40px' }}
+              >
+                <Icon name="logout" size={16} />
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Link
+                to="/login"
+                id="navbar-login-btn"
+                className="btn btn-ghost btn-sm"
+                style={{ padding: '0.4rem 0.75rem', fontSize: '0.82rem', minHeight: '40px', fontWeight: 700 }}
+              >
+                {t('nav.login', 'Sign In')}
+              </Link>
+              <Link
+                to="/register"
+                id="navbar-register-btn"
+                className="btn btn-primary btn-sm"
+                style={{ padding: '0.4rem 0.75rem', fontSize: '0.82rem', minHeight: '40px', fontWeight: 700 }}
+              >
+                {t('nav.register', 'Register')}
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
 
       <style>{`
-        @media (max-width: 960px) {
-          .navbar-offline-btn {
+        @media (max-width: 899px) {
+          .navbar-desktop-extras {
             display: none !important;
           }
         }
         @media (max-width: 480px) {
           .navbar-username {
             display: none !important;
-          }
-          .navbar-sos-action span {
-            display: none;
-          }
-          .navbar-sos-action {
-            padding: 0.4rem !important;
-            min-width: 40px;
-            justify-content: center;
           }
         }
       `}</style>

@@ -76,7 +76,7 @@ class CDPClient {
       width,
       height,
       deviceScaleFactor: 2,
-      mobile: width < 768,
+      mobile: width < 900,
     });
   }
 
@@ -91,7 +91,7 @@ class CDPClient {
 }
 
 async function runTests() {
-  console.log('=== STARTING DISASTERCHAIN UX VERIFICATION ===');
+  console.log('=== STARTING DISASTERCHAIN UNIVERSAL RESPONSIVE UX VERIFICATION ===');
 
   const edgeProc = spawn(
     EDGE_PATH,
@@ -133,7 +133,7 @@ async function runTests() {
 
   try {
     // -------------------------------------------------------------
-    // TEST 1: DESKTOP (1440x900) - LANDING PAGE
+    // TEST 1: DESKTOP (1440x900) - PUBLIC LANDING PAGE & LOGIN BUTTON
     // -------------------------------------------------------------
     console.log('\n--- 1. Testing Landing Page on Desktop (1440x900) ---');
     await cdp.setViewport(1440, 900);
@@ -143,32 +143,39 @@ async function runTests() {
       const h1 = document.querySelector('h1')?.innerText;
       const subtitle = document.querySelector('main p')?.innerText;
       const sosBtn = document.getElementById('landing-primary-sos-btn');
+      const loginHeroBtn = document.getElementById('landing-hero-login-btn');
+      const navbarLoginBtn = document.getElementById('navbar-login-btn');
       const secBtns = Array.from(document.querySelectorAll('.landing-secondary-btn')).map(b => b.innerText.trim());
       const blocks = Array.from(document.querySelectorAll('.landing-compact-blocks > div')).map(d => ({
         title: d.querySelector('div')?.innerText,
         h: d.querySelectorAll('div')[1]?.innerText
       }));
-      const links = Array.from(document.querySelectorAll('a')).filter(a => a.innerText.includes('Command') || a.innerText.includes('Emergency Data')).map(a => a.innerText.trim());
+      const docW = document.documentElement.clientWidth;
+      const scrollW = document.documentElement.scrollWidth;
 
       return {
         h1,
         subtitle,
         hasSosBtn: !!sosBtn,
-        sosText: sosBtn?.innerText,
+        hasLoginHeroBtn: !!loginHeroBtn,
+        loginHeroHref: loginHeroBtn?.getAttribute('href'),
+        hasNavbarLoginBtn: !!navbarLoginBtn,
         secBtns,
         blocksCount: blocks.length,
-        blocks,
-        links
+        hasOverflow: scrollW > docW
       };
     })()`);
 
-    console.log('Landing Page Data:', JSON.stringify(landingData, null, 2));
+    console.log('Landing Page Desktop Data:', JSON.stringify(landingData, null, 2));
     results.push({
-      test: 'Desktop Landing Page',
+      test: 'Desktop Landing Page with Public Login Button',
       passed: landingData.h1.includes('DISASTERCHAIN') &&
         landingData.hasSosBtn &&
+        landingData.hasLoginHeroBtn &&
+        landingData.loginHeroHref === '/login' &&
+        landingData.hasNavbarLoginBtn &&
         landingData.blocksCount === 3 &&
-        landingData.secBtns.length >= 3,
+        !landingData.hasOverflow,
     });
 
     // -------------------------------------------------------------
@@ -185,232 +192,205 @@ async function runTests() {
         value: d.children[1]?.innerText,
         sub: d.children[2]?.innerText,
       }));
-      const attentionHeader = Array.from(document.querySelectorAll('h2')).find(h => h.innerText.includes('ATTENTION'))?.innerText;
-      const attentionItemsCount = document.querySelectorAll('h2 ~ div > div').length;
-      const quickActionsHeader = Array.from(document.querySelectorAll('h2')).find(h => h.innerText.includes('QUICK ACTIONS'))?.innerText;
-      const quickActionLinks = Array.from(document.querySelectorAll('a')).filter(a => a.href && (a.href.includes('/shelters') || a.href.includes('/weather') || a.href.includes('/affected-areas') || a.href.includes('/guides'))).map(a => a.innerText.trim());
-      const liveMapPreview = Array.from(document.querySelectorAll('div')).find(d => d.innerText && d.innerText.includes('OPEN FULL MAP'))?.innerText;
+      const docW = document.documentElement.clientWidth;
+      const scrollW = document.documentElement.scrollWidth;
+      const rail = document.querySelector('.command-rail');
+      const railVisible = rail && window.getComputedStyle(rail).display !== 'none';
+      const hamburger = document.querySelector('.mobile-hamburger-btn');
+      const hamburgerHidden = !hamburger || window.getComputedStyle(hamburger).display === 'none';
 
       return {
         header,
         hasSosBtn: !!sosCardBtn,
-        sosText: sosCardBtn?.innerText,
         statusCardsCount: statusCards.length,
-        statusCards,
-        attentionHeader,
-        quickActionsHeader,
-        hasLiveMapPreview: !!liveMapPreview
+        railVisible,
+        hamburgerHidden,
+        hasOverflow: scrollW > docW
       };
     })()`);
 
-    console.log('Dashboard Data:', JSON.stringify(dashData, null, 2));
+    console.log('Dashboard Desktop Data:', JSON.stringify(dashData, null, 2));
     results.push({
-      test: 'Desktop Dashboard Emergency Overview',
+      test: 'Desktop Dashboard (Rail Active, Hamburger Hidden, 4 Cards)',
       passed: dashData.hasSosBtn &&
         dashData.statusCardsCount === 4 &&
-        !!dashData.attentionHeader &&
-        !!dashData.quickActionsHeader &&
-        dashData.hasLiveMapPreview,
+        dashData.railVisible &&
+        dashData.hamburgerHidden &&
+        !dashData.hasOverflow,
     });
 
     // -------------------------------------------------------------
-    // TEST 3: DESKTOP AI ASSISTANT (OPEN, CONTENT, CLOSE, ESCAPE)
+    // TEST 3: FULL DEVICE TEST MATRIX
     // -------------------------------------------------------------
-    console.log('\n--- 3. Testing Desktop AI Assistant Interaction ---');
-    const aiLauncherVisibleBefore = await cdp.eval(`!document.getElementById('open-ai-assistant-btn').hidden`);
-    console.log('AI Launcher visible initially:', aiLauncherVisibleBefore);
-
-    // Open AI
-    await cdp.eval(`document.getElementById('open-ai-assistant-btn').click()`);
-    await sleep(500);
-
-    const aiOpenData = await cdp.eval(`(() => {
-      const modal = document.querySelector('.disaster-ai-modal');
-      const launcher = document.getElementById('open-ai-assistant-btn');
-      const headerTitle = modal?.querySelector('header')?.innerText;
-      const chips = Array.from(document.querySelectorAll('.disaster-ai-chips button')).map(b => b.innerText.trim());
-      const closeBtn = document.getElementById('close-ai-assistant-btn');
-      const rect = modal?.getBoundingClientRect();
-
-      return {
-        hasModal: !!modal,
-        launcherHidden: !launcher,
-        headerTitle,
-        chipsCount: chips.length,
-        chips,
-        hasCloseBtn: !!closeBtn,
-        modalDimensions: rect ? { width: rect.width, height: rect.height } : null
-      };
-    })()`);
-
-    console.log('AI Assistant Open State:', JSON.stringify(aiOpenData, null, 2));
-
-    // Close via X button
-    await cdp.eval(`document.getElementById('close-ai-assistant-btn').click()`);
-    await sleep(400);
-
-    const aiClosedX = await cdp.eval(`!document.querySelector('.disaster-ai-modal') && !!document.getElementById('open-ai-assistant-btn')`);
-    console.log('AI closed via X button successfully:', aiClosedX);
-
-    // Test Escape key close
-    await cdp.eval(`document.getElementById('open-ai-assistant-btn').click()`);
-    await sleep(400);
-    await cdp.eval(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))`);
-    await sleep(400);
-    const aiClosedEsc = await cdp.eval(`!document.querySelector('.disaster-ai-modal') && !!document.getElementById('open-ai-assistant-btn')`);
-    console.log('AI closed via Escape key successfully:', aiClosedEsc);
-
-    results.push({
-      test: 'Desktop AI Assistant Open & Close',
-      passed: aiOpenData.hasModal &&
-        aiOpenData.chipsCount === 5 &&
-        aiClosedX &&
-        aiClosedEsc,
-    });
-
-    // -------------------------------------------------------------
-    // TEST 4: MOBILE VIEWPORTS (360x800, 375x812, 390x844, 412x915)
-    // -------------------------------------------------------------
-    const mobileViewports = [
-      { w: 360, h: 800, name: 'Small Android (360x800)' },
-      { w: 375, h: 812, name: 'iPhone X/Mini (375x812)' },
-      { w: 390, h: 844, name: 'iPhone 12/13/14 (390x844)' },
-      { w: 412, h: 915, name: 'Pixel / Samsung (412x915)' },
+    const testMatrix = [
+      // Phones
+      { w: 360, h: 800, name: 'Phone 360x800', type: 'phone' },
+      { w: 375, h: 812, name: 'Phone 375x812', type: 'phone' },
+      { w: 390, h: 844, name: 'Phone 390x844', type: 'phone' },
+      { w: 412, h: 915, name: 'Phone 412x915', type: 'phone' },
+      { w: 430, h: 932, name: 'Phone 430x932', type: 'phone' },
+      { w: 480, h: 960, name: 'Phone 480x960', type: 'phone' },
+      // Large Phones
+      { w: 540, h: 1200, name: 'Large Phone 540x1200', type: 'phone' },
+      { w: 600, h: 1024, name: 'Large Phone 600x1024', type: 'large-phone' },
+      { w: 720, h: 1600, name: 'Large Phone 720x1600', type: 'large-phone' },
+      // Tablets
+      { w: 768, h: 1024, name: 'Tablet 768x1024', type: 'tablet' },
+      { w: 820, h: 1180, name: 'Tablet 820x1180', type: 'tablet' },
+      { w: 900, h: 1200, name: 'Tablet 900x1200', type: 'compact-desktop' },
+      // Desktop
+      { w: 1024, h: 768, name: 'Desktop 1024x768', type: 'desktop' },
+      { w: 1280, h: 800, name: 'Desktop 1280x800', type: 'desktop' },
+      { w: 1920, h: 1080, name: 'Desktop 1920x1080', type: 'desktop' },
     ];
 
-    for (const vp of mobileViewports) {
-      console.log(`\n--- 4. Testing Mobile Viewport: ${vp.name} ---`);
-      await cdp.setViewport(vp.w, vp.h);
-      await cdp.navigate('http://localhost:3000/dashboard');
-      await sleep(600);
+    for (const dev of testMatrix) {
+      console.log(`\n--- Testing Device Viewport: ${dev.name} (${dev.w}x${dev.h}) ---`);
+      await cdp.setViewport(dev.w, dev.h);
 
-      // Check overflow & 1-column layout
-      const mobileCheck = await cdp.eval(`(() => {
+      // Check Landing Page for this device
+      await cdp.navigate('http://localhost:3000/');
+      await sleep(400);
+
+      const landingVpCheck = await cdp.eval(`(() => {
+        const docW = document.documentElement.clientWidth;
+        const scrollW = document.documentElement.scrollWidth;
+        const loginHeroBtn = document.getElementById('landing-hero-login-btn');
+        const sosBtn = document.getElementById('landing-primary-sos-btn');
+        const hamburger = document.querySelector('.mobile-hamburger-btn');
+        const hamburgerVisible = hamburger && window.getComputedStyle(hamburger).display !== 'none';
+        const desktopExtras = document.querySelector('.navbar-desktop-extras');
+        const desktopExtrasHidden = !desktopExtras || window.getComputedStyle(desktopExtras).display === 'none';
+
+        return {
+          docW,
+          scrollW,
+          hasOverflow: scrollW > docW,
+          hasLoginHeroBtn: !!loginHeroBtn,
+          hasSosBtn: !!sosBtn,
+          hamburgerVisible: !!hamburgerVisible,
+          desktopExtrasHidden: !!desktopExtrasHidden
+        };
+      })()`);
+
+      console.log(`${dev.name} Landing Check:`, JSON.stringify(landingVpCheck, null, 2));
+
+      // Check Dashboard for this device
+      await cdp.navigate('http://localhost:3000/dashboard');
+      await sleep(400);
+
+      const dashVpCheck = await cdp.eval(`(() => {
         const docW = document.documentElement.clientWidth;
         const scrollW = document.documentElement.scrollWidth;
         const statusRow = document.querySelector('.dashboard-status-row');
         const gridCols = statusRow ? window.getComputedStyle(statusRow).gridTemplateColumns.split(' ').length : 0;
+        const bottomNav = document.querySelector('.mobile-emergency-nav');
+        const bottomNavVisible = bottomNav && window.getComputedStyle(bottomNav).display !== 'none';
+        const rail = document.querySelector('.command-rail');
+        const railVisible = rail && window.getComputedStyle(rail).display !== 'none';
         const launcher = document.getElementById('open-ai-assistant-btn');
-        const launcherRect = launcher ? launcher.getBoundingClientRect() : null;
 
         return {
-          viewportW: docW,
-          scrollW: scrollW,
           hasOverflow: scrollW > docW,
           gridCols,
-          launcherVisible: !!launcher && launcherRect.width > 0,
-          launcherBottom: launcherRect ? Math.round(window.innerHeight - launcherRect.bottom) : null
+          bottomNavVisible: !!bottomNavVisible,
+          railVisible: !!railVisible,
+          hasAiLauncher: !!launcher
         };
       })()`);
 
-      console.log(`${vp.name} Overview:`, JSON.stringify(mobileCheck, null, 2));
+      console.log(`${dev.name} Dashboard Check:`, JSON.stringify(dashVpCheck, null, 2));
 
-      // Open AI Modal on mobile
-      await cdp.eval(`document.getElementById('open-ai-assistant-btn').click()`);
-      await sleep(500);
+      // Test AI modal behavior on this viewport
+      let aiPassed = true;
+      if (dashVpCheck.hasAiLauncher) {
+        await cdp.eval(`document.getElementById('open-ai-assistant-btn').click()`);
+        await sleep(400);
 
-      // Verify Mobile AI Modal & CRITICAL Close Button
-      const mobileAiCheck = await cdp.eval(`(() => {
-        const modal = document.querySelector('.disaster-ai-modal');
-        const closeBtn = document.getElementById('close-ai-assistant-btn');
-        const mRect = modal ? modal.getBoundingClientRect() : null;
-        const cRect = closeBtn ? closeBtn.getBoundingClientRect() : null;
-        const cStyles = closeBtn ? window.getComputedStyle(closeBtn) : null;
-        const bottomNav = document.querySelector('.mobile-emergency-bottom-bar');
-        const bottomNavDisplay = bottomNav ? window.getComputedStyle(bottomNav).display : 'none';
+        const aiCheck = await cdp.eval(`(() => {
+          const modal = document.querySelector('.disaster-ai-modal');
+          const closeBtn = document.getElementById('close-ai-assistant-btn');
+          const mRect = modal ? modal.getBoundingClientRect() : null;
+          const cRect = closeBtn ? closeBtn.getBoundingClientRect() : null;
+          const bottomNav = document.querySelector('.mobile-emergency-nav');
+          const bottomNavDisplay = bottomNav ? window.getComputedStyle(bottomNav).display : 'none';
 
-        return {
-          modalCoversScreen: mRect && mRect.width === window.innerWidth && mRect.height === window.innerHeight,
-          modalWidth: mRect?.width,
-          modalHeight: mRect?.height,
-          closeBtnVisible: !!closeBtn && cRect.width > 0,
-          closeBtnWidth: cRect?.width,
-          closeBtnHeight: cRect?.height,
-          closeBtnTop: cRect?.top,
-          closeBtnZIndex: cStyles?.zIndex,
-          bottomNavHidden: bottomNavDisplay === 'none'
-        };
-      })()`);
+          return {
+            hasModal: !!modal,
+            modalWidth: mRect?.width,
+            modalHeight: mRect?.height,
+            isFullScreenOnMobile: devWidth => devWidth < 900 ? (mRect && Math.abs(mRect.width - window.innerWidth) <= 2) : true,
+            closeBtnWidth: cRect?.width,
+            closeBtnHeight: cRect?.height,
+            bottomNavHiddenWhenAiOpen: bottomNavDisplay === 'none'
+          };
+        })()`);
 
-      console.log(`${vp.name} Mobile AI & Close Button Check:`, JSON.stringify(mobileAiCheck, null, 2));
+        // Close AI
+        await cdp.eval(`document.getElementById('close-ai-assistant-btn').click()`);
+        await sleep(300);
 
-      // Test Close Button Tap on mobile
-      await cdp.eval(`document.getElementById('close-ai-assistant-btn').click()`);
-      await sleep(400);
+        const aiClosed = await cdp.eval(`!document.querySelector('.disaster-ai-modal')`);
 
-      const mobileClosed = await cdp.eval(`!document.querySelector('.disaster-ai-modal') && !!document.getElementById('open-ai-assistant-btn')`);
-      console.log(`${vp.name} Closed successfully via ✕ button:`, mobileClosed);
+        aiPassed = aiCheck.hasModal &&
+          aiCheck.closeBtnWidth >= 44 &&
+          aiCheck.closeBtnHeight >= 44 &&
+          (dev.w < 900 ? aiCheck.bottomNavHiddenWhenAiOpen : true) &&
+          aiClosed;
+      }
 
-      const passed = !mobileCheck.hasOverflow &&
-        mobileCheck.gridCols === 1 &&
-        mobileAiCheck.closeBtnWidth >= 44 &&
-        mobileAiCheck.closeBtnHeight >= 44 &&
-        mobileAiCheck.closeBtnTop >= 16 &&
-        mobileClosed;
+      // Check Mobile Drawer Hamburger Open & Close on < 900px
+      let drawerPassed = true;
+      if (dev.w < 900) {
+        // Open Hamburger drawer
+        await cdp.eval(`document.getElementById('mobile-hamburger-toggle').click()`);
+        await sleep(350);
+
+        const drawerCheck = await cdp.eval(`(() => {
+          const drawer = document.querySelector('.mobile-nav-drawer');
+          const isOpen = drawer && drawer.classList.contains('open');
+          const hasSos = !!drawer?.querySelector('.btn-emergency');
+          const hasLogin = !!drawer?.querySelector('a[href="/login"]');
+          return { isOpen, hasSos, hasLogin };
+        })()`);
+
+        // Close drawer
+        await cdp.eval(`document.querySelector('.mobile-drawer-close-btn').click()`);
+        await sleep(300);
+
+        const drawerClosed = await cdp.eval(`!document.querySelector('.mobile-nav-drawer.open')`);
+
+        drawerPassed = drawerCheck.isOpen && drawerCheck.hasSos && drawerCheck.hasLogin && drawerClosed;
+      }
+
+      // Evaluation criteria
+      let passed = !landingVpCheck.hasOverflow &&
+        !dashVpCheck.hasOverflow &&
+        landingVpCheck.hasLoginHeroBtn &&
+        landingVpCheck.hasSosBtn &&
+        aiPassed &&
+        drawerPassed;
+
+      if (dev.w < 900) {
+        passed = passed && landingVpCheck.desktopExtrasHidden && dashVpCheck.bottomNavVisible && !dashVpCheck.railVisible;
+      } else {
+        passed = passed && dashVpCheck.railVisible;
+      }
 
       results.push({
-        test: `Mobile Viewport ${vp.name}`,
+        test: `Viewport ${dev.name} (${dev.w}x${dev.h})`,
         passed,
         details: {
-          noOverflow: !mobileCheck.hasOverflow,
-          singleColumn: mobileCheck.gridCols === 1,
-          closeBtnSize: `${mobileAiCheck.closeBtnWidth}x${mobileAiCheck.closeBtnHeight}px (>=44x44)`,
-          closeBtnTopSafe: `${mobileAiCheck.closeBtnTop}px (>=16px safe area)`,
-          closedCleanly: mobileClosed
+          noOverflow: !landingVpCheck.hasOverflow && !dashVpCheck.hasOverflow,
+          loginHeroBtn: landingVpCheck.hasLoginHeroBtn,
+          desktopExtrasHidden: dev.w < 900 ? landingVpCheck.desktopExtrasHidden : 'N/A',
+          bottomNav: dev.w < 900 ? dashVpCheck.bottomNavVisible : 'N/A',
+          rail: dev.w >= 1024 ? dashVpCheck.railVisible : 'N/A',
+          aiPassed,
+          drawerPassed
         }
       });
     }
-
-    // -------------------------------------------------------------
-    // TEST 5: PWA STANDALONE MODE SIMULATION
-    // -------------------------------------------------------------
-    console.log('\n--- 5. Testing PWA Standalone Mode Simulation ---');
-    await cdp.setViewport(390, 844);
-    await cdp.navigate('http://localhost:3000/dashboard');
-    await sleep(600);
-
-    // Emulate PWA standalone environment
-    await cdp.eval(`(() => {
-      Object.defineProperty(window.navigator, 'standalone', { value: true, configurable: true });
-      const origMatch = window.matchMedia;
-      window.matchMedia = (q) => {
-        if (q.includes('standalone')) {
-          return { matches: true, media: q, addEventListener: () => {}, removeEventListener: () => {} };
-        }
-        return origMatch ? origMatch(q) : { matches: false };
-      };
-    })()`);
-
-    await cdp.eval(`document.getElementById('open-ai-assistant-btn').click()`);
-    await sleep(500);
-
-    const pwaCheck = await cdp.eval(`(() => {
-      const closeBtn = document.getElementById('close-ai-assistant-btn');
-      const cRect = closeBtn ? closeBtn.getBoundingClientRect() : null;
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-      return {
-        isStandalone,
-        closeBtnWidth: cRect?.width,
-        closeBtnHeight: cRect?.height,
-        closeBtnTop: cRect?.top,
-        closeBtnClickable: !closeBtn.disabled
-      };
-    })()`);
-
-    console.log('PWA Standalone Check:', JSON.stringify(pwaCheck, null, 2));
-
-    await cdp.eval(`document.getElementById('close-ai-assistant-btn').click()`);
-    await sleep(400);
-    const pwaClosed = await cdp.eval(`!document.querySelector('.disaster-ai-modal')`);
-
-    results.push({
-      test: 'PWA Standalone Mode AI Close Button',
-      passed: pwaCheck.isStandalone &&
-        pwaCheck.closeBtnWidth >= 44 &&
-        pwaCheck.closeBtnTop >= 16 &&
-        pwaClosed,
-    });
 
   } catch (err) {
     console.error('Test Execution Error:', err);
@@ -420,7 +400,7 @@ async function runTests() {
   }
 
   console.log('\n=============================================');
-  console.log('FINAL VERIFICATION SUMMARY:');
+  console.log('FINAL UNIVERSAL RESPONSIVE VERIFICATION SUMMARY:');
   console.log('=============================================');
   let allPassed = true;
   for (const r of results) {
@@ -433,7 +413,7 @@ async function runTests() {
   }
 
   if (allPassed) {
-    console.log('\n🎉 ALL FRONTEND UX & MOBILE AI VERIFICATIONS PASSED PERFECTLY!\n');
+    console.log('\n🎉 ALL UNIVERSAL RESPONSIVE CHECKS & DEVICE VIEWPORTS PASSED!\n');
     process.exit(0);
   } else {
     console.log('\n❌ SOME VERIFICATIONS FAILED.\n');

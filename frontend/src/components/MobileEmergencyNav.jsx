@@ -173,14 +173,14 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
         </button>
       </nav>
 
-      {/* Media Query: show only on screens <= 768px */}
+      {/* Media Query: show on all phone and portrait tablet screens (< 900px) */}
       <style>{`
-        @media (min-width: 769px) {
+        @media (min-width: 900px) {
           .mobile-emergency-nav {
             display: none !important;
           }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 899px) {
           .main-content {
             padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
           }

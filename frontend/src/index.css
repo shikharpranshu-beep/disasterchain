@@ -93,6 +93,13 @@
   --glow-cyan: 0 0 24px rgba(255, 107, 44, 0.32);
   --glow-crimson: 0 0 28px rgba(229, 57, 53, 0.42);
   --glow-amber: 0 0 24px rgba(245, 158, 11, 0.3);
+  /* Universal Responsive Layout Tokens */
+  --page-padding-mobile: 16px;
+  --page-padding-tablet: 24px;
+  --page-padding-desktop: 32px;
+  --header-height-mobile: 58px;
+  --header-height-desktop: 68px;
+  --bottom-nav-height: 62px;
 }
 
 /* ==========================================================================
@@ -103,6 +110,13 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 html {
@@ -124,7 +138,6 @@ body {
     radial-gradient(circle at 50% 85%, rgba(245, 158, 11, 0.04) 0%, transparent 50%),
     linear-gradient(180deg, #120B08 0%, #1C110D 100%);
   background-attachment: fixed;
-  overflow-x: hidden;
 }
 
 a {
@@ -202,13 +215,13 @@ button, input, select, textarea {
   width: 100%;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1199px) {
   .page-body {
     padding: 1.25rem 1.25rem 5.5rem;
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 899px) {
   .page-body {
     padding: 0.85rem 0.75rem calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
@@ -219,7 +232,7 @@ button, input, select, textarea {
    ========================================================================== */
 
 .app-navbar {
-  height: 68px;
+  height: var(--header-height-desktop, 68px);
   background: rgba(28, 17, 13, 0.94);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -227,17 +240,18 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 var(--page-padding-desktop, 2rem);
   position: sticky;
   top: 0;
   z-index: 100;
   transition: all 0.2s ease;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 899px) {
   .app-navbar {
-    padding: 0 1rem;
-    height: 62px;
+    padding: 0 var(--page-padding-mobile, 1rem);
+    height: var(--header-height-mobile, 58px);
+    padding-top: max(0px, env(safe-area-inset-top, 0px));
   }
 }
 
@@ -290,9 +304,9 @@ button, input, select, textarea {
   gap: 1.25rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .hud-telemetry {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -405,7 +419,7 @@ button, input, select, textarea {
    MOBILE NAVIGATION DRAWER & RESPONSIVE RAIL
    ========================================================================== */
 
-@media (max-width: 960px) {
+@media (max-width: 899px) {
   .command-rail {
     display: none !important;
   }
@@ -448,7 +462,7 @@ button, input, select, textarea {
   transform: scale(0.96);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 899px) {
   .mobile-hamburger-btn {
     display: flex !important;
   }
@@ -1220,7 +1234,7 @@ button, input, select, textarea {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 899px) {
   .ai-assistant-launcher,
   .disaster-ai-launcher {
     bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
@@ -1263,20 +1277,12 @@ button, input, select, textarea {
   }
 
   /* When AI is open, hide mobile bottom emergency navigation */
+  body.ai-assistant-open .mobile-emergency-nav,
   body.ai-assistant-open .mobile-emergency-bottom-bar {
     display: none !important;
   }
 
-  /* One column layout for Dashboard on mobile */
-  .dashboard-status-row {
-    grid-template-columns: 1fr !important;
-  }
-
-  .landing-compact-blocks {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Tap Target & Input Size Guarantees for Phones */
+  /* Tap Target & Input Size Guarantees for Touch Devices */
   button, 
   .btn,
   .mobile-nav-item,
@@ -1295,15 +1301,44 @@ button, input, select, textarea {
   textarea.form-input,
   .form-control {
     min-height: 46px;
-    font-size: 16px !important; /* Prevents auto-zoom on iOS */
+    font-size: 16px !important; /* Prevents auto-zoom on mobile */
   }
 
-  /* Header adjustments on mobile */
+  /* Streamlined Header on mobile & small screens */
   .hud-logo-title {
     font-size: 1.05rem;
   }
   .hud-logo-tag {
     display: none;
+  }
+  .navbar-desktop-extras {
+    display: none !important;
+  }
+}
+
+/* 600px - 899px: Large Phone / Small Tablet */
+@media (min-width: 600px) and (max-width: 899px) {
+  .dashboard-status-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+
+  .landing-compact-blocks {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+    gap: 1rem !important;
+  }
+}
+
+/* < 600px: Small Phone Single Column */
+@media (max-width: 599px) {
+  .dashboard-status-row {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+
+  .landing-compact-blocks {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
   }
 }
 
