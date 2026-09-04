@@ -97,7 +97,7 @@ const LandingPage = ({ onOpenSos }) => {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0d0a08', color: '#f8fafc' }}>
+    <div style={{ minHeight: '100dvh', width: '100%', display: 'flex', flexDirection: 'column', background: '#0d0a08', color: '#f8fafc' }}>
       {/* Top Quiet Helpline Banner */}
       <div
         style={{

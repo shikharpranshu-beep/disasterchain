@@ -22,6 +22,8 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
       return () => {
         document.body.style.overflow = originalOverflow || '';
       };
+    } else {
+      document.body.style.overflow = '';
     }
   }, [isOpen]);
 
