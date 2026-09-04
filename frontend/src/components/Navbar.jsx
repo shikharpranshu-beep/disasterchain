@@ -39,25 +39,14 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
         {onToggleSidebar && (
           <button
             type="button"
-            className="mobile-hamburger-btn"
+            className={`mobile-hamburger-btn ${isMobileMenuOpen ? 'active' : ''}`}
             onClick={onToggleSidebar}
-            aria-label={isMobileMenuOpen ? 'Close Navigation Drawer' : 'Open Navigation Drawer'}
-            style={{
-              display: 'none',
-              width: '44px',
-              height: '44px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0,
-            }}
+            aria-label={isMobileMenuOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={isMobileMenuOpen}
+            id="mobile-hamburger-toggle"
           >
             {isMobileMenuOpen ? (
-              <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>✕</span>
+              <span style={{ fontSize: '1.25rem', lineHeight: 1, fontWeight: 700 }}>✕</span>
             ) : (
               <Icon name="menu" size={22} color="var(--primary)" />
             )}
@@ -178,9 +167,6 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
 
       <style>{`
         @media (max-width: 960px) {
-          .mobile-hamburger-btn {
-            display: flex !important;
-          }
           .navbar-offline-btn {
             display: none !important;
           }

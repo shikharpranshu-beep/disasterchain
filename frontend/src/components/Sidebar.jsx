@@ -1,16 +1,38 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/i18n';
 import { usePWA } from '../context/PWAContext';
 import Icon from './Icons';
 
-const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
+const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
   const { user, isAdmin } = useAuth();
   const { t } = useTranslation();
   const { isInstallable, isInstalled, promptInstall } = usePWA();
   const role = user?.role || 'citizen';
   const isPrivileged = role === 'responder' || role === 'ngo' || role === 'volunteer';
+
+  // Lock body scroll when mobile drawer is open to prevent accidental background scrolling
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow || '';
+      };
+    }
+  }, [isOpen]);
+
+  // Handle Escape key to close mobile drawer
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const navItems = [
     { label: t('nav.commandHud', 'Command HUD'), path: '/dashboard', icon: 'activity', section: 'OPERATION' },
@@ -32,7 +54,8 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
   return (
     <>
       {/* Desktop Spatial Command Rail */}
-      <aside className="command-rail">
+      {!hideDesktopRail && (
+        <aside className="command-rail">
         {/* Admin Quick Terminal Access */}
         {isAdmin && (
           <div style={{ marginBottom: '1.25rem' }}>
@@ -116,6 +139,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
           </NavLink>
         </div>
       </aside>
+      )}
 
       {/* Mobile Slide-Out Drawer Navigation (Triggered via Navbar hamburger) */}
       <div

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './i18n/i18n';
@@ -49,7 +49,12 @@ const AppLayout = () => {
   const [refreshCount, setRefreshCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Show clean layout without sidebar on standalone authentication/landing pages
+  // Automatically close mobile menu on route navigation
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Show clean layout without desktop sidebar on standalone authentication/landing pages
   const isPublicStandalone =
     location.pathname === '/' ||
     location.pathname === '/login' ||
@@ -60,14 +65,13 @@ const AppLayout = () => {
 
   return (
     <div className="app-container">
-      {/* Sidebar navigation */}
-      {!isPublicStandalone && (
-        <Sidebar
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
-          onOpenSos={() => setIsSosOpen(true)}
-        />
-      )}
+      {/* Sidebar navigation: Desktop rail hidden on public standalone; Mobile drawer always available */}
+      <Sidebar
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        onOpenSos={() => setIsSosOpen(true)}
+        hideDesktopRail={isPublicStandalone}
+      />
 
       {/* Main Content Area */}
       <div className="main-content">
