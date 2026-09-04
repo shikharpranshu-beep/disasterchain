@@ -296,7 +296,7 @@ const SheltersPage = () => {
       )}
 
       {/* Spatial Shelter Facility Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
+      <div className="responsive-card-grid">
         {filteredShelters.map((sh) => {
           const occ = Number(sh.occupancy) || 0;
           const cap = Number(sh.capacity) || 1;

@@ -38,16 +38,19 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
           bottom: 0,
           left: 0,
           right: 0,
-          height: '64px',
-          background: 'rgba(28, 17, 13, 0.96)',
-          backdropFilter: 'blur(16px)',
+          height: 'calc(62px + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          background: 'rgba(28, 17, 13, 0.97)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid var(--border-medium)',
           display: 'grid',
           gridTemplateColumns: 'repeat(5, 1fr)',
           alignItems: 'center',
           zIndex: 9990,
-          padding: '0 0.25rem',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.7)',
+          paddingLeft: '0.25rem',
+          paddingRight: '0.25rem',
+          boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.85)',
         }}
       >
         {/* 1. MAP / DASHBOARD */}
@@ -63,10 +66,11 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
             fontSize: '0.68rem',
             fontWeight: 700,
             gap: '3px',
-            padding: '4px 0',
+            minHeight: '48px',
+            touchAction: 'manipulation',
           })}
         >
-          <Icon name="map-pin" size={18} />
+          <Icon name="map-pin" size={19} />
           <span>{t('nav.map', 'MAP')}</span>
         </NavLink>
 
@@ -83,10 +87,11 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
             fontSize: '0.68rem',
             fontWeight: 700,
             gap: '3px',
-            padding: '4px 0',
+            minHeight: '48px',
+            touchAction: 'manipulation',
           })}
         >
-          <Icon name="bell" size={18} />
+          <Icon name="bell" size={19} />
           <span>{t('nav.alerts', 'ALERTS')}</span>
         </NavLink>
 
@@ -96,10 +101,10 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
           onClick={onOpenSos}
           style={{
             background: 'linear-gradient(135deg, #E53935, #B91C1C)',
-            border: '2px solid rgba(255, 255, 255, 0.45)',
+            border: '2px solid rgba(255, 255, 255, 0.55)',
             borderRadius: '50%',
-            width: '52px',
-            height: '52px',
+            width: '54px',
+            height: '54px',
             marginTop: '-18px',
             marginInline: 'auto',
             display: 'flex',
@@ -109,14 +114,14 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
             color: '#ffffff',
             fontWeight: 900,
             fontSize: '0.7rem',
-            boxShadow: '0 4px 18px rgba(229, 57, 53, 0.6)',
+            boxShadow: '0 4px 20px rgba(229, 57, 53, 0.65)',
             cursor: 'pointer',
             touchAction: 'manipulation',
           }}
           title="Broadcast Emergency SOS"
           aria-label="Broadcast Emergency SOS"
         >
-          <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>🚨</span>
+          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>🚨</span>
           <span style={{ fontSize: '0.62rem', letterSpacing: '0.04em' }}>{t('nav.emergencySos', 'SOS')}</span>
         </button>
 
@@ -133,10 +138,11 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
             fontSize: '0.68rem',
             fontWeight: 700,
             gap: '3px',
-            padding: '4px 0',
+            minHeight: '48px',
+            touchAction: 'manipulation',
           })}
         >
-          <Icon name="home" size={18} />
+          <Icon name="home" size={19} />
           <span>{t('nav.shelters', 'SHELTER')}</span>
         </NavLink>
 
@@ -155,14 +161,14 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
             fontSize: '0.68rem',
             fontWeight: 700,
             gap: '3px',
-            padding: '4px 0',
+            minHeight: '48px',
             cursor: 'pointer',
             touchAction: 'manipulation',
           }}
           title="Report Hazard Incident"
           aria-label="Report Hazard Incident"
         >
-          <Icon name="warning" size={18} color="var(--amber)" />
+          <Icon name="warning" size={19} color="var(--amber)" />
           <span>{t('incidents.reportIncident', 'REPORT')}</span>
         </button>
       </nav>
@@ -176,7 +182,7 @@ const MobileEmergencyNav = ({ onOpenSos, onOpenIncident }) => {
         }
         @media (max-width: 768px) {
           .main-content {
-            padding-bottom: 70px !important;
+            padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
           }
         }
       `}</style>

@@ -441,7 +441,7 @@ const SosPage = ({ onOpenSos, refreshKey }) => {
         )}
 
         {/* Signals Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+        <div className="responsive-card-grid">
           {filteredList.map((item) => (
             <div
               key={item._id}

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/i18n';
+import { usePWA } from '../context/PWAContext';
 import { fetchSosRequests, fetchIncidents, updateUserProfile, updateNotificationPreferences } from '../services/api';
 import Icon from '../components/Icons';
 
 const ProfilePage = () => {
   const { t } = useTranslation();
   const { user, logout, isAdmin, isVerified, refreshUser } = useAuth();
+  const { isInstallable, isInstalled, promptInstall } = usePWA();
   const navigate = useNavigate();
 
   const [sosList, setSosList] = useState([]);
@@ -516,6 +518,59 @@ const ProfilePage = () => {
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Progressive Web App (PWA) Application Setup Panel */}
+              <div className="spatial-panel" style={{ padding: '1.5rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Icon name="download" size={18} color="var(--primary, #FF6B2C)" />
+                    <span>DisasterChain Application (PWA)</span>
+                  </div>
+                  {isInstalled && (
+                    <span className="badge badge-mint" style={{ fontSize: '0.72rem' }}>
+                      INSTALLED STANDALONE
+                    </span>
+                  )}
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                  DisasterChain Progressive Web App provides native-level emergency response, fast cached shell launching, and safe offline guidance.
+                </p>
+
+                {isInstalled ? (
+                  <div style={{ padding: '0.85rem 1rem', background: 'rgba(132, 204, 22, 0.1)', border: '1px solid var(--border-mint)', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Icon name="check" size={18} color="var(--mint, #84CC16)" />
+                    <div>
+                      <div style={{ color: '#ffffff', fontSize: '0.84rem', fontWeight: 700 }}>Application Active in Standalone Mode</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.74rem' }}>Running without browser chrome. Offline survival directory available.</div>
+                    </div>
+                  </div>
+                ) : isInstallable ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                      Install DisasterChain onto your mobile home screen or desktop launcher for instant crisis dispatch access.
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={promptInstall}
+                        className="btn btn-primary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minHeight: '42px' }}
+                      >
+                        <Icon name="download" size={16} />
+                        <span>Install DisasterChain App</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ padding: '0.85rem 1rem', background: 'rgba(255, 107, 44, 0.08)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Icon name="info" size={18} color="var(--primary)" />
+                    <div>
+                      <div style={{ color: '#ffffff', fontSize: '0.84rem', fontWeight: 700 }}>Running in Web Browser</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.74rem' }}>You can also install DisasterChain from your browser's menu (Add to Home Screen).</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

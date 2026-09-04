@@ -246,9 +246,9 @@ const TransparencyLedgerPage = () => {
                 gap: '0.5rem',
               }}
             >
-              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', minWidth: 0, flex: 1 }}>
                 <span style={{ color: 'var(--text-muted)' }}>{t('transparency.currentHash')}: </span>
-                <span style={{ color: 'var(--cyan)' }}>
+                <span style={{ color: 'var(--cyan)', wordBreak: 'break-all' }}>
                   {block.blockHash || `0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069`}
                 </span>
               </div>

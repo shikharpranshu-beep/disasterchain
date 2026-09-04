@@ -30,7 +30,7 @@ const MapLocationPanel = ({
 
   return (
     <div
-      className="spatial-panel"
+      className="spatial-panel map-location-panel"
       style={{
         position: 'absolute',
         top: '16px',
@@ -257,6 +257,22 @@ const MapLocationPanel = ({
           </button>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .map-location-panel {
+            top: auto !important;
+            bottom: 8px !important;
+            left: 8px !important;
+            right: 8px !important;
+            width: auto !important;
+            max-width: calc(100vw - 16px) !important;
+            max-height: 52vh !important;
+            padding: 0.9rem !important;
+            z-index: 2000 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

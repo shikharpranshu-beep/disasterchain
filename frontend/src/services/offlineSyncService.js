@@ -91,8 +91,13 @@ class OfflineSyncService {
       if (this.queue.length > 0) {
         this.status = 'PENDING';
         this.notify();
-        // Trigger auto-sync with slight delay to allow network sockets to stabilize
-        setTimeout(() => this.syncPendingQueue(), 1200);
+        // EMERGENCY SAFETY RULE: Never auto-submit SOS requests upon reconnection.
+        // Only automatically synchronize non-SOS incident/telemetry records.
+        // Pending SOS requests require explicit confirmation from the user.
+        const hasNonSos = this.queue.some((item) => item.type !== 'sos');
+        if (hasNonSos) {
+          setTimeout(() => this.syncPendingQueue(false), 1200);
+        }
       } else {
         this.status = 'ONLINE';
         this.notify();
@@ -117,6 +122,7 @@ class OfflineSyncService {
       retries: 0,
       timestamp: new Date().toISOString(),
       status: 'QUEUED',
+      userConfirmed: false,
     };
 
     this.queue.push(queuedItem);
@@ -129,9 +135,10 @@ class OfflineSyncService {
   }
 
   /**
-   * Automatically synchronizes all pending offline emergency records to the live backend
+   * Synchronizes pending offline emergency records to the live backend.
+   * @param {boolean} allowSos - If false, skips SOS items to prevent automatic replays.
    */
-  async syncPendingQueue() {
+  async syncPendingQueue(allowSos = false) {
     if (this.isSyncing || this.queue.length === 0 || !this.isOnline) {
       return { success: true, count: 0 };
     }
@@ -144,6 +151,12 @@ class OfflineSyncService {
     const remainingQueue = [];
 
     for (const item of this.queue) {
+      // EMERGENCY SAFETY RULE: Do NOT auto-replay SOS unless explicitly permitted by user
+      if (item.type === 'sos' && !allowSos) {
+        remainingQueue.push(item);
+        continue;
+      }
+
       try {
         let res = null;
         if (item.type === 'sos') {
@@ -201,6 +214,33 @@ class OfflineSyncService {
       syncedCount: successfullySynced.length,
       remainingCount: remainingQueue.length,
     };
+  }
+
+  /**
+   * Explicit user confirmation to transmit a specific offline SOS request
+   */
+  async confirmAndSyncSos(queueId) {
+    if (!this.isOnline) {
+      return { success: false, message: 'Device is offline. Transmission requires network connectivity.' };
+    }
+    const itemIndex = this.queue.findIndex((it) => it.queueId === queueId && it.type === 'sos');
+    if (itemIndex === -1) {
+      return { success: false, message: 'SOS record not found in local offline queue.' };
+    }
+    const item = this.queue[itemIndex];
+    try {
+      const res = await createSosRequest(item.payload);
+      if (res && (res.success || res.status === 200 || res.status === 201)) {
+        this.queue.splice(itemIndex, 1);
+        this.saveQueue();
+        this.status = this.queue.length === 0 ? 'ONLINE' : 'PENDING';
+        this.notify();
+        return { success: true, data: res.data || res };
+      }
+      return { success: false, message: 'Server did not acknowledge SOS dispatch.' };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
   }
 
   clearQueue() {

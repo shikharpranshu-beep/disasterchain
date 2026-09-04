@@ -512,6 +512,7 @@ const DisasterCommandMapContent = ({
 
       {/* TOP RIGHT: Command Presets Bar */}
       <div
+        className="map-presets-bar"
         style={{
           position: 'absolute',
           top: '52px',
@@ -588,6 +589,7 @@ const DisasterCommandMapContent = ({
 
       {/* BOTTOM LEFT: Live Layer Filter Bar */}
       <div
+        className="map-layers-bar"
         style={{
           position: 'absolute',
           bottom: '14px',
@@ -924,6 +926,41 @@ const DisasterCommandMapContent = ({
           onNavigate={onNavigate}
         />
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .map-presets-bar {
+            top: 54px !important;
+            left: 8px !important;
+            right: 8px !important;
+            max-width: none !important;
+            flex-wrap: wrap !important;
+            gap: 4px !important;
+          }
+          .map-presets-bar button {
+            padding: 3px 6px !important;
+            font-size: 0.68rem !important;
+            min-height: 32px !important;
+          }
+          .map-layers-bar {
+            bottom: 8px !important;
+            left: 8px !important;
+            right: 8px !important;
+            max-width: calc(100% - 16px) !important;
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+            flex-wrap: nowrap !important;
+            scrollbar-width: none !important;
+            gap: 4px !important;
+          }
+          .map-layers-bar button {
+            flex-shrink: 0 !important;
+            padding: 3px 8px !important;
+            font-size: 0.68rem !important;
+            min-height: 32px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -206,7 +206,7 @@ const IncidentReportsPage = ({ onOpenIncident }) => {
       )}
 
       {/* Incident Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
+      <div className="responsive-card-grid">
         {filteredIncidents.map((inc) => (
           <div
             key={inc._id}

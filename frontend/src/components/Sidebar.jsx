@@ -2,11 +2,13 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/i18n';
+import { usePWA } from '../context/PWAContext';
 import Icon from './Icons';
 
 const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
   const { user, isAdmin } = useAuth();
   const { t } = useTranslation();
+  const { isInstallable, isInstalled, promptInstall } = usePWA();
   const role = user?.role || 'citizen';
   const isPrivileged = role === 'responder' || role === 'ngo' || role === 'volunteer';
 
@@ -115,51 +117,194 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
         </div>
       </aside>
 
-      {/* Mobile Floating Bottom Navigation Bar */}
-      <nav className="mobile-nav-bar" aria-label="Mobile Navigation">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
-        >
-          <Icon name="activity" size={19} />
-          <span>HUD</span>
-        </NavLink>
+      {/* Mobile Slide-Out Drawer Navigation (Triggered via Navbar hamburger) */}
+      <div
+        className={`mobile-drawer-backdrop ${isOpen ? 'open' : ''}`}
+        onClick={onClose}
+        aria-hidden={!isOpen}
+      />
 
-        <NavLink
-          to="/alerts"
-          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
-        >
-          <Icon name="bell" size={19} />
-          <span>{t('common.warning', 'Alerts')}</span>
-        </NavLink>
+      <aside
+        className={`mobile-nav-drawer ${isOpen ? 'open' : ''}`}
+        aria-label="Mobile Mission Directory"
+      >
+        {/* Drawer Header */}
+        <div className="mobile-drawer-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: 'var(--radius-sm)',
+                background: 'linear-gradient(135deg, rgba(255, 107, 44, 0.25), rgba(245, 158, 11, 0.15))',
+                border: '1px solid var(--border-highlight)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon name="shield-check" size={18} color="var(--primary)" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#ffffff' }}>
+                DISASTERCHAIN
+              </div>
+              <div className="micro-label" style={{ color: 'var(--primary)' }}>
+                {t('nav.navigationMenu', 'MISSION DIRECTORY')}
+              </div>
+            </div>
+          </div>
 
-        {/* Floating Center SOS Beacon Button */}
+          <button
+            type="button"
+            className="mobile-drawer-close-btn"
+            onClick={onClose}
+            aria-label="Close Navigation Drawer"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Emergency SOS Shortcut */}
         <button
           type="button"
-          onClick={onOpenSos}
-          className="mobile-nav-beacon"
-          aria-label="Emergency SOS Beacon"
-          title={t('nav.broadcastSos', 'Emergency SOS Dispatch')}
+          onClick={() => {
+            onClose();
+            onOpenSos();
+          }}
+          className="btn btn-emergency"
+          style={{
+            width: '100%',
+            marginBottom: '1rem',
+            padding: '0.65rem',
+            justifyContent: 'center',
+            fontSize: '0.85rem',
+            fontWeight: 800,
+          }}
         >
-          <Icon name="alert-circle" size={24} color="#ffffff" />
+          <Icon name="alert-circle" size={18} color="#ffffff" />
+          <span>{t('nav.broadcastSos', 'BROADCAST SOS')}</span>
         </button>
 
-        <NavLink
-          to="/shelters"
-          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
-        >
-          <Icon name="shelter" size={19} />
-          <span>{t('shelters.shelterTitle', 'Shelter')}</span>
-        </NavLink>
+        {/* Admin Terminal Link */}
+        {isAdmin && (
+          <div style={{ marginBottom: '1rem' }}>
+            <NavLink
+              to="/admin"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `btn ${isActive ? 'btn-primary' : 'btn-secondary'}`
+              }
+              style={{
+                width: '100%',
+                justifyContent: 'flex-start',
+                padding: '0.65rem 0.85rem',
+                fontSize: '0.82rem',
+                border: '1px solid var(--border-highlight)',
+              }}
+            >
+              <Icon name="shield" size={16} color="var(--cyan)" />
+              <span>{t('nav.adminCommand', 'ADMIN COMMAND')}</span>
+            </NavLink>
+          </div>
+        )}
 
-        <NavLink
-          to="/offline"
-          className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
-        >
-          <Icon name="offline" size={19} />
-          <span>{t('nav.offlineMode', 'Offline')}</span>
-        </NavLink>
-      </nav>
+        {/* Operational Role Indicator */}
+        {!isAdmin && isPrivileged && (
+          <div
+            style={{
+              marginBottom: '0.85rem',
+              padding: '0.45rem 0.75rem',
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgba(0, 240, 255, 0.08)',
+              border: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <span className="live-beacon-pulse" />
+            <span className="micro-label" style={{ color: 'var(--cyan)' }}>
+              ROLE: {role.toUpperCase()}
+            </span>
+          </div>
+        )}
+
+        {/* Full Navigation Item List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `rail-nav-item ${isActive ? 'active' : ''}`
+              }
+              style={{ minHeight: '44px' }}
+            >
+              <span className="nav-icon-wrap">
+                <Icon name={item.icon} size={18} />
+              </span>
+              <span style={{ fontSize: '0.9rem' }}>{item.label}</span>
+              {item.badge && (
+                <span className="rail-nav-badge badge badge-critical">
+                  {item.badge}
+                </span>
+              )}
+            </NavLink>
+          ))}
+        </div>
+
+        {/* PWA Mobile Installation Trigger */}
+        {isInstallable && !isInstalled && (
+          <div style={{ marginTop: '0.75rem', marginBottom: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                promptInstall();
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '11px 14px',
+                borderRadius: 'var(--radius-sm, 8px)',
+                background: 'linear-gradient(135deg, rgba(255, 107, 44, 0.18), rgba(245, 158, 11, 0.12))',
+                border: '1px solid var(--border-highlight, #FF6B2C)',
+                color: '#FFF',
+                fontWeight: '700',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                minHeight: '44px',
+              }}
+            >
+              <span className="nav-icon-wrap" style={{ color: 'var(--primary, #FF6B2C)' }}>
+                <Icon name="download" size={18} />
+              </span>
+              <span>{t('pwa.installApp', 'Install DisasterChain App')}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Footer Link: Personnel Profile */}
+        <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid var(--border-subtle)' }}>
+          <NavLink
+            to="/profile"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `rail-nav-item ${isActive ? 'active' : ''}`
+            }
+            style={{ minHeight: '44px' }}
+          >
+            <span className="nav-icon-wrap">
+              <Icon name="profile" size={18} />
+            </span>
+            <span style={{ fontSize: '0.9rem' }}>{t('nav.profile', 'Personnel Dossier')}</span>
+          </NavLink>
+        </div>
+      </aside>
     </>
   );
 };

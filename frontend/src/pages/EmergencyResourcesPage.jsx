@@ -199,7 +199,7 @@ const EmergencyResourcesPage = () => {
       )}
 
       {/* Facilities Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
+      <div className="responsive-card-grid">
         {filteredResources.map((res) => (
           <div
             key={res._id}

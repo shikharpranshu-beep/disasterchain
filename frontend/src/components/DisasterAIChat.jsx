@@ -431,8 +431,9 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
               }}
             />
           </div>
-          <span>DISASTERCHAIN AI</span>
+          <span className="disaster-ai-btn-text">DISASTERCHAIN AI</span>
           <span
+            className="disaster-ai-btn-pill"
             style={{
               fontSize: '0.65rem',
               background: 'rgba(0, 0, 0, 0.35)',
@@ -446,6 +447,14 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
           </span>
         </button>
       )}
+
+      <style>{`
+        @media (max-width: 480px) {
+          .disaster-ai-btn-pill {
+            display: none !important;
+          }
+        }
+      `}</style>
 
       {/* 2. CHAT DRAWER / COMMAND MODAL */}
       {isOpen && (

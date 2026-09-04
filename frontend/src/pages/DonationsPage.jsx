@@ -237,7 +237,7 @@ const DonationsPage = () => {
       )}
 
       {/* In-Kind Donations Spatial Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
+      <div className="responsive-card-grid">
         {filteredDonations.map((don) => (
           <div
             key={don._id}

@@ -204,7 +204,7 @@ const AffectedAreasPage = () => {
       )}
 
       {/* Spatial Hazard Area Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
+      <div className="responsive-card-grid">
         {filteredAreas.map((area) => (
           <div
             key={area._id}

@@ -249,7 +249,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
                   EMERGENCY REQUEST SAVED LOCALLY
                 </h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-                  Emergency request saved locally. It will be transmitted automatically when connectivity returns.
+                  Emergency request saved locally on your device. For safety, SOS is never sent automatically — you can confirm transmission upon reconnection or use phone links below.
                 </p>
 
                 <div
@@ -259,7 +259,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
                     borderRadius: 'var(--radius-sm)',
                     padding: '1rem',
                     textAlign: 'left',
-                    marginBottom: '1.5rem',
+                    marginBottom: '1.25rem',
                     fontFamily: 'var(--font-mono)',
                     fontSize: '0.78rem',
                   }}
@@ -268,7 +268,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
                     LOCAL QUEUE ID: <span style={{ color: '#f59e0b' }}>{submittedRecord?.requestId}</span>
                   </div>
                   <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
-                    STATUS: <span style={{ color: '#f59e0b', fontWeight: 700 }}>QUEUED LOCALLY (PENDING SYNC)</span>
+                    STATUS: <span style={{ color: '#f59e0b', fontWeight: 700 }}>QUEUED LOCALLY (PENDING CONFIRMATION)</span>
                   </div>
                   <div style={{ color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
                     SEVERITY: <span style={{ color: 'var(--crimson)' }}>{formData.severity}</span>
@@ -276,6 +276,26 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
                   <div style={{ color: 'var(--text-muted)' }}>
                     COORDINATES: <span style={{ color: '#ffffff' }}>{formData.latitude}, {formData.longitude}</span>
                   </div>
+                </div>
+
+                {/* Direct Emergency Telephone & SMS Links (Work without mobile data) */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1.25rem' }}>
+                  <a
+                    href="tel:112"
+                    className="btn btn-emergency"
+                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.82rem', padding: '0.6rem' }}
+                  >
+                    <span>📞</span>
+                    <span>CALL 112</span>
+                  </a>
+                  <a
+                    href={`sms:112?body=${encodeURIComponent(`DISASTERCHAIN EMERGENCY SOS: ${formData.description}. Loc: ${formData.location || `${formData.latitude},${formData.longitude}`}. Contact: ${formData.contact}`)}`}
+                    className="btn btn-secondary"
+                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.82rem', padding: '0.6rem' }}
+                  >
+                    <span>💬</span>
+                    <span>SEND SMS</span>
+                  </a>
                 </div>
               </>
             ) : (
@@ -372,7 +392,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
                 fontSize: '0.85rem',
               }}
             >
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div className="form-grid-2col" style={{ marginBottom: '0.75rem' }}>
                 <div>
                   <div className="micro-label">Caller Name</div>
                   <div style={{ fontWeight: 600, color: '#ffffff' }}>{formData.name}</div>
@@ -399,7 +419,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid-2col">
               <button
                 type="button"
                 onClick={() => setSosState('READY')}
@@ -421,7 +441,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
         {/* STATE: READY (Default Form) */}
         {sosState === 'READY' && (
           <form onSubmit={proceedToConfirmation}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+            <div className="form-grid-2col">
               <div className="form-group">
                 <label className="form-label">{t('emergency.fullName', 'Full Name / Caller')}</label>
                 <input
@@ -452,7 +472,7 @@ const SosModal = ({ isOpen, onClose, onSosSubmitted }) => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+            <div className="form-grid-2col">
               <div className="form-group">
                 <label className="form-label">Severity Level</label>
                 <select

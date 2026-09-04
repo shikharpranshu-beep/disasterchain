@@ -65,9 +65,9 @@ const LandingPage = ({ onOpenSos }) => {
           maxWidth: '1360px',
           margin: '0 auto',
           width: '100%',
-          minHeight: '620px',
+          minHeight: '580px',
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 0.9fr) minmax(500px, 1.1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 460px), 1fr))',
           gap: '2.5rem',
           alignItems: 'center',
           boxSizing: 'border-box',
@@ -84,9 +84,9 @@ const LandingPage = ({ onOpenSos }) => {
           <h1
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '3.2rem',
+              fontSize: 'clamp(1.9rem, 5.5vw, 3.2rem)',
               fontWeight: 800,
-              lineHeight: 1.1,
+              lineHeight: 1.15,
               letterSpacing: '-0.03em',
               marginBottom: '1.25rem',
               color: '#ffffff',
@@ -272,7 +272,7 @@ const LandingPage = ({ onOpenSos }) => {
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <div className="responsive-card-grid">
           {hazardCategories.map((cat) => (
             <div
               key={cat.title}

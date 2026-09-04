@@ -23,6 +23,36 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Interceptor to flag cached operational data served by Service Worker when offline
+api.interceptors.response.use(
+  (response) => {
+    const isCached =
+      response.headers &&
+      (response.headers['x-disasterchain-cached'] === 'true' ||
+        response.headers.get?.('x-disasterchain-cached') === 'true');
+
+    if (isCached) {
+      if (response.data && typeof response.data === 'object') {
+        response.data._isCached = true;
+        if (Array.isArray(response.data.data)) {
+          response.data.data._isCached = true;
+        }
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('disasterchain:cachedDataServed', {
+            detail: { url: response.config?.url },
+          })
+        );
+      }
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // ================= EMERGENCY SOS API =================
 export const fetchSosRequests = async (params = {}) => {
   const res = await api.get('/sos', { params });

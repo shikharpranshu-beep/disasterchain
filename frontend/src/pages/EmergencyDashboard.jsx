@@ -368,19 +368,81 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
         </div>
       </div>
 
+      {/* TOP: Compact Live Telemetry KPIs Grid (Always at top of operations) */}
+      <div className="grid-cols-4">
+        {/* 1. SOS Signals */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">{t('dashboard.activeDistressSignals')}</span>
+            <span className="live-beacon-pulse critical" />
+          </div>
+          <div className="telemetry-num crimson">
+            {activeSosCount}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>{t('common.critical')}: {criticalSosCount}</span>
+            <Link to="/sos" style={{ color: 'var(--cyan)' }}>{t('common.viewAll')} →</Link>
+          </div>
+        </div>
+
+        {/* 2. Shelter Capacity */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">{t('dashboard.openBeds').toUpperCase()}</span>
+            <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>
+              {shelters.length} {t('nav.reliefShelters')}
+            </span>
+          </div>
+          <div className="telemetry-num cyan">
+            {availableBeds.toLocaleString()}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>{t('shelters.totalCapacity')}: {totalShelterCapacity.toLocaleString()}</span>
+            <Link to="/shelters" style={{ color: 'var(--cyan)' }}>{t('common.viewDetails')} →</Link>
+          </div>
+        </div>
+
+        {/* 3. Hazard Impact Zones */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">{t('affectedAreas.monitoredZones').toUpperCase()}</span>
+            <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
+              {affectedAreas.length} {t('common.active')}
+            </span>
+          </div>
+          <div className="telemetry-num amber">
+            {totalAffectedPeople.toLocaleString()}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>{t('dashboard.affectedPopulation')}</span>
+            <Link to="/affected-areas" style={{ color: 'var(--cyan)' }}>{t('common.viewMap')} →</Link>
+          </div>
+        </div>
+
+        {/* 4. Cryptographic Blockchain Ledger */}
+        <div className="telemetry-widget">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+            <span className="micro-label">{t('transparency.transparencyTitle').toUpperCase()}</span>
+            <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
+              {t('common.verified')}
+            </span>
+          </div>
+          <div className="telemetry-num mint">
+            {blockchainRecords.length}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <span>{t('transparency.totalBlocks')}</span>
+            <Link to="/transparency" style={{ color: 'var(--cyan)' }}>{t('dashboard.viewFullLedger')} →</Link>
+          </div>
+        </div>
+      </div>
+
       {/* CENTER WORKSPACE: TACTICAL VIEW OR MISSION CONTROL */}
       {dashboardMode === 'STANDARD' ? (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '400px 1fr 340px',
-          gap: '1.25rem',
-          alignItems: 'stretch',
-        }}
-      >
+      <div className="dashboard-tactical-grid">
         {/* LEFT RAIL: High-Priority Operational Crisis Intelligence Panel */}
         <div
-          className="spatial-panel"
+          className="spatial-panel tactical-order-intel"
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -676,7 +738,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
         </div>
 
         {/* CENTER VISUAL CENTERPIECE: 2D Disaster Command Map */}
-        <div style={{ minHeight: '560px', display: 'flex', flexDirection: 'column' }}>
+        <div className="tactical-order-map" style={{ minHeight: '440px', display: 'flex', flexDirection: 'column' }}>
           <DisasterCommandMap
             sosRequests={sosList}
             affectedAreas={affectedAreas}
@@ -694,7 +756,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
 
         {/* RIGHT RAIL: Situation Intelligence & Priority Alerts */}
         <div
-          className="spatial-panel"
+          className="spatial-panel tactical-order-alerts"
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -793,7 +855,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
           </div>
 
           {/* 8 Operational Panels Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.25rem' }}>
+          <div className="responsive-card-grid">
             {/* 1. CRITICAL PRIORITIES */}
             <div className="spatial-panel" style={{ background: 'rgba(10, 16, 28, 0.96)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -969,7 +1031,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
       {/* PHASE 7: LIVE RISK INTELLIGENCE & HEATMAP SECTORS                        */}
       {/* ========================================================================= */}
       <div
-        className="spatial-panel"
+        className="spatial-panel tactical-order-heatmap"
         style={{
           marginTop: '1.5rem',
           background: 'rgba(8, 13, 24, 0.94)',
@@ -1014,7 +1076,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             No active emergency convergence zones detected. All monitored sectors nominal.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
+          <div className="responsive-card-grid">
             {riskZones.slice(0, 6).map((zone) => {
               const isCrit = zone.riskLevel === 'CRITICAL';
               const isHi = zone.riskLevel === 'HIGH';
@@ -1149,84 +1211,6 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             })}
           </div>
         )}
-      </div>
-
-      <style>{`
-        @media (max-width: 1280px) {
-          div[style*="gridTemplateColumns: 400px 1fr 340px"],
-          div[style*="gridTemplateColumns: 320px 1fr 340px"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-
-      {/* BOTTOM: Compact Live Telemetry KPIs Grid */}
-      <div className="grid-cols-4">
-        {/* 1. SOS Signals */}
-        <div className="telemetry-widget">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">{t('dashboard.activeDistressSignals')}</span>
-            <span className="live-beacon-pulse critical" />
-          </div>
-          <div className="telemetry-num crimson">
-            {activeSosCount}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>{t('common.critical')}: {criticalSosCount}</span>
-            <Link to="/sos" style={{ color: 'var(--cyan)' }}>{t('common.viewAll')} →</Link>
-          </div>
-        </div>
-
-        {/* 2. Shelter Capacity */}
-        <div className="telemetry-widget">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">{t('dashboard.openBeds').toUpperCase()}</span>
-            <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>
-              {shelters.length} {t('nav.reliefShelters')}
-            </span>
-          </div>
-          <div className="telemetry-num cyan">
-            {availableBeds.toLocaleString()}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>{t('shelters.totalCapacity')}: {totalShelterCapacity.toLocaleString()}</span>
-            <Link to="/shelters" style={{ color: 'var(--cyan)' }}>{t('common.viewDetails')} →</Link>
-          </div>
-        </div>
-
-        {/* 3. Hazard Impact Zones */}
-        <div className="telemetry-widget">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">{t('affectedAreas.monitoredZones').toUpperCase()}</span>
-            <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
-              {affectedAreas.length} {t('common.active')}
-            </span>
-          </div>
-          <div className="telemetry-num amber">
-            {totalAffectedPeople.toLocaleString()}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>{t('dashboard.affectedPopulation')}</span>
-            <Link to="/affected-areas" style={{ color: 'var(--cyan)' }}>{t('common.viewMap')} →</Link>
-          </div>
-        </div>
-
-        {/* 4. Cryptographic Blockchain Ledger */}
-        <div className="telemetry-widget">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-            <span className="micro-label">{t('transparency.transparencyTitle').toUpperCase()}</span>
-            <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
-              {t('common.verified')}
-            </span>
-          </div>
-          <div className="telemetry-num mint">
-            {blockchainRecords.length}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            <span>{t('transparency.totalBlocks')}</span>
-            <Link to="/transparency" style={{ color: 'var(--cyan)' }}>{t('dashboard.viewFullLedger')} →</Link>
-          </div>
-        </div>
       </div>
 
       {/* Modals for Resource Journey, Blockchain Receipt, Crisis Intelligence, and Shelter Detail */}

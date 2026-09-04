@@ -4,9 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/i18n';
 import Icon from './Icons';
 import OfflineSyncBadge from './OfflineSyncBadge';
+import NetworkStatusIndicator from './NetworkStatusIndicator';
 import LanguageSelector from './LanguageSelector';
 
-const Navbar = ({ onOpenSos }) => {
+const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -33,20 +34,50 @@ const Navbar = ({ onOpenSos }) => {
 
   return (
     <header className="app-navbar">
-      {/* Brand HUD Logo */}
-      <Link to="/" className="hud-logo">
-        <div className="hud-logo-icon">
-          <Icon name="shield-check" size={20} color="var(--primary)" />
-        </div>
-        <div>
-          <div className="hud-logo-title">
-            <span>DISASTERCHAIN</span>
-            <span className="hud-logo-tag">{t('common.appTag', 'NET v2.6')}</span>
-          </div>
-        </div>
-      </Link>
+      {/* Left Area: Hamburger Toggle (Mobile/Tablet) + Brand HUD Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        {onToggleSidebar && (
+          <button
+            type="button"
+            className="mobile-hamburger-btn"
+            onClick={onToggleSidebar}
+            aria-label={isMobileMenuOpen ? 'Close Navigation Drawer' : 'Open Navigation Drawer'}
+            style={{
+              display: 'none',
+              width: '44px',
+              height: '44px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            {isMobileMenuOpen ? (
+              <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>✕</span>
+            ) : (
+              <Icon name="menu" size={22} color="var(--primary)" />
+            )}
+          </button>
+        )}
 
-      {/* Center Telemetry Readout */}
+        <Link to="/" className="hud-logo">
+          <div className="hud-logo-icon">
+            <Icon name="shield-check" size={20} color="var(--primary)" />
+          </div>
+          <div>
+            <div className="hud-logo-title">
+              <span>DISASTERCHAIN</span>
+              <span className="hud-logo-tag">{t('common.appTag', 'NET v2.6')}</span>
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* Center Telemetry Readout (Desktop only) */}
       <div className="hud-telemetry" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div className="telemetry-chip">
           <span className="live-beacon-pulse" />
@@ -77,44 +108,48 @@ const Navbar = ({ onOpenSos }) => {
       </div>
 
       {/* Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {/* Global Tactical Network Status Indicator */}
+        <NetworkStatusIndicator />
+
         {/* Multilingual 20-Language Selector */}
         <LanguageSelector />
 
-        {/* Urgent Emergency Beacon Button */}
+        {/* Urgent Emergency Beacon Button (Desktop & Tablet) */}
         <button
           type="button"
           onClick={onOpenSos}
-          className="btn btn-emergency btn-sm"
+          className="btn btn-emergency btn-sm navbar-sos-action"
           id="navbar-sos-btn"
           style={{ letterSpacing: '0.04em' }}
         >
           <Icon name="alert-circle" size={16} color="#ffffff" />
-          <span>{t('nav.broadcastSos', 'BROADCAST SOS')}</span>
+          <span>{t('nav.broadcastSos', 'SOS')}</span>
         </button>
 
-        {/* Low-Connectivity Mode Switcher */}
+        {/* Low-Connectivity Mode Switcher (Desktop only) */}
         <Link
           to="/offline"
-          className="btn btn-secondary btn-sm"
+          className="btn btn-secondary btn-sm navbar-offline-btn"
           title={t('offline.offlineModeTitle', 'Offline & Survivability Mode')}
         >
           <Icon name="wifi-off" size={15} color="var(--primary)" />
-          <span style={{ fontSize: '0.78rem' }}>{t('nav.offlineMode', 'Offline Mode')}</span>
+          <span style={{ fontSize: '0.78rem' }}>{t('nav.offlineMode', 'Offline')}</span>
         </Link>
 
         {/* User Status / Authentication */}
         {isAuthenticated ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Link
               to="/profile"
               className="btn btn-ghost btn-sm"
-              style={{ padding: '0.35rem 0.65rem' }}
+              style={{ padding: '0.35rem 0.55rem' }}
+              title="User Profile"
             >
-              <span className="badge badge-info" style={{ textTransform: 'capitalize' }}>
+              <span className="badge badge-info" style={{ textTransform: 'capitalize', fontSize: '0.68rem' }}>
                 {user?.role || 'Citizen'}
               </span>
-              <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.82rem' }}>
+              <span className="navbar-username" style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.82rem' }}>
                 {user?.name?.split(' ')[0] || 'User'}
               </span>
             </Link>
@@ -124,22 +159,46 @@ const Navbar = ({ onOpenSos }) => {
               onClick={handleLogout}
               className="btn btn-ghost btn-sm"
               title={t('nav.logout', 'Sign Out')}
-              style={{ color: 'var(--text-muted)' }}
+              style={{ color: 'var(--text-muted)', padding: '0.4rem' }}
             >
               <Icon name="logout" size={16} />
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Link to="/login" className="btn btn-ghost btn-sm">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Link to="/login" className="btn btn-ghost btn-sm" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}>
               {t('nav.login', 'Sign In')}
             </Link>
-            <Link to="/register" className="btn btn-primary btn-sm">
+            <Link to="/register" className="btn btn-primary btn-sm" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}>
               {t('nav.register', 'Register')}
             </Link>
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 960px) {
+          .mobile-hamburger-btn {
+            display: flex !important;
+          }
+          .navbar-offline-btn {
+            display: none !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .navbar-username {
+            display: none !important;
+          }
+          .navbar-sos-action span {
+            display: none;
+          }
+          .navbar-sos-action {
+            padding: 0.4rem !important;
+            min-width: 40px;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </header>
   );
 };

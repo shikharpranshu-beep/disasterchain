@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './i18n/i18n';
+import { PWAProvider } from './context/PWAContext';
 
 // Components
 import Navbar from './components/Navbar';
@@ -14,6 +15,8 @@ import AdminRoute from './components/AdminRoute';
 import MobileEmergencyNav from './components/MobileEmergencyNav';
 import AIAssistant from './components/AIAssistant';
 import ErrorBoundary from './components/ErrorBoundary';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PWAUpdateToast from './components/PWAUpdateToast';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -159,6 +162,10 @@ const AppLayout = () => {
         onClose={() => setIsIncidentOpen(false)}
         onIncidentSubmitted={() => setRefreshCount((c) => c + 1)}
       />
+
+      {/* PWA Mobile Installation Prompt & Service Worker Update Alert */}
+      <PWAInstallPrompt />
+      <PWAUpdateToast />
     </div>
   );
 };
@@ -166,13 +173,15 @@ const AppLayout = () => {
 function App() {
   return (
     <ErrorBoundary>
-      <LanguageProvider>
-        <AuthProvider>
-          <Router>
-            <AppLayout />
-          </Router>
-        </AuthProvider>
-      </LanguageProvider>
+      <PWAProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Router>
+              <AppLayout />
+            </Router>
+          </AuthProvider>
+        </LanguageProvider>
+      </PWAProvider>
     </ErrorBoundary>
   );
 }

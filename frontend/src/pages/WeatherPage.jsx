@@ -429,7 +429,7 @@ export default function WeatherPage() {
       )}
 
       {/* 3. Hero Current Conditions & Metrics Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+      <div className="responsive-card-grid">
         {/* Current Weather Card */}
         <div
           className="spatial-panel"
@@ -474,10 +474,8 @@ export default function WeatherPage() {
 
           {/* Compact Primary Metrics Grid */}
           <div
+            className="weather-metrics-grid"
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '0.75rem',
               marginTop: '1.75rem',
               paddingTop: '1.25rem',
               borderTop: '1px solid var(--border-subtle)',
@@ -809,7 +807,7 @@ export default function WeatherPage() {
       </div>
 
       {/* 7. Wind Intelligence & Sky Profile (2-Column) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+      <div className="responsive-card-grid">
         {/* Wind Intelligence Card with Compass */}
         <div className="spatial-panel" style={{ padding: '1.75rem', background: 'rgba(11, 17, 30, 0.95)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -1018,7 +1016,7 @@ export default function WeatherPage() {
         </div>
 
         {cyclonesData.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+          <div className="responsive-card-grid">
             {cyclonesData.map((c) => {
               const isSelected = selectedCyclone?.id === c.id;
               return (
