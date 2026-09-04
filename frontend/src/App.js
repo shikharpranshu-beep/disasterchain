@@ -35,6 +35,7 @@ import DonationsPage from './pages/DonationsPage';
 import ResourceTrackingPage from './pages/ResourceTrackingPage';
 import TransparencyLedgerPage from './pages/TransparencyLedgerPage';
 import OfflineEmergencyPage from './pages/OfflineEmergencyPage';
+import WeatherPage from './pages/WeatherPage';
 import AdminDashboard from './pages/AdminDashboard';
 
 const AppLayout = () => {
@@ -118,6 +119,7 @@ const AppLayout = () => {
             <Route path="/resource-tracking" element={<ResourceTrackingPage />} />
             <Route path="/transparency" element={<TransparencyLedgerPage />} />
             <Route path="/offline" element={<OfflineEmergencyPage />} />
+            <Route path="/weather" element={<WeatherPage />} />
             <Route
               path="/admin"
               element={

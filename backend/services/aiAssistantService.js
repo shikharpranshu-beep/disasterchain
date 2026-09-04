@@ -20,6 +20,7 @@ const {
   recommendBestShelter,
   sanitizeShelterForRole,
 } = require('./shelterRecommendationService');
+const weatherService = require('./weatherService');
 const {
   buildRiskHeatmap,
   sanitizeRiskZoneForRole,
@@ -726,6 +727,29 @@ function getPreparednessGuides() {
 }
 
 /**
+ * Safe weather & atmospheric intelligence accessors
+ */
+async function getCurrentWeather(lat = 28.6139, lon = 77.2090) {
+  return weatherService.fetchCurrentWeather(lat, lon);
+}
+
+async function getWeatherForecast(lat = 28.6139, lon = 77.2090) {
+  return weatherService.fetchForecast(lat, lon);
+}
+
+async function getAirQuality(lat = 28.6139, lon = 77.2090) {
+  return weatherService.fetchAirQuality(lat, lon);
+}
+
+async function getActiveCyclones() {
+  return weatherService.fetchActiveCyclones();
+}
+
+async function getWeatherDisasterEvents(type = 'ALL') {
+  return weatherService.fetchDisasterEvents(type);
+}
+
+/**
  * Detects user intent and category from incoming message string
  */
 function analyzeIntent(message) {
@@ -756,6 +780,18 @@ function analyzeIntent(message) {
     dataCategory = 'LIVE_DATA';
   } else if (/\b(resources?|supplies|supply|water|food|medical kit|rations?|blankets?)\b/i.test(text) && !/what should|how to|emergency kit/i.test(text)) {
     primaryIntent = 'resource';
+    dataCategory = 'LIVE_DATA';
+  } else if (/\b(cyclones?|hurricanes?|typhoons?|cyclone track|cyclones near me)\b|चक्रवात|ঘূর্ণিঝড়|சூறாவளி|తుఫాను|चक्रीवादळ|વાવાઝોડું|ಚಂಡಮಾರುತ|ചുഴലിക്കാറ്റ്|ਚੱਕਰਵਾਤ|ବାତ୍ୟା|ঘূৰ্ণীবতাহ|طوفان/i.test(text)) {
+    primaryIntent = 'cyclone';
+    dataCategory = 'LIVE_DATA';
+  } else if (/\b(aqi|air quality|pollution|pm2\.5|pm10|smog)\b|वायु गुणवत्ता|বায়ু গুণমান|காற்று தரம்|గాలి నాణ్యత|हवेची गुणवत्ता|હવાની ગુણવત્તા|ವಾಯು ಗುಣಮಟ್ಟ|വായു നിലവാരം|ਹਵਾ ਦੀ ਗੁਣਵੱਤਾ|ବାୟୁ ଗୁଣବତ୍ତା|বায়ুৰ গুণমান|ہوا کا معیار/i.test(text)) {
+    primaryIntent = 'air_quality';
+    dataCategory = 'LIVE_DATA';
+  } else if (/\b(forecast|tomorrow|weather tomorrow|rain tomorrow|will it rain|next 24 hours|next 7 days)\b|पूर्वानुमान|পূর্বাভাস|வானிலை முன்னறிவிப்பு|వాతావరణ సూచన|हवामान अंदाज|હવામાન આગાહી|ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ|കാലാവസ്ഥാ പ്രവചനം|ਮੌਸਮ ਦੀ ਭਵਿੱਖਬਾਣੀ|ପାଣିପାଗ ପୂର୍ବାନୁମାନ|বতৰৰ আগজাননী|موسم کی پیش گوئی/i.test(text)) {
+    primaryIntent = 'weather_forecast';
+    dataCategory = 'LIVE_DATA';
+  } else if (/\b(weather|temperature|temp|humidity|wind|wind speed|how hot|how cold|rain|raining)\b|मौसम|আবহাওয়া|வானிலை|వాతావరణం|हवामान|હવામાન|ಹವಾಮಾನ|കാലാവസ്ഥ|ਮੌਸਮ|ପାଣିପାଗ|বতৰ|موسم/i.test(text)) {
+    primaryIntent = 'weather_current';
     dataCategory = 'LIVE_DATA';
   } else if (/\b(what should|how do|how to|prepare|emergency kit|protocol|safety tip|checklist|first aid|cpr|evacuat|guideline|dos and donts)\b|क्या करना|কী করা|என்ன செய்ய|ఏమి చేయాలి|काय करावे|શું કરવું|ಏನು ಮಾಡಬೇಕು|എന്ത് ചെയ്യണം|ਕੀ ਕਰਨਾ|କଣ କରିବା|কি কৰা|کیا کرنا/i.test(text)) {
     primaryIntent = 'preparedness';
@@ -896,6 +932,46 @@ async function retrieveLiveContext(intentInfo, userRole, coordinates = null) {
       const guideKey = intentInfo.disasterType || 'flood';
       context.preparedness = PREPAREDNESS_GUIDES[guideKey] || PREPAREDNESS_GUIDES.flood;
       context.sources.push('DisasterChain Preparedness Standards');
+    }
+
+    // 7. Fetch Live Weather & Atmospheric Data if requested
+    const qLat = userLat ?? 28.6139;
+    const qLon = userLon ?? 77.2090;
+
+    if (intentInfo.primaryIntent === 'weather_current') {
+      try {
+        context.weather = await weatherService.fetchCurrentWeather(qLat, qLon);
+        context.sources.push('Open-Meteo Live Weather');
+      } catch (e) {
+        context.weatherError = e.message;
+      }
+    }
+
+    if (intentInfo.primaryIntent === 'weather_forecast') {
+      try {
+        context.forecast = await weatherService.fetchForecast(qLat, qLon);
+        context.sources.push('Open-Meteo Weather Forecast');
+      } catch (e) {
+        context.forecastError = e.message;
+      }
+    }
+
+    if (intentInfo.primaryIntent === 'air_quality') {
+      try {
+        context.airQuality = await weatherService.fetchAirQuality(qLat, qLon);
+        context.sources.push('Open-Meteo Air Quality (CAMS)');
+      } catch (e) {
+        context.airQualityError = e.message;
+      }
+    }
+
+    if (intentInfo.primaryIntent === 'cyclone') {
+      try {
+        context.cyclonesData = await weatherService.fetchActiveCyclones();
+        context.sources.push('GDACS Tropical Cyclone Monitoring');
+      } catch (e) {
+        context.cyclonesError = e.message;
+      }
     }
   } catch (err) {
     console.error('Error retrieving live DisasterChain context for AI assistant:', err);
@@ -1186,6 +1262,126 @@ function generateDeterministicReply(message, intentInfo, context, userRole, lang
     return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
   }
 
+  // 7b. Live Weather Intent
+  if (intentInfo.primaryIntent === 'weather_current') {
+    if (context.weather) {
+      const w = context.weather;
+      reply = `🌤️ **Live Weather & Atmospheric Conditions**\n\n` +
+        `• **Current Temperature:** ${w.temperature}°C (Feels like ${w.apparentTemperature}°C)\n` +
+        `• **Relative Humidity:** ${w.relativeHumidity}%\n` +
+        `• **Wind Speed & Direction:** ${w.windSpeed} km/h from ${w.windDirection}° (Gusts up to ${w.windGusts || 0} km/h)\n` +
+        `• **Atmospheric Pressure:** ${w.pressureMsl} hPa\n` +
+        `• **Cloud Cover:** ${w.cloudCover}%\n` +
+        `• **Visibility:** ${w.visibilityKm != null ? w.visibilityKm + ' km' : 'Nominal'}\n` +
+        `• **UV Index:** ${w.uvIndex ?? 'N/A'}\n` +
+        `• **Precipitation:** ${w.precipitation || 0} mm\n\n` +
+        `*Source: Open-Meteo Global Forecasting Network*`;
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'OPEN WEATHER DASHBOARD',
+        route: '/weather',
+      });
+    } else {
+      reply = `I can't access current weather data right now.`;
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'OPEN WEATHER DASHBOARD',
+        route: '/weather',
+      });
+    }
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
+  }
+
+  // 7c. Weather Forecast Intent
+  if (intentInfo.primaryIntent === 'weather_forecast') {
+    if (context.forecast && context.forecast.daily && context.forecast.daily.length > 0) {
+      const d1 = context.forecast.daily[1] || context.forecast.daily[0];
+      reply = `📅 **Weather Forecast Outlook**\n\n` +
+        `• **Tomorrow's Forecast:** High ${d1.tempMax}°C / Low ${d1.tempMin}°C\n` +
+        `• **Rain Probability:** ${d1.precipitationProbabilityMax || 0}%\n` +
+        `• **Expected Rainfall:** ${d1.precipitationSum || 0} mm\n` +
+        `• **Peak Wind Speed:** ${d1.windSpeedMax || 0} km/h (Gusts: ${d1.windGustsMax || 0} km/h)\n` +
+        `• **Sunrise / Sunset:** ${d1.sunrise ? d1.sunrise.slice(11, 16) : '06:00'} / ${d1.sunset ? d1.sunset.slice(11, 16) : '18:30'}\n\n` +
+        `*Source: Open-Meteo 7-Day Atmospheric Model*`;
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'VIEW 7-DAY OUTLOOK',
+        route: '/weather',
+      });
+    } else {
+      reply = `I can't access current weather data right now.`;
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'OPEN WEATHER DASHBOARD',
+        route: '/weather',
+      });
+    }
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
+  }
+
+  // 7d. Air Quality Intent
+  if (intentInfo.primaryIntent === 'air_quality') {
+    if (context.airQuality) {
+      const a = context.airQuality;
+      reply = `🍃 **Live Air Quality Index (AQI)**\n\n` +
+        `• **European AQI:** ${a.europeanAqi} (${a.severity})\n` +
+        `• **Fine Particulates (PM2.5):** ${a.pm2_5} μg/m³\n` +
+        `• **Coarse Particulates (PM10):** ${a.pm10} μg/m³\n` +
+        `• **Ozone (O₃):** ${a.ozone || 'Nominal'} μg/m³\n` +
+        `• **Nitrogen Dioxide (NO₂):** ${a.nitrogenDioxide || 'Nominal'} μg/m³\n` +
+        `• **Carbon Monoxide (CO):** ${a.carbonMonoxide || 'Nominal'} μg/m³\n\n` +
+        `*Methodology: European Air Quality Index (EAQI) / Open-Meteo CAMS*`;
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'VIEW AIR QUALITY',
+        route: '/weather',
+      });
+    } else {
+      reply = `I can't access current weather data right now.`;
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'OPEN WEATHER DASHBOARD',
+        route: '/weather',
+      });
+    }
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
+  }
+
+  // 7e. Cyclone Surveillance Intent
+  if (intentInfo.primaryIntent === 'cyclone') {
+    if (context.cyclonesData && context.cyclonesData.cyclones) {
+      const cyclones = context.cyclonesData.cyclones;
+      if (cyclones.length > 0) {
+        reply = `🌀 **Active Global Tropical Cyclones (${cyclones.length} Monitored)**\n\n` +
+          `Current live GDACS feeds track the following active tropical storms:\n\n`;
+        cyclones.forEach((c, idx) => {
+          reply += `${idx + 1}. **${c.name}** [${c.category}]\n` +
+            `   • Alert Level: **${c.alertLevel.toUpperCase()}**\n` +
+            `   • Maximum Wind: ${c.maxWindKmh} km/h\n` +
+            `   • Basin / Region: ${c.country}\n` +
+            `   • Position: ${c.latitude.toFixed(1)}°, ${c.longitude.toFixed(1)}°\n\n`;
+        });
+        reply += `*Source: GDACS (Global Disaster Alert and Coordination System)*`;
+      } else {
+        reply = `🌀 **Tropical Cyclone Surveillance**\n\n` +
+          `There are currently **zero active tropical cyclones** threatening monitored regions in the live GDACS global feed.`;
+      }
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'VIEW CYCLONE MAP',
+        route: '/weather',
+      });
+    } else {
+      reply = `I can't access current weather data right now.`;
+      actions.push({
+        type: 'NAVIGATE',
+        label: 'OPEN WEATHER DASHBOARD',
+        route: '/weather',
+      });
+    }
+    return { reply, actions, isEmergency: false, dataCategory: 'LIVE_DATA' };
+  }
+
   // 8. Preparedness Intent
   if (intentInfo.primaryIntent === 'preparedness') {
     const guide = context.preparedness || PREPAREDNESS_GUIDES.flood;
@@ -1417,4 +1613,9 @@ module.exports = {
   getResources,
   getAlerts,
   getPreparednessGuides,
+  getCurrentWeather,
+  getWeatherForecast,
+  getAirQuality,
+  getActiveCyclones,
+  getWeatherDisasterEvents,
 };

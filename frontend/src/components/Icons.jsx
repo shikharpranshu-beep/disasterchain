@@ -451,6 +451,72 @@ export const Icon = ({ name = '', size = 20, className = '', color = 'currentCol
         </svg>
       );
 
+    case 'cloud':
+    case 'weather':
+      return (
+        <svg {...propsCombined}>
+          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+        </svg>
+      );
+
+    case 'sun':
+      return (
+        <svg {...propsCombined}>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="m4.93 4.93 1.41 1.41" />
+          <path d="m17.66 17.66 1.41 1.41" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="m6.34 17.66-1.41 1.41" />
+          <path d="m19.07 4.93-1.41 1.41" />
+        </svg>
+      );
+
+    case 'wind':
+      return (
+        <svg {...propsCombined}>
+          <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" />
+          <path d="M9.6 4.6A2 2 0 1 1 11 8H2" />
+          <path d="M12.6 19.4A2 2 0 1 0 14 16H2" />
+        </svg>
+      );
+
+    case 'droplet':
+    case 'rain':
+      return (
+        <svg {...propsCombined}>
+          <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+        </svg>
+      );
+
+    case 'thermometer':
+    case 'temperature':
+      return (
+        <svg {...propsCombined}>
+          <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+        </svg>
+      );
+
+    case 'compass':
+      return (
+        <svg {...propsCombined}>
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+        </svg>
+      );
+
+    case 'cyclone':
+    case 'hurricane':
+      return (
+        <svg {...propsCombined}>
+          <circle cx="12" cy="12" r="2" />
+          <path d="M16 8a6 6 0 0 0-8-1 6 6 0 0 0-1 8" />
+          <path d="M8 16a6 6 0 0 0 8 1 6 6 0 0 0 1-8" />
+        </svg>
+      );
+
     case 'info':
     default:
       return (

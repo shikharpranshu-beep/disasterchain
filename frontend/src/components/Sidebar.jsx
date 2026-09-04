@@ -16,6 +16,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos }) => {
     { label: t('nav.reliefShelters', 'Relief Shelters'), path: '/shelters', icon: 'shelter', section: 'OPERATION' },
     { label: t('nav.affectedAreas', 'Affected Areas'), path: '/affected-areas', icon: 'map', section: 'OPERATION' },
     { label: t('nav.crisisAlerts', 'Crisis Alerts'), path: '/alerts', icon: 'bell', section: 'OPERATION' },
+    { label: t('nav.weatherIntelligence', 'Weather Intelligence'), path: '/weather', icon: 'cloud', badge: t('common.live', 'LIVE'), section: 'OPERATION' },
     { label: t('nav.hazardReports', 'Hazard Reports'), path: '/incidents', icon: 'warning', section: 'REPORTING' },
     { label: t('nav.mySubmissions', 'My Submissions'), path: '/my-reports', icon: 'report', section: 'REPORTING' },
     { label: t('nav.emergencyFacilities', 'Emergency Facilities'), path: '/resources', icon: 'hospital', section: 'SUPPLY' },

@@ -54,6 +54,25 @@ const Navbar = ({ onOpenSos }) => {
           <span style={{ opacity: 0.5 }}>|</span>
           <span>{timeStr || t('common.syncing', 'SYNCING...')}</span>
         </div>
+        <Link
+          to="/weather"
+          className="telemetry-chip hover-highlight"
+          style={{
+            textDecoration: 'none',
+            color: '#ffffff',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            cursor: 'pointer',
+            borderColor: 'var(--border-subtle)',
+          }}
+          title={t('weather.weatherIntelligence', 'Weather Intelligence')}
+        >
+          <span style={{ fontSize: '0.95rem' }}>🌤️</span>
+          <span style={{ color: 'var(--cyan)', fontWeight: 700, fontSize: '0.78rem' }}>
+            {t('nav.weatherIntelligence', 'WEATHER INTELLIGENCE')}
+          </span>
+        </Link>
         <OfflineSyncBadge />
       </div>
 
