@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { isNativePlatform, watchNetworkStatus } from '../services/nativeService';
 
 const PWAContext = createContext(null);
 
@@ -7,8 +8,12 @@ const DISMISSED_STORAGE_KEY = 'disasterchain_pwa_install_dismissed';
 export const PWAProvider = ({ children }) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (isNativePlatform()) return true;
+    return false;
+  });
   const [isDismissed, setIsDismissed] = useState(() => {
+    if (isNativePlatform()) return true;
     try {
       return localStorage.getItem(DISMISSED_STORAGE_KEY) === 'true';
     } catch (e) {
@@ -32,6 +37,7 @@ export const PWAProvider = ({ children }) => {
   useEffect(() => {
     const checkStandalone = () => {
       const isStandalone =
+        isNativePlatform() ||
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true ||
         document.referrer.includes('android-app://');
@@ -94,37 +100,34 @@ export const PWAProvider = ({ children }) => {
     return () => window.removeEventListener('disasterchain:swUpdate', handleSwUpdate);
   }, []);
 
-  // Network Connectivity Lifecycle
+  // Network Connectivity Lifecycle (Native & Web)
   useEffect(() => {
     let reconnectTimer = null;
 
-    const handleOnline = () => {
-      setIsOnline(true);
-      setNetworkStatus('RECONNECTED');
+    const unwatch = watchNetworkStatus(({ connected }) => {
+      if (connected) {
+        setIsOnline(true);
+        setNetworkStatus('RECONNECTED');
 
-      // Dispatch custom window event so active pages can refresh live data
-      window.dispatchEvent(new CustomEvent('disasterchain:reconnected'));
+        // Dispatch custom window event so active pages can refresh live data
+        window.dispatchEvent(new CustomEvent('disasterchain:reconnected'));
 
-      // Keep RECONNECTED status for 4 seconds before transitioning to LIVE
-      reconnectTimer = setTimeout(() => {
-        setNetworkStatus('LIVE');
-      }, 4000);
-    };
-
-    const handleOffline = () => {
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      setIsOnline(false);
-      setNetworkStatus('OFFLINE');
-      window.dispatchEvent(new CustomEvent('disasterchain:offline'));
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+        // Keep RECONNECTED status for 4 seconds before transitioning to LIVE
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(() => {
+          setNetworkStatus('LIVE');
+        }, 4000);
+      } else {
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        setIsOnline(false);
+        setNetworkStatus('OFFLINE');
+        window.dispatchEvent(new CustomEvent('disasterchain:offline'));
+      }
+    });
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      unwatch();
     };
   }, []);
 

@@ -1,10 +1,17 @@
 import axios from 'axios';
+import { Capacitor } from '@capacitor/core';
+
+const isNativeApp = typeof window !== 'undefined' && (Capacitor.isNativePlatform() || window.Capacitor?.isNativePlatform?.());
+const isLocalBrowser = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
+  process.env.NODE_ENV !== 'production' &&
+  !isNativeApp;
 
 const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
-  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-    ? 'https://disasterrchain-backend.onrender.com/api'
-    : 'http://localhost:5000/api');
+  (isLocalBrowser
+    ? 'http://localhost:5000/api'
+    : 'https://disasterrchain-backend.onrender.com/api');
 
 const api = axios.create({
   baseURL: API_BASE_URL,

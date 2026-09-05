@@ -1,0 +1,9 @@
+# Project-wide Gradle settings.
+org.gradle.jvmargs=-Xmx1536m
+android.useAndroidX=true
+
+# Keystore signing configuration template
+# Set via environment variables DISASTERCHAIN_KEYSTORE_PASSWORD and DISASTERCHAIN_KEY_PASSWORD
+# or populate locally in gradle.properties (gitignored)
+# DISASTERCHAIN_KEYSTORE_PASSWORD=
+# DISASTERCHAIN_KEY_PASSWORD=

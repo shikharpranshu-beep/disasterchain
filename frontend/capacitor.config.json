@@ -1,0 +1,23 @@
+{
+  "appId": "org.disasterchain.app",
+  "appName": "DisasterChain",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "launchAutoHide": true,
+      "backgroundColor": "#120B08",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#120B08"
+    }
+  }
+}

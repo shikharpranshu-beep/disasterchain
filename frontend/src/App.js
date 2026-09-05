@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './i18n/i18n';
 import { PWAProvider } from './context/PWAContext';
+import { initNativeApp, registerBackButtonHandler } from './services/nativeService';
 
 // Components
 import Navbar from './components/Navbar';
@@ -44,10 +45,37 @@ import AdminDashboard from './pages/AdminDashboard';
 
 const AppLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isSosOpen, setIsSosOpen] = useState(false);
   const [isIncidentOpen, setIsIncidentOpen] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Initialize native status bar and splash screen
+  useEffect(() => {
+    initNativeApp();
+  }, []);
+
+  // Hardware Back-Button hierarchy: Drawer -> AI -> Modal -> History Back
+  useEffect(() => {
+    const unregister = registerBackButtonHandler({
+      isDrawerOpen: () => isMobileMenuOpen,
+      closeDrawer: () => setIsMobileMenuOpen(false),
+      isAiOpen: () => document.body.classList.contains('ai-assistant-open'),
+      closeAi: () => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      },
+      isModalOpen: () => isSosOpen || isIncidentOpen,
+      closeModal: () => {
+        setIsSosOpen(false);
+        setIsIncidentOpen(false);
+      },
+      navigateBack: () => navigate(-1),
+      canGoBack: () => window.history.length > 1 && location.pathname !== '/' && location.pathname !== '/dashboard',
+    });
+
+    return () => unregister();
+  }, [isMobileMenuOpen, isSosOpen, isIncidentOpen, location.pathname, navigate]);
 
   // Automatically close mobile menu on route navigation
   useEffect(() => {
