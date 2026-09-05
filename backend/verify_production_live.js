@@ -30,6 +30,40 @@ function postChat(payload) {
   });
 }
 
+function checkHealth() {
+  return new Promise((resolve, reject) => {
+    https.get('https://disasterrchain-backend.onrender.com/api/health', (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(body));
+        } catch (e) {
+          resolve({ raw: body });
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+async function waitForDeploy() {
+  console.log('Checking Render deployment version at /api/health...');
+  for (let i = 1; i <= 30; i++) {
+    try {
+      const h = await checkHealth();
+      console.log(`[Attempt ${i}/30] Live Health Version: "${h.version}", DB: "${h.database}"`);
+      if (h.version === '1.2.1-weather-gpt-intent-priority') {
+        console.log('✅ Latest version 1.2.1-weather-gpt-intent-priority is LIVE on Render!');
+        return true;
+      }
+    } catch (e) {
+      console.log(`[Attempt ${i}/30] Health check error:`, e.message);
+    }
+    await new Promise(r => setTimeout(r, 10000));
+  }
+  return false;
+}
+
 const queries = [
   { id: 1, query: 'What is the weather right now at my location?', lat: 30.7499, lon: 76.6411, loc: 'Kharar, Punjab' },
   { id: 2, query: 'flood', lat: 30.7499, lon: 76.6411, loc: 'Kharar, Punjab' },
@@ -45,6 +79,11 @@ async function testAll() {
   console.log('🌐 LIVE PRODUCTION WEATHERGPT VERIFICATION');
   console.log('Target: https://disasterrchain-backend.onrender.com/api/weather-gpt/chat');
   console.log('========================================================\n');
+
+  const deployed = await waitForDeploy();
+  if (!deployed) {
+    console.warn('⚠️ Timed out waiting for version 1.2.1 on Render, proceeding with test anyway...\n');
+  }
 
   let allSuccess = true;
 

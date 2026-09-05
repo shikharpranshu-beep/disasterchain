@@ -135,7 +135,10 @@ const STOP_WORDS = new Set([
   'hazard', 'emergency', 'current', 'local', 'outdoor', 'indoor',
   'hazardous', 'extreme', 'hot', 'cold', 'rainy', 'sunny', 'cloudy',
   'windy', 'stormy', 'travel', 'flight', 'drive', 'driving', 'road',
-  'highway', 'sos', 'all weather telemetry', 'unknown'
+  'highway', 'sos', 'all weather telemetry', 'unknown',
+  'water', 'floodwater', 'river', 'sea', 'lake', 'building', 'home',
+  'house', 'room', 'floor', 'car', 'vehicle', 'street', 'danger', 'trouble',
+  'please help', 'save me', 'trapped', 'water please help me sos'
 ]);
 
 /**
@@ -144,10 +147,17 @@ const STOP_WORDS = new Set([
 function extractLocationName(message) {
   if (!message || typeof message !== 'string') return null;
 
+  // Reject emergency/help cries from location extraction
+  const lowerMsg = message.toLowerCase();
+  if (/\b(?:trapped|drowning|emergency|save me|help me|sos|dying)\b/i.test(lowerMsg)) {
+    return null;
+  }
+
   // Patterns for explicit named locations with strict boundary check
   const patterns = [
-    /\b(?:in|for|at|near|around|weather in|forecast for)\s+([A-Za-z\s,]{3,45})(?:\?|\.|$|\s+(?:tomorrow|today|tonight|now|yesterday))/i,
-    /\b(?:show me the weather for|show me the weather in|show me|what is the weather in|how is the weather in|tell me about)\s+([A-Za-z\s,]{3,45})(?:\?|\.|$)/i,
+    /\b(?:weather in|forecast for|weather for|aqi in|climate of)\s+([A-Za-z\s,]{3,35})(?:\?|\.|$|\s+(?:tomorrow|today|tonight|now|yesterday))/i,
+    /\b(?:show me the weather for|show me the weather in|show me|what is the weather in|how is the weather in|tell me about)\s+([A-Za-z\s,]{3,35})(?:\?|\.|$)/i,
+    /\b(?:in|for|at|near|around)\s+([A-Za-z\s,]{3,35})(?:\?|\.|$|\s+(?:tomorrow|today|tonight|now|yesterday))/i,
     /\b([A-Za-z]{3,25})\s+(?:weather|forecast|aqi|temperature|climate)\b/i,
   ];
 
@@ -156,7 +166,11 @@ function extractLocationName(message) {
     if (match && match[1]) {
       let candidate = match[1].trim().replace(/^(?:the|my|a|an|our)\s+/i, '').replace(/[\.,]+$/, '').trim();
       const lower = candidate.toLowerCase();
-      if (!STOP_WORDS.has(lower) && candidate.length >= 3) {
+      // If candidate contains emergency keywords or stop words, discard
+      if (/\b(?:help|please|sos|trapped|danger|water|save|emergency)\b/i.test(lower)) {
+        continue;
+      }
+      if (!STOP_WORDS.has(lower) && candidate.length >= 3 && candidate.split(/\s+/).length <= 4) {
         return candidate;
       }
     }
