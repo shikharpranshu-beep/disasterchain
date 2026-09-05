@@ -38,6 +38,7 @@ async function resolveUserFromToken(req) {
         }
       } catch (err) {
         // Token invalid or expired: gracefully treat as public citizen
+        console.warn('[DIAGNOSTIC] authentication failure: Token verification failed:', err.message);
       }
     }
   }
@@ -55,6 +56,7 @@ exports.handleWeatherGPTChat = async (req, res) => {
 
     // 1. Validate Message
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      console.warn('[DIAGNOSTIC] validation failure: Message is required and cannot be empty');
       return res.status(400).json({
         success: false,
         message: 'Message is required and cannot be empty.',
@@ -62,6 +64,7 @@ exports.handleWeatherGPTChat = async (req, res) => {
     }
 
     if (message.length > 1000) {
+      console.warn('[DIAGNOSTIC] validation failure: Message exceeds maximum length of 1000 characters');
       return res.status(400).json({
         success: false,
         message: 'Message exceeds maximum length of 1000 characters.',
@@ -121,7 +124,7 @@ exports.handleWeatherGPTChat = async (req, res) => {
       data: result,
     });
   } catch (err) {
-    console.error('WeatherGPT Controller Error:', err.message);
+    console.error('[DIAGNOSTIC] unexpected exception in WeatherGPT controller:', err.message, err.stack);
     return res.status(500).json({
       success: false,
       message: 'Weather data is temporarily unavailable. Please try again.',

@@ -68,7 +68,7 @@ function fetchUrl(url, options = {}, redirectCount = 0) {
 
     req.on('error', (err) => {
       // If family: 4 fails with network error, attempt one fallback without family restriction
-      if (reqOptions.family === 4 && (err.code === 'ENETUNREACH' || err.code === 'EADDRNOTAVAIL')) {
+      if (reqOptions.family === 4) {
         return resolve(fetchUrl(url, { ...options, family: undefined }, redirectCount));
       }
       reject(err);

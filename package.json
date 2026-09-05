@@ -1,0 +1,13 @@
+{
+  "name": "disasterchain",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DisasterChain - Decentralized Disaster Response and Transparency Platform",
+  "scripts": {
+    "build": "cd backend && npm install",
+    "start": "node backend/server.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

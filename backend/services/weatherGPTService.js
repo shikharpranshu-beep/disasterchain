@@ -275,36 +275,43 @@ function summarizeForecast(daily = [], hourly = []) {
 function evaluateRisk(current = {}, aqi = {}, cyclones = [], alerts = []) {
   const risks = [];
   let level = 'LOW';
+  const c = current || {};
+  const a = aqi || {};
+  const cycList = Array.isArray(cyclones) ? cyclones : (cyclones?.cyclones || []);
+  const alertList = Array.isArray(alerts) ? alerts : (alerts?.alerts || []);
 
   // Wind hazard
-  if (current.windSpeed >= 65 || current.windGusts >= 80) {
+  const windSpeed = Number(c.windSpeed) || 0;
+  const windGusts = Number(c.windGusts) || windSpeed;
+  if (windSpeed >= 65 || windGusts >= 80) {
     level = 'HIGH';
     risks.push({
       type: 'WIND',
       severity: 'HIGH',
       title: 'Strong Wind Hazard',
-      desc: `Wind gusts up to ${Math.round(current.windGusts || current.windSpeed)} km/h. Secure loose outdoor objects and avoid two-wheeler travel.`,
+      desc: `Wind gusts up to ${Math.round(windGusts)} km/h. Secure loose outdoor objects and avoid two-wheeler travel.`,
     });
-  } else if (current.windSpeed >= 40) {
+  } else if (windSpeed >= 40) {
     if (level !== 'HIGH') level = 'MODERATE';
     risks.push({
       type: 'WIND',
       severity: 'MODERATE',
       title: 'Brisk Winds',
-      desc: `Winds of ${Math.round(current.windSpeed)} km/h. Keep outdoor items secure.`,
+      desc: `Winds of ${Math.round(windSpeed)} km/h. Keep outdoor items secure.`,
     });
   }
 
   // Precipitation / Flooding
-  if (current.precipitation >= 20 || current.rain >= 20) {
+  const precip = Number(c.precipitation) || Number(c.rain) || 0;
+  if (precip >= 20) {
     level = 'HIGH';
     risks.push({
       type: 'RAIN',
       severity: 'HIGH',
       title: 'Heavy Rainfall & Waterlogging Risk',
-      desc: `Precipitation rate of ${current.precipitation} mm/h. Rapid waterlogging possible in low-lying roadways.`,
+      desc: `Precipitation rate of ${precip} mm/h. Rapid waterlogging possible in low-lying roadways.`,
     });
-  } else if (current.precipitation >= 5 || current.rain >= 5) {
+  } else if (precip >= 5) {
     if (level !== 'HIGH') level = 'MODERATE';
     risks.push({
       type: 'RAIN',
@@ -315,7 +322,7 @@ function evaluateRisk(current = {}, aqi = {}, cyclones = [], alerts = []) {
   }
 
   // Thunderstorm / Lightning (WMO 95, 96, 99)
-  if ([95, 96, 99].includes(current.weatherCode)) {
+  if (c.weatherCode != null && [95, 96, 99].includes(c.weatherCode)) {
     level = 'HIGH';
     risks.push({
       type: 'THUNDERSTORM',
@@ -326,60 +333,64 @@ function evaluateRisk(current = {}, aqi = {}, cyclones = [], alerts = []) {
   }
 
   // Extreme Heat / Cold
-  if (current.temperature >= 42) {
-    level = 'HIGH';
-    risks.push({
-      type: 'HEAT',
-      severity: 'HIGH',
-      title: 'Extreme Heatwave Advisory',
-      desc: `Ambient temperature at ${Math.round(current.temperature)}°C. High dehydration and heatstroke risk. Stay hydrated and avoid peak sun.`,
-    });
-  } else if (current.temperature <= 2) {
-    level = 'HIGH';
-    risks.push({
-      type: 'COLD',
-      severity: 'HIGH',
-      title: 'Severe Cold / Frost Risk',
-      desc: `Temperature at ${Math.round(current.temperature)}°C. Hypothermia risk. Layer thermal clothing.`,
-    });
+  if (c.temperature != null) {
+    if (c.temperature >= 42) {
+      level = 'HIGH';
+      risks.push({
+        type: 'HEAT',
+        severity: 'HIGH',
+        title: 'Extreme Heatwave Advisory',
+        desc: `Ambient temperature at ${Math.round(c.temperature)}°C. High dehydration and heatstroke risk. Stay hydrated and avoid peak sun.`,
+      });
+    } else if (c.temperature <= 2) {
+      level = 'HIGH';
+      risks.push({
+        type: 'COLD',
+        severity: 'HIGH',
+        title: 'Severe Cold / Frost Risk',
+        desc: `Temperature at ${Math.round(c.temperature)}°C. Hypothermia risk. Layer thermal clothing.`,
+      });
+    }
   }
 
   // Air Quality Hazard (European AQI: >60 Moderate/Poor, >80 Very Poor, >100 Extremely Poor)
-  if (aqi && aqi.europeanAqi >= 80) {
-    level = 'HIGH';
-    risks.push({
-      type: 'AQI',
-      severity: 'HIGH',
-      title: 'Hazardous Air Quality',
-      desc: `AQI index is ${aqi.europeanAqi} (${aqi.severity}). PM2.5 is ${aqi.pm2_5 || 'high'} μg/m³. Wear an N95 mask and limit outdoor exertion.`,
-    });
-  } else if (aqi && aqi.europeanAqi >= 60) {
-    if (level !== 'HIGH') level = 'MODERATE';
-    risks.push({
-      type: 'AQI',
-      severity: 'MODERATE',
-      title: 'Poor Air Quality',
-      desc: `AQI is ${aqi.europeanAqi}. Sensitive groups, elderly, and children should limit prolonged outdoor exertion.`,
-    });
+  if (a.europeanAqi != null) {
+    if (a.europeanAqi >= 80) {
+      level = 'HIGH';
+      risks.push({
+        type: 'AQI',
+        severity: 'HIGH',
+        title: 'Hazardous Air Quality',
+        desc: `AQI index is ${a.europeanAqi} (${a.severity || 'Hazardous'}). PM2.5 is ${a.pm2_5 || 'high'} μg/m³. Wear an N95 mask and limit outdoor exertion.`,
+      });
+    } else if (a.europeanAqi >= 60) {
+      if (level !== 'HIGH') level = 'MODERATE';
+      risks.push({
+        type: 'AQI',
+        severity: 'MODERATE',
+        title: 'Poor Air Quality',
+        desc: `AQI is ${a.europeanAqi}. Sensitive groups, elderly, and children should limit prolonged outdoor exertion.`,
+      });
+    }
   }
 
   // Cyclones
-  if (cyclones && cyclones.length > 0) {
-    const nearby = cyclones.filter((c) => c.alertLevel === 'Red' || c.alertLevel === 'Orange');
+  if (cycList.length > 0) {
+    const nearby = cycList.filter((cyc) => cyc && (cyc.alertLevel === 'Red' || cyc.alertLevel === 'Orange'));
     if (nearby.length > 0) {
       level = 'HIGH';
       risks.push({
         type: 'CYCLONE',
         severity: 'HIGH',
         title: 'Active Cyclone Advisory',
-        desc: `${nearby.length} intense cyclone(s) active in regional monitoring: ${nearby.map((c) => c.name).join(', ')}. Follow coastal shelter advisories.`,
+        desc: `${nearby.length} intense cyclone(s) active in regional monitoring: ${nearby.map((cyc) => cyc.name).join(', ')}. Follow coastal shelter advisories.`,
       });
     }
   }
 
   // Official Alerts
-  if (alerts && alerts.length > 0) {
-    const critical = alerts.filter((a) => a.severity === 'CRITICAL' || a.severity === 'EXTREME');
+  if (alertList.length > 0) {
+    const critical = alertList.filter((alt) => alt && (alt.severity === 'CRITICAL' || alt.severity === 'EXTREME'));
     if (critical.length > 0) {
       level = 'HIGH';
       risks.push({
@@ -587,8 +598,29 @@ function generateWeatherGPTReply({
     };
   }
 
-  // 3. No Weather Telemetry Available
-  if (!currentWeather) {
+  // Synthesize effective current weather from forecast.hourly[0] if current weather endpoint is unavailable
+  let effectiveCurrent = currentWeather;
+  if (!effectiveCurrent && forecast?.hourly?.length > 0) {
+    const h0 = forecast.hourly[0];
+    effectiveCurrent = {
+      latitude: forecast.latitude,
+      longitude: forecast.longitude,
+      timezone: forecast.timezone,
+      temperature: h0.temperature,
+      apparentTemperature: h0.apparentTemperature,
+      relativeHumidity: h0.humidity,
+      precipitation: h0.precipitation || 0,
+      weatherCode: h0.weatherCode,
+      windSpeed: h0.windSpeed || 0,
+      windGusts: h0.windGusts || 0,
+      visibilityKm: 10,
+      source: 'Open-Meteo Forecast Model',
+      fetchedAt: new Date().toISOString(),
+    };
+  }
+
+  // 3. No Weather Telemetry Available at all
+  if (!effectiveCurrent && !forecast && (!airQuality || airQuality.europeanAqi == null)) {
     return {
       reply: `I can't verify the current weather data right now for ${place}. Please verify that your location name is spelled correctly or enable device location services.`,
       riskLevel: 'UNKNOWN',
@@ -633,7 +665,7 @@ function generateWeatherGPTReply({
 
   // 5. Evaluate Hazards & Severe Risk
   const riskAnalysis = evaluateRisk(
-    currentWeather,
+    effectiveCurrent,
     airQuality,
     cyclones?.cyclones || [],
     operationalContext.alerts || []
@@ -658,9 +690,12 @@ function generateWeatherGPTReply({
   // 6. Cyclone Inquiries
   if (intent.isCyclone) {
     const activeCyclones = cyclones?.cyclones || [];
+    const windVal = effectiveCurrent ? Math.round(effectiveCurrent.windSpeed || 0) : 0;
+    const condText = effectiveCurrent?.weatherCode != null ? getConditionDescription(effectiveCurrent.weatherCode).toLowerCase() : 'calm conditions';
+
     if (activeCyclones.length === 0) {
       return {
-        reply: `✓ SAFE / NORMAL\n\nNo active cyclones or severe tropical depressions are currently detected in regional waters or impacting ${place}.\n\nWind speed is calm at ${Math.round(currentWeather.windSpeed || 0)} km/h with ${getConditionDescription(currentWeather.weatherCode).toLowerCase()}.\n\nData Trust: GDACS Global Real-Time RSS Feed.`,
+        reply: `✓ SAFE / NORMAL\n\nNo active cyclones or severe tropical depressions are currently detected in regional waters or impacting ${place}.\n\nWind speed is calm at ${windVal} km/h with ${condText}.\n\nData Trust: GDACS Global Real-Time RSS Feed.`,
         riskLevel: 'LOW',
         actions,
       };
@@ -681,33 +716,37 @@ function generateWeatherGPTReply({
 
   // 7. Rain & Umbrella Questions
   if (intent.isRain) {
-    const isRainingNow = (currentWeather.precipitation && currentWeather.precipitation > 0) ||
-      (currentWeather.rain && currentWeather.rain > 0) ||
-      [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(currentWeather.weatherCode);
+    const isRainingNow = effectiveCurrent && (
+      (effectiveCurrent.precipitation && effectiveCurrent.precipitation > 0) ||
+      (effectiveCurrent.rain && effectiveCurrent.rain > 0) ||
+      [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(effectiveCurrent.weatherCode)
+    );
 
     const rainProbToday = forecast?.daily?.[0]?.precipitationProbabilityMax || 0;
-    const rainProbTomorrow = forecast?.daily?.[1]?.precipitationProbabilityMax || 0;
-    const condition = getConditionDescription(currentWeather.weatherCode);
+    const condition = effectiveCurrent?.weatherCode != null ? getConditionDescription(effectiveCurrent.weatherCode) : 'Skies';
+    const curTemp = effectiveCurrent?.temperature != null ? `${Math.round(effectiveCurrent.temperature)}°C` : 'seasonal average';
+    const curPrecip = effectiveCurrent?.precipitation || 0;
+    const curWind = effectiveCurrent?.windSpeed != null ? `${Math.round(effectiveCurrent.windSpeed)} km/h` : 'normal';
 
     if (isRainingNow || rainProbToday >= 40) {
-      const isHeavy = currentWeather.precipitation >= 10 || rainProbToday >= 80;
+      const isHeavy = (effectiveCurrent?.precipitation >= 10) || rainProbToday >= 80;
       if (isHeavy) {
         return {
-          reply: `⚠️ HIGH RISK: HEAVY PRECIPITATION\n\nWhat is happening:\nHeavy rain is affecting ${place}. Current rate: ${currentWeather.precipitation || 'Moderate to heavy'} mm/h with ${rainProbToday}% probability today.\n\nWhat it means:\nRoad waterlogging, reduced braking traction, and potential flash ponding in dips and underpasses.\n\nWhat to do:\n1. Yes, definitely carry an umbrella or waterproof rainwear.\n2. Avoid walking or driving through standing water of unknown depth.\n3. Allow extra travel time and use headlights.\n\nEmergency:\nCall 112 if water enters ground-floor premises.\n\nData Trust: Open-Meteo Live Telemetry & Numerical Forecast.`,
+          reply: `⚠️ HIGH RISK: HEAVY PRECIPITATION\n\nWhat is happening:\nHeavy rain is affecting ${place}. Current rate: ${curPrecip || 'Moderate to heavy'} mm/h with ${rainProbToday}% probability today.\n\nWhat it means:\nRoad waterlogging, reduced braking traction, and potential flash ponding in dips and underpasses.\n\nWhat to do:\n1. Yes, definitely carry an umbrella or waterproof rainwear.\n2. Avoid walking or driving through standing water of unknown depth.\n3. Allow extra travel time and use headlights.\n\nEmergency:\nCall 112 if water enters ground-floor premises.\n\nData Trust: Open-Meteo Live Telemetry & Numerical Forecast.`,
           riskLevel: 'HIGH',
           actions,
         };
       }
 
       return {
-        reply: `🌧️ RAIN ADVISORY\n\nYes, you should carry an umbrella today. Current condition in ${place} is ${condition.toLowerCase()} with a ${rainProbToday}% chance of rain.\n\nPrecipitation rate is approximately ${currentWeather.precipitation || 0} mm/h with winds of ${Math.round(currentWeather.windSpeed || 0)} km/h.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        reply: `🌧️ RAIN ADVISORY\n\nYes, you should carry an umbrella today. Current condition in ${place} is ${condition.toLowerCase()} with a ${rainProbToday}% chance of rain.\n\nPrecipitation rate is approximately ${curPrecip} mm/h with winds of ${curWind}.\n\nData Trust: Open-Meteo Live Telemetry.`,
         riskLevel: 'MODERATE',
         actions,
       };
     }
 
     return {
-      reply: `✓ SAFE / NORMAL\n\nRain is unlikely in ${place} today. The chance of precipitation is only ${rainProbToday}%, and skies are currently ${condition.toLowerCase()} at ${Math.round(currentWeather.temperature)}°C.\n\nYou do not need an umbrella for outdoor activities right now.\n\nData Trust: Open-Meteo Live Telemetry.`,
+      reply: `✓ SAFE / NORMAL\n\nRain is unlikely in ${place} today. The chance of precipitation is only ${rainProbToday}%, and skies are currently ${condition.toLowerCase()} at ${curTemp}.\n\nYou do not need an umbrella for outdoor activities right now.\n\nData Trust: Open-Meteo Live Telemetry.`,
       riskLevel: 'LOW',
       actions,
     };
@@ -716,8 +755,9 @@ function generateWeatherGPTReply({
   // 8. Air Quality (AQI) Questions
   if (intent.isAqi) {
     if (!airQuality || airQuality.europeanAqi == null) {
+      const tempNote = effectiveCurrent?.temperature != null ? ` Current ambient temperature is ${Math.round(effectiveCurrent.temperature)}°C and wind speed is ${Math.round(effectiveCurrent.windSpeed || 0)} km/h.` : '';
       return {
-        reply: `Air quality sensor telemetry is temporarily calibrating for ${place}. Current ambient temperature is ${Math.round(currentWeather.temperature)}°C and wind speed is ${Math.round(currentWeather.windSpeed || 0)} km/h.`,
+        reply: `Air quality sensor telemetry is temporarily calibrating for ${place}.${tempNote}`,
         riskLevel: 'LOW',
         actions,
       };
@@ -781,8 +821,13 @@ function generateWeatherGPTReply({
       };
     }
 
+    const curCond = effectiveCurrent?.weatherCode != null ? getConditionDescription(effectiveCurrent.weatherCode).toLowerCase() : 'normal weather';
+    const curT = effectiveCurrent?.temperature != null ? `${Math.round(effectiveCurrent.temperature)}°C` : 'seasonal normal';
+    const curW = Math.round(effectiveCurrent?.windSpeed || 0);
+    const curP = effectiveCurrent?.precipitation || 0;
+
     return {
-      reply: `✓ SAFE / NORMAL\n\nIt is currently safe for travel and outdoor activities in ${place}. Current weather is ${getConditionDescription(currentWeather.weatherCode).toLowerCase()} at ${Math.round(currentWeather.temperature)}°C with wind speeds of ${Math.round(currentWeather.windSpeed || 0)} km/h and ${currentWeather.precipitation || 0} mm rain.\n\nRoad and atmospheric conditions are normal.\n\nData Trust: Open-Meteo Live Telemetry.`,
+      reply: `✓ SAFE / NORMAL\n\nIt is currently safe for travel and outdoor activities in ${place}. Current weather is ${curCond} at ${curT} with wind speeds of ${curW} km/h and ${curP} mm rain.\n\nRoad and atmospheric conditions are normal.\n\nData Trust: Open-Meteo Live Telemetry.`,
       riskLevel: 'LOW',
       actions,
     };
@@ -808,32 +853,56 @@ function generateWeatherGPTReply({
   }
 
   // 12. Tomorrow / Future Forecast
-  if (intent.isTomorrow && forecast?.daily?.[1]) {
-    const tom = forecast.daily[1];
-    const maxT = Math.round(tom.tempMax);
-    const minT = Math.round(tom.tempMin);
-    const rainP = tom.precipitationProbabilityMax || 0;
-    const cond = getConditionDescription(tom.weatherCode);
+  if (intent.isTomorrow) {
+    if (forecast?.daily?.[1]) {
+      const tom = forecast.daily[1];
+      const maxT = Math.round(tom.tempMax);
+      const minT = Math.round(tom.tempMin);
+      const rainP = tom.precipitationProbabilityMax || 0;
+      const cond = getConditionDescription(tom.weatherCode);
 
-    return {
-      reply: `📅 FORECAST FOR TOMORROW (${place})\n\nExpect ${cond.toLowerCase()} with daytime maximum temperatures reaching ${maxT}°C and overnight lows around ${minT}°C.\n\n• Rain Probability: ${rainP}%\n• Maximum Wind: ${Math.round(tom.windSpeedMax || 0)} km/h\n• Sunrise: ${tom.sunrise ? tom.sunrise.slice(11, 16) : '06:00'} | Sunset: ${tom.sunset ? tom.sunset.slice(11, 16) : '18:00'}\n\nData Trust: Open-Meteo Numerical Weather Prediction.`,
-      riskLevel: 'LOW',
-      actions,
-    };
+      return {
+        reply: `📅 FORECAST FOR TOMORROW (${place})\n\nExpect ${cond.toLowerCase()} with daytime maximum temperatures reaching ${maxT}°C and overnight lows around ${minT}°C.\n\n• Rain Probability: ${rainP}%\n• Maximum Wind: ${Math.round(tom.windSpeedMax || 0)} km/h\n• Sunrise: ${tom.sunrise ? tom.sunrise.slice(11, 16) : '06:00'} | Sunset: ${tom.sunset ? tom.sunset.slice(11, 16) : '18:00'}\n\nData Trust: Open-Meteo Numerical Weather Prediction.`,
+        riskLevel: 'LOW',
+        actions,
+      };
+    }
+
+    if (effectiveCurrent) {
+      const cond = getConditionDescription(effectiveCurrent.weatherCode);
+      const temp = Math.round(effectiveCurrent.temperature);
+      return {
+        reply: `📅 FORECAST FOR TOMORROW (${place})\n\nTomorrow's high-resolution numerical projection model is currently updating for ${place}.\n\nCurrent conditions are ${cond.toLowerCase()} at ${temp}°C with winds of ${Math.round(effectiveCurrent.windSpeed || 0)} km/h. Please check back shortly for full 7-day model projections.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        riskLevel: 'LOW',
+        actions,
+      };
+    }
   }
 
   // 13. General Upcoming / 5-Day Forecast
-  if (intent.isForecast && forecast?.daily?.length > 1) {
-    const days = forecast.daily.slice(0, 5).map((d) => {
-      const dateStr = d.date ? d.date.slice(5) : '';
-      return `• ${dateStr}: ${getConditionDescription(d.weatherCode)}, High ${Math.round(d.tempMax)}°C / Low ${Math.round(d.tempMin)}°C, Rain: ${d.precipitationProbabilityMax || 0}%`;
-    }).join('\n');
+  if (intent.isForecast) {
+    if (forecast?.daily?.length > 1) {
+      const days = forecast.daily.slice(0, 5).map((d) => {
+        const dateStr = d.date ? d.date.slice(5) : '';
+        return `• ${dateStr}: ${getConditionDescription(d.weatherCode)}, High ${Math.round(d.tempMax)}°C / Low ${Math.round(d.tempMin)}°C, Rain: ${d.precipitationProbabilityMax || 0}%`;
+      }).join('\n');
 
-    return {
-      reply: `📅 5-DAY WEATHER FORECAST (${place})\n\n${days}\n\nData Trust: Open-Meteo 7-Day Numerical Forecast.`,
-      riskLevel: 'LOW',
-      actions,
-    };
+      return {
+        reply: `📅 5-DAY WEATHER FORECAST (${place})\n\n${days}\n\nData Trust: Open-Meteo 7-Day Numerical Forecast.`,
+        riskLevel: 'LOW',
+        actions,
+      };
+    }
+
+    if (effectiveCurrent) {
+      const cond = getConditionDescription(effectiveCurrent.weatherCode);
+      const temp = Math.round(effectiveCurrent.temperature);
+      return {
+        reply: `📅 WEATHER FORECAST (${place})\n\nExtended 5-day numerical forecasts are currently refreshing for ${place}.\n\nCurrent weather is ${cond.toLowerCase()} at ${temp}°C with winds of ${Math.round(effectiveCurrent.windSpeed || 0)} km/h.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        riskLevel: 'LOW',
+        actions,
+      };
+    }
   }
 
   // 14. Severe Weather / Hazards Overall Check (Triggered when explicitly inquiring about hazards)
@@ -847,19 +916,24 @@ function generateWeatherGPTReply({
       };
     }
 
+    const cond = effectiveCurrent?.weatherCode != null ? getConditionDescription(effectiveCurrent.weatherCode) : 'Normal Conditions';
+    const temp = effectiveCurrent?.temperature != null ? Math.round(effectiveCurrent.temperature) : '--';
+    const wind = Math.round(effectiveCurrent?.windSpeed || 0);
+    const vis = effectiveCurrent?.visibilityKm || 10;
+
     return {
-      reply: `✓ SAFE / NORMAL\n\nNo severe weather warnings, gale-force winds, or flood conditions are currently detected for ${place}.\n\nCurrent conditions: ${getConditionDescription(currentWeather.weatherCode)} at ${Math.round(currentWeather.temperature)}°C, wind ${Math.round(currentWeather.windSpeed || 0)} km/h, and visibility ${currentWeather.visibilityKm || 10} km.\n\nData Trust: Open-Meteo Live Telemetry & GDACS Feeds.`,
+      reply: `✓ SAFE / NORMAL\n\nNo severe weather warnings, gale-force winds, or flood conditions are currently detected for ${place}.\n\nCurrent conditions: ${cond} at ${temp}°C, wind ${wind} km/h, and visibility ${vis} km.\n\nData Trust: Open-Meteo Live Telemetry & GDACS Feeds.`,
       riskLevel: 'LOW',
       actions,
     };
   }
 
   // 15. Default: Comprehensive Current Conditions & Explanation
-  const temp = Math.round(currentWeather.temperature);
-  const feelsLike = Math.round(currentWeather.apparentTemperature || temp);
-  const cond = getConditionDescription(currentWeather.weatherCode);
-  const humidity = currentWeather.relativeHumidity != null ? `${currentWeather.relativeHumidity}%` : 'N/A';
-  const wind = Math.round(currentWeather.windSpeed || 0);
+  const temp = effectiveCurrent?.temperature != null ? Math.round(effectiveCurrent.temperature) : '--';
+  const feelsLike = effectiveCurrent?.apparentTemperature != null ? Math.round(effectiveCurrent.apparentTemperature) : temp;
+  const cond = effectiveCurrent?.weatherCode != null ? getConditionDescription(effectiveCurrent.weatherCode) : 'Normal Conditions';
+  const humidity = effectiveCurrent?.relativeHumidity != null ? `${effectiveCurrent.relativeHumidity}%` : 'N/A';
+  const wind = Math.round(effectiveCurrent?.windSpeed || 0);
   const aqiBadge = airQuality?.europeanAqi != null ? `AQI: ${airQuality.europeanAqi} (${airQuality.severity})` : 'AQI: Normal';
 
   const riskPrefix = isHighRisk && riskAnalysis.risks.length > 0
@@ -884,7 +958,7 @@ function generateWeatherGPTReply({
   }
 
   return {
-    reply: `${riskPrefix}📍 WEATHER REPORT: ${place.toUpperCase()}\n\n• Condition: ${cond}\n• Temperature: ${temp}°C (Feels like: ${feelsLike}°C)\n• Wind: ${wind} km/h (Gusts: ${Math.round(currentWeather.windGusts || wind)} km/h)\n• Humidity: ${humidity} | Visibility: ${currentWeather.visibilityKm || 10} km\n• Air Quality: ${aqiBadge}\n\nGuidance: Conditions are ${isHighRisk ? 'HAZARDOUS - exercise caution' : 'safe and normal for daily activities'}.\n\nData Trust: LIVE TELEMETRY (Open-Meteo Verified).`,
+    reply: `${riskPrefix}📍 WEATHER REPORT: ${place.toUpperCase()}\n\n• Condition: ${cond}\n• Temperature: ${temp}°C (Feels like: ${feelsLike}°C)\n• Wind: ${wind} km/h (Gusts: ${Math.round(effectiveCurrent?.windGusts || wind)} km/h)\n• Humidity: ${humidity} | Visibility: ${effectiveCurrent?.visibilityKm || 10} km\n• Air Quality: ${aqiBadge}\n\nGuidance: Conditions are ${isHighRisk ? 'HAZARDOUS - exercise caution' : 'safe and normal for daily activities'}.\n\nData Trust: LIVE TELEMETRY (Open-Meteo Verified).`,
     riskLevel: isHighRisk ? 'HIGH' : 'LOW',
     actions,
   };
@@ -1086,25 +1160,39 @@ async function processWeatherGPTChat({
       if (wRes.value.isCached) feedStatus = 'CACHED';
     } else {
       feedStatus = 'PARTIAL_LIVE';
+      console.warn('[DIAGNOSTIC] weather fetch failure:', wRes.status === 'rejected' ? wRes.reason?.message : 'no data returned');
     }
 
     if (fRes.status === 'fulfilled' && fRes.value) {
       forecast = fRes.value;
+    } else {
+      console.warn('[DIAGNOSTIC] forecast failure:', fRes.status === 'rejected' ? fRes.reason?.message : 'no data returned');
     }
+
     if (aqiRes.status === 'fulfilled' && aqiRes.value) {
       airQuality = aqiRes.value;
+    } else {
+      console.warn('[DIAGNOSTIC] AQI failure:', aqiRes.status === 'rejected' ? aqiRes.reason?.message : 'no data returned');
     }
+
     if (cycRes.status === 'fulfilled' && cycRes.value) {
       cyclones = cycRes.value;
+    } else {
+      console.warn('[DIAGNOSTIC] GDACS failure (cyclones):', cycRes.status === 'rejected' ? cycRes.reason?.message : 'no data returned');
     }
+
     if (disRes.status === 'fulfilled' && disRes.value) {
       disasterEvents = disRes.value;
+    } else {
+      console.warn('[DIAGNOSTIC] GDACS failure (disaster events):', disRes.status === 'rejected' ? disRes.reason?.message : 'no data returned');
     }
+
     if (opsRes.status === 'fulfilled' && opsRes.value) {
       operationalContext = opsRes.value;
     }
   } catch (e) {
     feedStatus = 'UNAVAILABLE';
+    console.error('[DIAGNOSTIC] unexpected exception during telemetry gathering:', e.message);
   }
 
   // 7. Synthesize Response (LLM if configured, otherwise deterministic engine)
