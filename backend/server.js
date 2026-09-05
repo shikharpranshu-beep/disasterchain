@@ -58,7 +58,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     project: 'DisasterChain',
     tagline: 'Respond Faster. Recover Smarter. Track Transparently.',
-    version: '1.2.0-weather-live-connectivity',
+    version: '1.2.1-weather-gpt-intent-priority',
     supportedRoles: ['citizen', 'volunteer', 'ngo', 'responder', 'admin'],
     database: mongoose.connection.readyState === 1 ? 'MongoDB Atlas Connected' : 'In-Memory Mode',
     dbHost: mongoose.connection.host || 'N/A',
