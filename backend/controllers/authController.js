@@ -11,6 +11,7 @@ const {
   sendPasswordChangedConfirmation,
   sendWelcomeEmail,
   getEmailDeliveryStatus,
+  checkEmailConfigStatus,
 } = require('../services/emailService');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
@@ -511,7 +512,7 @@ exports.forgotPassword = async (req, res) => {
     if (isDbConnected()) {
       const user = await User.findOne({ email: normalizedEmail });
 
-      // Return generic safe response if user not found to prevent enumeration
+      // Return generic safe response if user not found to prevent account enumeration
       if (!user) {
         return res.json({
           success: true,
@@ -520,7 +521,7 @@ exports.forgotPassword = async (req, res) => {
         });
       }
 
-      // Generate 15-minute password reset token
+      // Generate 15-minute cryptographically random password reset token (stored as sha256 hash)
       const rawResetToken = user.createPasswordResetToken();
       await user.save({ validateBeforeSave: false });
 
@@ -531,42 +532,49 @@ exports.forgotPassword = async (req, res) => {
         token: rawResetToken,
       });
 
-      const resetResponse = {
+      // If email provider rejected or failed to deliver, do not falsely report success
+      if (!emailResult || !emailResult.success) {
+        return res.status(502).json({
+          success: false,
+          code: 'EMAIL_DELIVERY_FAILED',
+          message: 'Unable to send the password reset email right now. Please try again later.',
+        });
+      }
+
+      return res.json({
         success: true,
         message:
           'If an account is associated with that email, a password reset link has been sent.',
-        emailDelivery: {
-          mode: emailResult.mode,
-          resendId: emailResult.id || null,
-          from: emailResult.from || null,
-          recipient: user.email,
-          status: emailResult.deliveryStatus || emailResult.lastEvent || (emailResult.mode === 'resend' ? 'accepted' : 'console'),
-          accountNotice: 'Testing domain onboarding@resend.dev delivers exclusively to your verified Resend account address.',
-        },
-      };
-
-      if (process.env.NODE_ENV !== 'production') {
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-        resetResponse.devMode = {
-          enabled: true,
-          mode: 'DEVELOPMENT EMAIL MODE',
-          resetUrl: `${frontendUrl}/reset-password?token=${encodeURIComponent(rawResetToken)}`,
-          notice: 'Zero-cost development mode active. Omitted in production.',
-        };
-      }
-
-      return res.json(resetResponse);
+      });
     }
 
-    return res.json({
-      success: true,
-      message: 'Password reset link sent to your email.',
+    return res.status(503).json({
+      success: false,
+      code: 'DATABASE_UNAVAILABLE',
+      message: 'Database service is currently unavailable. Please try again shortly.',
     });
   } catch (error) {
-    console.error('Forgot password error:', error);
+    console.error('Forgot password error:', error.message);
     return res.status(500).json({
       success: false,
       message: 'Server error while processing password reset request.',
+    });
+  }
+};
+
+// @desc    Get safe email service configuration status (strictly no secrets)
+// @route   GET /api/auth/email-config
+// @access  Public / Diagnostic
+exports.getEmailConfigStatus = async (req, res) => {
+  try {
+    return res.json({
+      success: true,
+      config: checkEmailConfigStatus(),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -652,11 +660,15 @@ exports.resetPassword = async (req, res) => {
       user.resetPasswordExpires = undefined;
       await user.save();
 
-      // Send password changed security alert
-      await sendPasswordChangedConfirmation({
-        email: user.email,
-        name: user.name,
-      });
+      // Send password changed security alert (non-blocking for reset success)
+      try {
+        await sendPasswordChangedConfirmation({
+          email: user.email,
+          name: user.name,
+        });
+      } catch (confirmErr) {
+        console.error('Password changed confirmation error:', confirmErr.message);
+      }
 
       return res.json({
         success: true,

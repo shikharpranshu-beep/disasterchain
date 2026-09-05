@@ -155,11 +155,15 @@ export const AuthProvider = ({ children }) => {
       const res = await apiForgotPassword(email);
       return {
         success: true,
-        message: res.data.message || 'Password reset link sent to your email.',
+        message: res.data.message || "If an account exists for this address, we've sent a password reset link.",
       };
     } catch (err) {
-      const message = err.response?.data?.message || 'Failed to process password reset request.';
-      return { success: false, message };
+      const code = err.response?.data?.code;
+      const message =
+        code === 'EMAIL_DELIVERY_FAILED'
+          ? 'Unable to send the password reset email right now. Please try again later.'
+          : (err.response?.data?.message || 'Unable to process password reset request.');
+      return { success: false, code, message };
     }
   };
 

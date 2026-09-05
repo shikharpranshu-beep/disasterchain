@@ -25,9 +25,13 @@ const ForgotPasswordPage = () => {
 
     if (res.success) {
       setSubmitted(true);
-      setMessage(res.message || 'Password reset link sent to your email.');
+      setMessage("Check your email. If an account exists for this address, we've sent a password reset link.");
     } else {
-      setError(res.message || 'Unable to process password reset request.');
+      if (res.code === 'EMAIL_DELIVERY_FAILED') {
+        setError('Unable to send the password reset email right now. Please try again later.');
+      } else {
+        setError(res.message || 'Unable to send the password reset email right now. Please try again later.');
+      }
     }
   };
 
@@ -69,13 +73,13 @@ const ForgotPasswordPage = () => {
             <Icon name="key" size={24} color="#ffffff" />
           </div>
           <div className="micro-label" style={{ color: 'var(--amber)', marginBottom: '0.25rem' }}>
-            {t('auth.forgotPasswordTitle')}
+            {t('auth.forgotPasswordTitle', 'PASSWORD RECOVERY')}
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.65rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
-            {t('auth.forgotPasswordTitle')}
+            {t('auth.forgotPasswordTitle', 'Forgot Password')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
-            {t('auth.forgotPasswordSubtitle')}
+            {t('auth.forgotPasswordSubtitle', 'Enter your registered email to receive secure recovery directives')}
           </p>
         </div>
 
@@ -89,13 +93,16 @@ const ForgotPasswordPage = () => {
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📨</div>
             <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem', marginBottom: '0.35rem' }}>
-              {t('auth.verifyNotice')}
+              Check your email
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '0.85rem' }}>
               {message}
             </p>
+            <div style={{ background: 'rgba(255, 184, 0, 0.08)', border: '1px solid rgba(255, 184, 0, 0.25)', borderRadius: 'var(--radius-xs)', padding: '0.65rem 0.85rem', fontSize: '0.78rem', color: '#fcd34d', marginBottom: '1.5rem', textAlign: 'left', lineHeight: 1.4 }}>
+              💡 <strong>Security Note:</strong> Check your spam or junk folder if the transmission does not appear in your inbox within a few moments.
+            </div>
             <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
-              {t('auth.alreadyAccount')}
+              Back to Login
             </Link>
           </div>
         ) : (

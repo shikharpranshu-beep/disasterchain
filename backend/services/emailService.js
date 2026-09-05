@@ -13,11 +13,10 @@ const getResendClient = () => {
 };
 
 const getFrontendUrl = () => {
-  // Production URL default must always match canonical deployment
-  if (process.env.NODE_ENV === 'production') {
-    return process.env.FRONTEND_URL || 'https://disasterchain.vercel.app';
+  if (process.env.FRONTEND_URL) {
+    return process.env.FRONTEND_URL.replace(/\/+$/, '');
   }
-  return process.env.FRONTEND_URL || 'http://localhost:3000';
+  return 'https://disasterchain.vercel.app';
 };
 
 const getFromEmail = () => {
@@ -37,6 +36,24 @@ const maskEmail = (email) => {
   const [local, domain] = parts;
   if (local.length <= 2) return `${local[0] || '*'}***@${domain}`;
   return `${local[0]}***${local[local.length - 1]}@${domain}`;
+};
+
+// Safe delivery diagnostics logging (strictly avoids logging tokens, passwords, or secrets)
+const logSafeDeliveryDiagnostic = ({ emailType, provider, status, to, messageId = null, reason = null }) => {
+  const domain = (to && typeof to === 'string' && to.includes('@'))
+    ? to.split('@')[1]
+    : 'unknown';
+  const typeStr = (emailType || 'dispatch').toUpperCase();
+  console.log(`${typeStr}_EMAIL:`);
+  console.log(`provider=${provider || 'none'}`);
+  console.log(`status=${status || 'unknown'}`);
+  console.log(`recipient_domain=${domain}`);
+  if (messageId) {
+    console.log(`message_id=${messageId}`);
+  }
+  if (reason) {
+    console.log(`reason=${reason}`);
+  }
 };
 
 const safeLog = (type, email, status, details = '') => {
@@ -232,24 +249,10 @@ const renderEmailTemplate = ({
 // PROVIDER DISPATCH ENGINE
 // ==========================================
 
-const sendEmail = async ({ to, subject, html, emailType, testUrl = '' }) => {
+const sendEmail = async ({ to, subject, html, emailType }) => {
   const resend = getResendClient();
   const fromEmail = getFromEmail();
 
-  // 1. In Development Mode, output clear zero-cost testing box to server console
-  if (isDevMode()) {
-    console.log('\n================================================================================');
-    console.log(`🛠️  [DEVELOPMENT EMAIL MODE] TYPE: ${emailType.toUpperCase()}`);
-    console.log(`👤 Recipient: ${maskEmail(to)}`);
-    console.log(`📋 Subject: ${subject}`);
-    if (testUrl) {
-      console.log(`🔗 Action URL: ${testUrl}`);
-      console.log('💡 Zero-cost testing active. Open URL in browser to test instantly without custom domain.');
-    }
-    console.log('================================================================================\n');
-  }
-
-  // 2. Dispatch via Resend if client is configured
   if (resend) {
     try {
       const { data, error } = await resend.emails.send({
@@ -260,31 +263,81 @@ const sendEmail = async ({ to, subject, html, emailType, testUrl = '' }) => {
       });
 
       if (error) {
-        safeLog(emailType, to, 'FAILED_PROVIDER_REJECTED', error.message);
-        if (!isDevMode()) {
-          // In production, record failure
-          return { success: false, mode: 'resend', status: 'failed', error: error.message };
-        }
-      } else {
-        safeLog(emailType, to, 'ACCEPTED_QUEUED', `Resend ID: ${data?.id}`);
-        return { success: true, mode: 'resend', status: 'accepted', id: data?.id };
+        const errorMsg = String(error.message || '');
+        const isSandbox =
+          errorMsg.includes('only send testing emails') ||
+          errorMsg.includes('validation_error') ||
+          errorMsg.includes('verify a domain');
+
+        const safeReason = isSandbox
+          ? 'sandbox_recipient_restriction'
+          : (error.name || 'provider_rejection');
+
+        logSafeDeliveryDiagnostic({
+          emailType,
+          provider: 'resend',
+          status: 'failure',
+          to,
+          reason: safeReason,
+        });
+
+        return {
+          success: false,
+          code: 'EMAIL_DELIVERY_FAILED',
+          mode: 'resend',
+          status: 'failed',
+          isSandboxRestriction: isSandbox,
+          error: error.message,
+        };
       }
+
+      logSafeDeliveryDiagnostic({
+        emailType,
+        provider: 'resend',
+        status: 'success',
+        to,
+        messageId: data?.id,
+      });
+
+      return {
+        success: true,
+        mode: 'resend',
+        status: 'accepted',
+        id: data?.id,
+      };
     } catch (err) {
-      safeLog(emailType, to, 'FAILED_EXCEPTION', err.message);
-      if (!isDevMode()) {
-        return { success: false, mode: 'resend', status: 'failed', error: err.message };
-      }
+      logSafeDeliveryDiagnostic({
+        emailType,
+        provider: 'resend',
+        status: 'failure',
+        to,
+        reason: err.name || 'network_exception',
+      });
+
+      return {
+        success: false,
+        code: 'EMAIL_DELIVERY_FAILED',
+        mode: 'resend',
+        status: 'failed',
+        error: err.message,
+      };
     }
-  } else {
-    safeLog(emailType, to, isDevMode() ? 'DEV_SIMULATED' : 'SKIPPED_NO_API_KEY');
   }
 
-  // Fallback for development / unconfigured environments
+  logSafeDeliveryDiagnostic({
+    emailType,
+    provider: 'none',
+    status: 'failure',
+    to,
+    reason: 'missing_resend_api_key',
+  });
+
   return {
-    success: true,
-    mode: isDevMode() ? 'console' : 'none',
-    status: isDevMode() ? 'sent' : 'unconfigured',
-    testUrl,
+    success: false,
+    code: 'EMAIL_DELIVERY_FAILED',
+    mode: 'none',
+    status: 'unconfigured',
+    error: 'Email provider not configured',
   };
 };
 
@@ -307,7 +360,7 @@ exports.sendVerificationEmail = async ({ email, name, token }) => {
       This verification link is valid for <strong>24 hours</strong>.
     `,
     actionUrl: verificationUrl,
-    actionText: '✅ Authenticate Email',
+    actionText: 'AUTHENTICATE EMAIL',
     warningNote: 'If you did not register for DisasterChain, please disregard this transmission.',
   });
 
@@ -316,7 +369,6 @@ exports.sendVerificationEmail = async ({ email, name, token }) => {
     subject,
     html,
     emailType: 'verification',
-    testUrl: verificationUrl,
   });
 };
 
@@ -330,17 +382,17 @@ exports.sendPasswordResetEmail = async ({ email, name, token }) => {
   const subject = 'Reset your DisasterChain password';
 
   const html = renderEmailTemplate({
-    title: 'Password Reset Request',
-    badge: 'CREDENTIAL SECURITY',
-    badgeColor: '#f59e0b',
+    title: 'Reset your password',
+    badge: 'DisasterChain Security',
+    badgeColor: '#00f0ff',
     bodyHtml: `
       Hello <strong>${name || 'Citizen'}</strong>,<br><br>
-      We received a request to reset the password for your DisasterChain account associated with <strong>${maskEmail(email)}</strong>.<br><br>
-      Click the button below to establish a new password. For your security, this reset link expires in <strong>15 minutes</strong>.
+      We received a request to reset your password for your DisasterChain account associated with <strong>${maskEmail(email)}</strong>.<br><br>
+      Click the button below to establish a new password for DisasterChain. For your security, this reset link expires in <strong>15 minutes</strong>.
     `,
     actionUrl: resetUrl,
-    actionText: '🔑 Reset Operator Password',
-    warningNote: 'DisasterChain operators will never ask for your password. If you did not initiate this request, verify your account security immediately.',
+    actionText: 'RESET PASSWORD',
+    warningNote: 'DisasterChain operators will never ask for your password. If you did not initiate this request, you can safely disregard this transmission.',
   });
 
   return await sendEmail({
@@ -348,7 +400,6 @@ exports.sendPasswordResetEmail = async ({ email, name, token }) => {
     subject,
     html,
     emailType: 'password_reset',
-    testUrl: resetUrl,
   });
 };
 
@@ -593,6 +644,15 @@ exports.getEmailDeliveryStatus = async (emailId) => {
   } catch (err) {
     return { available: false, error: err.message };
   }
+};
+
+// Safe environment configuration check (never exposes secret values)
+exports.checkEmailConfigStatus = () => {
+  return {
+    RESEND_API_KEY: process.env.RESEND_API_KEY ? '✓ configured' : '✗ missing',
+    EMAIL_FROM: process.env.EMAIL_FROM ? '✓ configured' : '✓ configured (default: onboarding@resend.dev)',
+    FRONTEND_URL: process.env.FRONTEND_URL ? '✓ configured' : '✓ configured (default: https://disasterchain.vercel.app)',
+  };
 };
 
 // Backward compatibility alias
