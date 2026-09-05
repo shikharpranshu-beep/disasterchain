@@ -79,6 +79,7 @@ const OfflineSyncBadge = () => {
 
   return (
     <div
+      className="offline-sync-badge"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -109,7 +110,8 @@ const OfflineSyncBadge = () => {
           animation: syncState.status === 'SYNCING' || syncState.status === 'OFFLINE' ? 'pulse 1.5s infinite' : 'none',
         }}
       />
-      <span>{config.label}</span>
+      <span className="sync-badge-full">{config.label}</span>
+      <span className="sync-badge-compact">{syncState.status === 'ONLINE' ? 'SYNCED' : config.label}</span>
       {syncState.pendingCount > 0 && syncState.isOnline && (
         <span
           style={{

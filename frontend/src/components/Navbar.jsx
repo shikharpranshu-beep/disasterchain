@@ -7,13 +7,35 @@ import OfflineSyncBadge from './OfflineSyncBadge';
 import NetworkStatusIndicator from './NetworkStatusIndicator';
 import LanguageSelector from './LanguageSelector';
 
+/**
+ * DISASTERCHAIN RESILIENT MISSION CONTROL HUD TOP BAR
+ * 
+ * Target A: Desktop Web (>= 1200px and 900-1199px)
+ * Linear Control Hierarchy:
+ * 1. [DisasterChain Logo + Name]
+ * 2. [Operational Status]
+ * 3. [Weather Intelligence]
+ * 4. [Online]
+ * 5. [Broadcast SOS]
+ * 6. [Live]
+ * 7. [Language]
+ * 8. [Offline Mode]
+ * 9. [Role]
+ * 10. [User Name]
+ * 11. [Info]
+ *
+ * Target B: Android Capacitor Native App (< 900px)
+ * Left: [☰] [shield/logo] DISASTERCHAIN
+ * Center/Right: [🌐 EN ▼]
+ * Right: [🚨 SOS]
+ */
 const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [timeStr, setTimeStr] = useState('');
 
-  // Live Mission Control Telemetry Clock (UTC + Local)
+  // Live Mission Control Telemetry Clock (UTC)
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -33,9 +55,13 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
   };
 
   return (
-    <header className="app-navbar">
-      {/* Left Area: Hamburger Toggle (Mobile/Tablet) + Brand HUD Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', minWidth: 0, flexShrink: 1 }}>
+    <header className="app-navbar" id="disasterchain-app-header">
+      {/* ====================================================================
+          1. BRAND SECTION (Left): IMMUTABLE & COMPLETELY UNCLIPPED
+          flex-shrink: 0, stable min-width, visible across all viewports
+          ==================================================================== */}
+      <div className="hud-brand-container">
+        {/* Mobile/Tablet Hamburger Navigation Drawer Toggle */}
         {onToggleSidebar && (
           <button
             type="button"
@@ -53,155 +79,188 @@ const Navbar = ({ onOpenSos, onToggleSidebar, isMobileMenuOpen }) => {
           </button>
         )}
 
-        <Link to="/" className="hud-logo" style={{ minWidth: 0, flexShrink: 1 }}>
-          <div className="hud-logo-icon" style={{ flexShrink: 0 }}>
+        {/* DisasterChain Logo + Full Branding */}
+        <Link to="/" className="hud-logo" id="disasterchain-brand-logo" title="DisasterChain Mission Control">
+          <div className="brand-mark hud-logo-icon">
             <Icon name="shield-check" size={20} color="var(--primary)" />
           </div>
-          <div style={{ minWidth: 0, overflow: 'hidden' }}>
-            <div className="hud-logo-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              <span>DISASTERCHAIN</span>
-              <span className="hud-logo-tag">{t('common.appTag', 'NET v2.6')}</span>
-            </div>
+          <div className="brand-text-wrap">
+            <span className="brand-name">DISASTERCHAIN</span>
+            <span className="hud-logo-tag brand-tag">{t('common.appTag', 'NET v2.6')}</span>
           </div>
         </Link>
       </div>
 
-      {/* Center Telemetry Readout (Desktop only) */}
-      <div className="hud-telemetry" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <div className="telemetry-chip">
-          <span className="live-beacon-pulse" />
-          <span style={{ color: 'var(--primary)' }}>{t('common.operational', 'OPERATIONAL')}</span>
-          <span style={{ opacity: 0.5 }}>|</span>
-          <span>{timeStr || t('common.syncing', 'SYNCING...')}</span>
-        </div>
-        <Link
-          to="/weather"
-          className="telemetry-chip hover-highlight"
-          style={{
-            textDecoration: 'none',
-            color: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-            cursor: 'pointer',
-            borderColor: 'var(--border-subtle)',
-          }}
-          title={t('weather.weatherIntelligence', 'Weather Intelligence')}
-        >
-          <span style={{ fontSize: '0.95rem' }}>🌤️</span>
-          <span style={{ color: 'var(--cyan)', fontWeight: 700, fontSize: '0.78rem' }}>
-            {t('nav.weatherIntelligence', 'WEATHER INTELLIGENCE')}
-          </span>
-        </Link>
-        <OfflineSyncBadge />
-      </div>
+      {/* ====================================================================
+          MOBILE & ANDROID HEADER CONTROLS (< 900px)
+          Streamlined: [🌐 EN ▼] + [🚨 SOS]
+          Fits strictly within 360px without horizontal scroll
+          ==================================================================== */}
+      <div className="hud-mobile-actions">
+        {/* Compact Mobile 20-Language Selector */}
+        <LanguageSelector compact={true} className="mobile-header-lang" />
 
-      {/* Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-        {/* Urgent Emergency Beacon Button (Always Visible, Mobile & Desktop) */}
+        {/* Primary Emergency SOS Button (Always accessible) */}
         <button
           type="button"
           onClick={onOpenSos}
-          className="btn btn-emergency btn-sm navbar-sos-action"
-          id="navbar-sos-btn"
+          className="btn btn-emergency btn-sm navbar-sos-action mobile-sos-btn"
+          id="navbar-mobile-sos-btn"
           aria-label="Broadcast Emergency SOS"
-          style={{
-            letterSpacing: '0.04em',
-            minHeight: '44px',
-            minWidth: '44px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.4rem',
-            padding: '0 0.85rem',
-            fontWeight: 800,
-          }}
+          title="Broadcast Emergency SOS"
         >
-          <Icon name="alert-circle" size={17} color="#ffffff" />
+          <Icon name="alert-circle" size={16} color="#ffffff" />
           <span>{t('nav.broadcastSos', 'SOS')}</span>
         </button>
-
-        {/* Desktop Extras: Hidden on mobile & tablet viewports (< 900px) */}
-        <div className="navbar-desktop-extras" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {/* Global Tactical Network Status Indicator */}
-          <NetworkStatusIndicator />
-
-          {/* Multilingual 20-Language Selector */}
-          <LanguageSelector />
-
-          {/* Low-Connectivity Mode Switcher */}
-          <Link
-            to="/offline"
-            className="btn btn-secondary btn-sm navbar-offline-btn"
-            title={t('offline.offlineModeTitle', 'Offline & Survivability Mode')}
-            style={{ minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-          >
-            <Icon name="wifi-off" size={15} color="var(--primary)" />
-            <span style={{ fontSize: '0.78rem' }}>{t('nav.offlineMode', 'Offline')}</span>
-          </Link>
-
-          {/* User Status / Authentication */}
-          {isAuthenticated ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Link
-                to="/profile"
-                className="btn btn-ghost btn-sm"
-                style={{ padding: '0.35rem 0.55rem', minHeight: '40px' }}
-                title="User Profile"
-              >
-                <span className="badge badge-info" style={{ textTransform: 'capitalize', fontSize: '0.68rem' }}>
-                  {user?.role || 'Citizen'}
-                </span>
-                <span className="navbar-username" style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.82rem' }}>
-                  {user?.name?.split(' ')[0] || 'User'}
-                </span>
-              </Link>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="btn btn-ghost btn-sm"
-                title={t('nav.logout', 'Sign Out')}
-                style={{ color: 'var(--text-muted)', padding: '0.4rem', minHeight: '40px', minWidth: '40px' }}
-              >
-                <Icon name="logout" size={16} />
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Link
-                to="/login"
-                id="navbar-login-btn"
-                className="btn btn-ghost btn-sm"
-                style={{ padding: '0.4rem 0.75rem', fontSize: '0.82rem', minHeight: '40px', fontWeight: 700 }}
-              >
-                {t('nav.login', 'Sign In')}
-              </Link>
-              <Link
-                to="/register"
-                id="navbar-register-btn"
-                className="btn btn-primary btn-sm"
-                style={{ padding: '0.4rem 0.75rem', fontSize: '0.82rem', minHeight: '40px', fontWeight: 700 }}
-              >
-                {t('nav.register', 'Register')}
-              </Link>
-            </div>
-          )}
-        </div>
       </div>
 
-      <style>{`
-        @media (max-width: 899px) {
-          .navbar-desktop-extras {
-            display: none !important;
-          }
-        }
-        @media (max-width: 480px) {
-          .navbar-username {
-            display: none !important;
-          }
-        }
-      `}</style>
+      {/* ====================================================================
+          DESKTOP MISSION CONTROL CONTROLS TRACK (>= 900px)
+          Required Linear Order:
+          2. [Operational Status]
+          3. [Weather Intelligence]
+          4. [Online]
+          5. [Broadcast SOS]
+          6. [Live]
+          7. [Language]
+          8. [Offline Mode]
+          9. [Role]
+          10. [User Name]
+          11. [Info]
+          ==================================================================== */}
+      <div className="hud-desktop-controls-track">
+        {/* 2. [Operational Status] */}
+        <div
+          className="telemetry-chip telemetry-operational"
+          title={`Operational status. Current telemetry clock: ${timeStr}`}
+        >
+          <span className="live-beacon-pulse" />
+          <span className="op-label-full" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+            {t('common.operational', 'OPERATIONAL')}
+          </span>
+          <span className="op-label-compact" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+            OP
+          </span>
+          <span className="op-divider" style={{ opacity: 0.4 }}>|</span>
+          <span className="op-clock">{timeStr || t('common.syncing', 'SYNCING...')}</span>
+        </div>
+
+        {/* 3. [Weather Intelligence] */}
+        <Link
+          to="/weather"
+          className="telemetry-chip hover-highlight telemetry-weather"
+          title={t('weather.weatherIntelligence', 'Weather Intelligence')}
+        >
+          <span style={{ fontSize: '0.92rem' }}>🌤️</span>
+          <span className="weather-label-full" style={{ color: 'var(--cyan, #38bdf8)', fontWeight: 700, fontSize: '0.78rem' }}>
+            {t('nav.weatherIntelligence', 'WEATHER INTELLIGENCE')}
+          </span>
+          <span className="weather-label-compact" style={{ color: 'var(--cyan, #38bdf8)', fontWeight: 700, fontSize: '0.74rem' }}>
+            WEATHER
+          </span>
+        </Link>
+
+        {/* 4. [Online] */}
+        <div className="telemetry-online-wrap" title="Tactical network queue & sync status">
+          <OfflineSyncBadge />
+        </div>
+
+        {/* 5. [Broadcast SOS] */}
+        <button
+          type="button"
+          onClick={onOpenSos}
+          className="btn btn-emergency btn-sm navbar-sos-action desktop-sos-btn"
+          id="navbar-sos-btn"
+          aria-label="Broadcast Emergency SOS"
+          title="Broadcast Urgent Distress Beacon"
+        >
+          <Icon name="alert-circle" size={16} color="#ffffff" />
+          <span className="sos-label-full">{t('nav.broadcastSos', 'BROADCAST SOS')}</span>
+          <span className="sos-label-compact">{t('nav.broadcastSos', 'SOS')}</span>
+        </button>
+
+        {/* 6. [Live] */}
+        <div className="telemetry-live-wrap" title="Network connectivity state">
+          <NetworkStatusIndicator />
+        </div>
+
+        {/* 7. [Language] */}
+        <div className="telemetry-lang-wrap" title="Multilingual i18n switcher (20 languages)">
+          <LanguageSelector />
+        </div>
+
+        {/* 8. [Offline Mode] */}
+        <Link
+          to="/offline"
+          className="btn btn-secondary btn-sm navbar-offline-btn"
+          id="navbar-offline-btn"
+          title={t('offline.offlineModeTitle', 'Offline & Survivability Mode')}
+        >
+          <Icon name="wifi-off" size={14} color="var(--primary)" />
+          <span className="offline-label-full" style={{ fontSize: '0.78rem' }}>{t('nav.offlineMode', 'Offline')}</span>
+          <span className="offline-label-compact" style={{ fontSize: '0.74rem' }}>OFF</span>
+        </Link>
+
+        {/* 9. [Role] + 10. [User Name] / Authentication Cluster */}
+        {isAuthenticated ? (
+          <div className="navbar-user-cluster">
+            <Link
+              to="/profile"
+              className="btn btn-ghost btn-sm navbar-profile-link"
+              title="User Profile & Identity"
+            >
+              {/* 9. [Role] */}
+              <span className="badge badge-info navbar-role-badge" style={{ textTransform: 'capitalize', fontSize: '0.68rem' }}>
+                {user?.role || 'Citizen'}
+              </span>
+              {/* 10. [User Name] */}
+              <span className="navbar-username" style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.80rem' }}>
+                {user?.name?.split(' ')[0] || 'User'}
+              </span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="btn btn-ghost btn-sm navbar-logout-btn"
+              title={t('nav.logout', 'Sign Out')}
+              aria-label="Sign Out"
+            >
+              <Icon name="logout" size={15} />
+            </button>
+          </div>
+        ) : (
+          <div className="navbar-auth-cluster">
+            {/* 9. [Role: Visitor] + 10. [User Name / Sign In & Register] */}
+            <Link
+              to="/login"
+              id="navbar-login-btn"
+              className="btn btn-ghost btn-sm navbar-login-btn"
+            >
+              {t('nav.login', 'Sign In')}
+            </Link>
+            <Link
+              to="/register"
+              id="navbar-register-btn"
+              className="btn btn-primary btn-sm navbar-register-btn"
+            >
+              {t('nav.register', 'Register')}
+            </Link>
+          </div>
+        )}
+
+        {/* 11. [Info] */}
+        <Link
+          to="/guides"
+          className="btn btn-ghost btn-sm navbar-info-btn"
+          id="navbar-info-btn"
+          title={t('guides.title', 'Emergency Preparedness & System Information')}
+          aria-label="System & Preparedness Information"
+        >
+          <Icon name="info" size={16} color="var(--text-secondary)" />
+          <span className="navbar-info-label">Info</span>
+        </Link>
+      </div>
     </header>
   );
 };
