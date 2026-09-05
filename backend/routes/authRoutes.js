@@ -16,6 +16,9 @@ const {
   adminVerifyUser,
   checkEmailStatus,
   getEmailConfigStatus,
+  getPasswordRecoveryRequests,
+  approvePasswordRecoveryRequest,
+  rejectPasswordRecoveryRequest,
 } = require('../controllers/authController');
 const { protect, authorizeAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
@@ -41,6 +44,9 @@ router.put('/preferences', protect, updatePreferences);
 router.get('/users', protect, authorizeAdmin, getUsers);
 router.put('/users/:id/role', protect, authorizeAdmin, updateUserRole);
 router.put('/users/:id/verify', protect, authorizeAdmin, adminVerifyUser);
+router.get('/password-recovery-requests', protect, authorizeAdmin, getPasswordRecoveryRequests);
+router.put('/password-recovery-requests/:id/approve', protect, authorizeAdmin, approvePasswordRecoveryRequest);
+router.put('/password-recovery-requests/:id/reject', protect, authorizeAdmin, rejectPasswordRecoveryRequest);
 
 // Development-only zero-cost verification endpoint (Strictly omitted in production)
 if (process.env.NODE_ENV !== 'production') {

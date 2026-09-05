@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/i18n';
@@ -7,13 +7,20 @@ import Icon from '../components/Icons';
 const ResetPasswordPage = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const token = (searchParams.get('token') || '').trim();
+  const initialToken = (searchParams.get('token') || searchParams.get('code') || '').trim();
 
+  const [recoveryCode, setRecoveryCode] = useState(initialToken);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialToken) {
+      setRecoveryCode(initialToken);
+    }
+  }, [initialToken]);
 
   const { resetPassword } = useAuth();
 
@@ -35,8 +42,9 @@ const ResetPasswordPage = () => {
     e.preventDefault();
     setError('');
 
-    if (!token) {
-      return setError('Missing or invalid password reset token in URL.');
+    const trimmedCode = recoveryCode.trim();
+    if (!trimmedCode) {
+      return setError('Please enter the recovery authorization code provided by your administrator.');
     }
 
     if (password !== confirmPassword) {
@@ -44,38 +52,19 @@ const ResetPasswordPage = () => {
     }
 
     if (passwordScore < 5) {
-      return setError('Password must meet all security requirements.');
+      return setError('Password must meet all security requirements listed below.');
     }
 
     setLoading(true);
-    const res = await resetPassword({ token, password, confirmPassword });
+    const res = await resetPassword({ token: trimmedCode, password, confirmPassword });
     setLoading(false);
 
     if (res.success) {
       setSuccess(true);
     } else {
-      setError(res.message || 'Password reset failed. The link may have expired.');
+      setError(res.message || 'Password reset failed. The code may be invalid, expired, or already used.');
     }
   };
-
-  if (!token) {
-    return (
-      <div style={{ minHeight: 'calc(100vh - 68px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1.5rem', background: 'var(--bg-space)' }}>
-        <div className="spatial-panel spatial-panel-critical" style={{ maxWidth: '460px', width: '100%', padding: '2.5rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
-            {t('auth.invalidRecoveryToken', 'Invalid Recovery Token')}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-            {t('auth.invalidTokenDesc', 'The password reset link is invalid or missing required verification parameters.')}
-          </p>
-          <Link to="/forgot-password" className="btn btn-primary" style={{ width: '100%' }}>
-            {t('auth.requestNewLink', 'Request New Recovery Link')}
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -91,7 +80,7 @@ const ResetPasswordPage = () => {
       <div
         className="spatial-panel"
         style={{
-          maxWidth: '460px',
+          maxWidth: '480px',
           width: '100%',
           padding: '2.5rem 2.25rem',
           border: '1px solid var(--border-highlight)',
@@ -121,12 +110,22 @@ const ResetPasswordPage = () => {
             {t('auth.resetPasswordTitle', 'Set New Operator Key')}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
-            {t('auth.resetSubtitle', 'Establish strong password credentials for grid authentication')}
+            Enter your admin-issued recovery code and new password to restore account access.
           </p>
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(255, 46, 77, 0.15)', border: '1px solid var(--border-red)', borderRadius: 'var(--radius-xs)', padding: '0.75rem 1rem', color: '#ff8597', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
+          <div
+            style={{
+              background: 'rgba(255, 46, 77, 0.15)',
+              border: '1px solid var(--border-red)',
+              borderRadius: 'var(--radius-xs)',
+              padding: '0.75rem 1rem',
+              color: '#ff8597',
+              fontSize: '0.82rem',
+              marginBottom: '1.25rem',
+            }}
+          >
             ⚠️ {error}
           </div>
         )}
@@ -137,16 +136,41 @@ const ResetPasswordPage = () => {
             <div style={{ fontWeight: 800, color: '#ffffff', fontSize: '1.2rem', marginBottom: '0.35rem' }}>
               {t('auth.keyResetSuccess', 'Key Re-established Successfully')}
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              {t('auth.credentialsUpdated', 'Your operator credentials have been updated and synchronized with the security grid.')}
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+              Your operator credentials have been updated and synchronized with the security grid. You can now log in.
             </p>
-            <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
+            <Link to="/login" className="btn btn-primary" style={{ width: '100%', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {t('auth.proceedToSignIn', 'Proceed to Grid Sign In')}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: '1.15rem' }}>
+              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Recovery Authorization Code</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--amber)', fontWeight: 600 }}>Valid for 15 min</span>
+              </label>
+              <input
+                type="text"
+                required
+                className="form-input"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  letterSpacing: '0.08em',
+                  fontWeight: 700,
+                  color: '#38bdf8',
+                  textTransform: 'uppercase',
+                }}
+                value={recoveryCode}
+                onChange={(e) => setRecoveryCode(e.target.value)}
+                placeholder="RCVR-XXXX-XXXX-XXXX"
+              />
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                Provided directly by your DisasterChain incident commander or administrator.
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '1.15rem' }}>
               <label className="form-label">{t('auth.newPassword', 'New Password')}</label>
               <input
                 type="password"
@@ -159,25 +183,37 @@ const ResetPasswordPage = () => {
             </div>
 
             {/* Criteria Checklist */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', marginBottom: '1rem', fontSize: '0.72rem', fontFamily: 'var(--font-mono)' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '0.35rem',
+                marginBottom: '1rem',
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-mono)',
+                background: 'rgba(255, 255, 255, 0.03)',
+                padding: '0.65rem 0.85rem',
+                borderRadius: 'var(--radius-xs)',
+              }}
+            >
               <span style={{ color: passwordCriteria.hasLength ? 'var(--mint)' : 'var(--text-muted)' }}>
                 {passwordCriteria.hasLength ? '✓' : '○'} {t('auth.criteriaLength', '8+ Characters')}
               </span>
               <span style={{ color: passwordCriteria.hasUpper ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasUpper ? '✓' : '○'} {t('auth.criteriaUpper', 'Uppercase')}
+                {passwordCriteria.hasUpper ? '✓' : '○'} {t('auth.criteriaUpper', 'Uppercase (A-Z)')}
               </span>
               <span style={{ color: passwordCriteria.hasLower ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasLower ? '✓' : '○'} {t('auth.criteriaLower', 'Lowercase')}
+                {passwordCriteria.hasLower ? '✓' : '○'} {t('auth.criteriaLower', 'Lowercase (a-z)')}
               </span>
               <span style={{ color: passwordCriteria.hasNumber ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasNumber ? '✓' : '○'} {t('auth.criteriaNumber', 'Number')}
+                {passwordCriteria.hasNumber ? '✓' : '○'} {t('auth.criteriaNumber', 'Number (0-9)')}
               </span>
               <span style={{ color: passwordCriteria.hasSpecial ? 'var(--mint)' : 'var(--text-muted)' }}>
-                {passwordCriteria.hasSpecial ? '✓' : '○'} {t('auth.criteriaSpecial', 'Special Char')}
+                {passwordCriteria.hasSpecial ? '✓' : '○'} {t('auth.criteriaSpecial', 'Special (!@#...)')}
               </span>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
               <label className="form-label">{t('auth.confirmPassword', 'Confirm New Password')}</label>
               <input
                 type="password"
@@ -193,12 +229,19 @@ const ResetPasswordPage = () => {
               type="submit"
               disabled={loading}
               className="btn btn-primary"
-              style={{ width: '100%', marginTop: '0.5rem' }}
+              style={{ width: '100%', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               {loading ? t('common.loading', 'Re-establishing...') : t('auth.resetBtn', 'Update Operator Password →')}
             </button>
           </form>
         )}
+
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+          Don't have a recovery code yet?{' '}
+          <Link to="/forgot-password" style={{ color: 'var(--cyan)', fontWeight: 700 }}>
+            Request Recovery
+          </Link>
+        </div>
       </div>
     </div>
   );

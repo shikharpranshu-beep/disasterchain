@@ -225,6 +225,22 @@ export const adminVerifyUser = async (userId) => {
   return res.data;
 };
 
+// ================= PASSWORD RECOVERY REQUESTS ADMIN API =================
+export const fetchPasswordRecoveryRequests = async (params = {}) => {
+  const res = await api.get('/auth/password-recovery-requests', { params });
+  return res.data.data || [];
+};
+
+export const approvePasswordRecoveryRequest = async (id) => {
+  const res = await api.put(`/auth/password-recovery-requests/${id}/approve`);
+  return res.data;
+};
+
+export const rejectPasswordRecoveryRequest = async (id, rejectionReason = '') => {
+  const res = await api.put(`/auth/password-recovery-requests/${id}/reject`, { rejectionReason });
+  return res.data;
+};
+
 export const logoutUser = async () => {
   try {
     await api.post('/auth/logout');

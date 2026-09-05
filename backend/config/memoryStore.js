@@ -578,6 +578,7 @@ const memoryStore = {
       verificationNote: 'Cryptographically verified relief distribution registered on DisasterChain transparency ledger.',
     },
   ],
+  passwordRecoveryRequests: [],
 };
 
 module.exports = memoryStore;

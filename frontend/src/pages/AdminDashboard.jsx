@@ -19,11 +19,14 @@ import {
   fetchAdminUsers,
   updateUserRole,
   adminVerifyUser,
+  fetchPasswordRecoveryRequests,
+  approvePasswordRecoveryRequest,
+  rejectPasswordRecoveryRequest,
 } from '../services/api';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sos' | 'incidents' | 'shelters' | 'alerts' | 'donations' | 'blockchain' | 'users'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sos' | 'incidents' | 'shelters' | 'alerts' | 'donations' | 'blockchain' | 'users' | 'recoveries'
   const [sosList, setSosList] = useState([]);
   const [shelters, setShelters] = useState([]);
   const [incidents, setIncidents] = useState([]);
@@ -32,6 +35,14 @@ const AdminDashboard = () => {
   const [distributions, setDistributions] = useState([]);
   const [blockchainRecords, setBlockchainRecords] = useState([]);
   const [users, setUsers] = useState([]);
+  const [recoveryRequests, setRecoveryRequests] = useState([]);
+  const [recoveryFilter, setRecoveryFilter] = useState('all'); // 'all' | 'pending' | 'approved' | 'rejected' | 'completed' | 'expired'
+  const [recoveryCodeModal, setRecoveryCodeModal] = useState(null); // { email, code, expiresAt }
+  const [rejectionModalTarget, setRejectionModalTarget] = useState(null); // request object
+  const [rejectionReasonInput, setRejectionReasonInput] = useState('');
+  const [approvingRecoveryId, setApprovingRecoveryId] = useState(null);
+  const [rejectingRecoveryId, setRejectingRecoveryId] = useState(null);
+  const [copiedCode, setCopiedCode] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [confirmVerifyUser, setConfirmVerifyUser] = useState(null);
   const [verifyingUserId, setVerifyingUserId] = useState(null);
@@ -48,7 +59,7 @@ const AdminDashboard = () => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [sos, sh, inc, alt, don, dist, bc, usr] = await Promise.all([
+      const [sos, sh, inc, alt, don, dist, bc, usr, rec] = await Promise.all([
         fetchSosRequests(),
         fetchShelters(),
         fetchIncidents(),
@@ -57,6 +68,7 @@ const AdminDashboard = () => {
         fetchDistributions(),
         fetchBlockchainTransactions(),
         fetchAdminUsers(),
+        fetchPasswordRecoveryRequests().catch(() => []),
       ]);
       setSosList(sos || []);
       setShelters(sh || []);
@@ -66,11 +78,69 @@ const AdminDashboard = () => {
       setDistributions(dist || []);
       setBlockchainRecords(bc || []);
       setUsers(usr || []);
+      setRecoveryRequests(rec || []);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadRecoveries = async () => {
+    try {
+      const rec = await fetchPasswordRecoveryRequests();
+      setRecoveryRequests(rec || []);
+    } catch (err) {
+      console.error('Failed to load password recoveries:', err);
+    }
+  };
+
+  const handleApproveRecovery = async (id) => {
+    setApprovingRecoveryId(id);
+    try {
+      const res = await approvePasswordRecoveryRequest(id);
+      if (res.success) {
+        setRecoveryCodeModal({
+          email: res.data?.email,
+          code: res.recoveryCode,
+          expiresAt: res.expiresAt,
+        });
+        setActionNotice(`Recovery request for ${res.data?.email} approved.`);
+        await loadRecoveries();
+      }
+    } catch (err) {
+      setActionNotice(err.response?.data?.message || 'Failed to approve recovery request.');
+    } finally {
+      setApprovingRecoveryId(null);
+      setTimeout(() => setActionNotice(''), 4000);
+    }
+  };
+
+  const handleRejectRecovery = async () => {
+    if (!rejectionModalTarget) return;
+    setRejectingRecoveryId(rejectionModalTarget._id);
+    try {
+      const res = await rejectPasswordRecoveryRequest(rejectionModalTarget._id, rejectionReasonInput);
+      if (res.success) {
+        setActionNotice(`Recovery request for ${rejectionModalTarget.email} rejected.`);
+        setRejectionModalTarget(null);
+        setRejectionReasonInput('');
+        await loadRecoveries();
+      }
+    } catch (err) {
+      setActionNotice(err.response?.data?.message || 'Failed to reject recovery request.');
+    } finally {
+      setRejectingRecoveryId(null);
+      setTimeout(() => setActionNotice(''), 4000);
+    }
+  };
+
+  const handleCopyCode = (code) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(code);
+    }
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 3000);
   };
 
   useEffect(() => {
@@ -233,6 +303,7 @@ const AdminDashboard = () => {
           { id: 'donations', label: t('donations.title', 'Log Aid & Donations'), icon: 'box' },
           { id: 'blockchain', label: `${t('transparency.blockchainVerified', 'Blockchain Ledger')} (${blockchainRecords.length})`, icon: 'ledger' },
           { id: 'users', label: `${t('admin.userManagement', 'User Directory')} (${users.length})`, icon: 'user' },
+          { id: 'recoveries', label: `Password Recovery (${recoveryRequests.filter((r) => r.status === 'pending').length})`, icon: 'key' },
         ].map((tab) => {
           const isTabActive = activeTab === tab.id;
           return (
@@ -299,6 +370,22 @@ const AdminDashboard = () => {
                 subtitle={`${users.filter((u) => !u.isVerified).length} Awaiting Approval →`}
                 icon="user"
                 color={users.filter((u) => !u.isVerified).length > 0 ? 'amber' : 'mint'}
+              />
+            </div>
+            <div
+              onClick={() => {
+                setActiveTab('recoveries');
+                setRecoveryFilter('pending');
+              }}
+              style={{ cursor: 'pointer' }}
+              title="Click to review pending password recoveries"
+            >
+              <StatCard
+                title="Recovery Requests"
+                value={recoveryRequests.filter((r) => r.status === 'pending').length}
+                subtitle={`${recoveryRequests.filter((r) => r.status === 'pending').length} Awaiting Verification →`}
+                icon="key"
+                color={recoveryRequests.filter((r) => r.status === 'pending').length > 0 ? 'amber' : 'mint'}
               />
             </div>
           </div>
@@ -1016,6 +1103,504 @@ const AdminDashboard = () => {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* 9. PASSWORD RECOVERY REQUESTS */}
+      {activeTab === 'recoveries' && (
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.25rem',
+              flexWrap: 'wrap',
+              gap: '1rem',
+            }}
+          >
+            <div>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.25rem' }}>
+                Password Recovery Verification Grid
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', margin: 0 }}>
+                Review and approve operator account recovery requests. Single-use 15-minute codes are cryptographically generated upon approval.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button
+                onClick={loadRecoveries}
+                className="btn btn-ghost"
+                style={{ padding: '0.5rem 0.85rem', fontSize: '0.82rem' }}
+                title="Refresh Recovery Requests"
+              >
+                <Icon name="refresh" size={15} />
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Filter Pills */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+            {[
+              { id: 'all', label: `All (${recoveryRequests.length})` },
+              { id: 'pending', label: `Pending (${recoveryRequests.filter((r) => r.status === 'pending').length})` },
+              { id: 'approved', label: `Approved (${recoveryRequests.filter((r) => r.status === 'approved').length})` },
+              { id: 'completed', label: `Completed (${recoveryRequests.filter((r) => r.status === 'completed').length})` },
+              { id: 'rejected', label: `Rejected (${recoveryRequests.filter((r) => r.status === 'rejected').length})` },
+              { id: 'expired', label: `Expired (${recoveryRequests.filter((r) => r.status === 'expired').length})` },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setRecoveryFilter(f.id)}
+                className={`btn ${recoveryFilter === f.id ? 'btn-primary' : 'btn-ghost'}`}
+                style={{
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.8rem',
+                  minHeight: '36px',
+                  borderRadius: 'var(--radius-xs)',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Recovery Requests Table */}
+          {recoveryRequests.filter((r) => recoveryFilter === 'all' || r.status === recoveryFilter).length === 0 ? (
+            <div
+              className="glass-card"
+              style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--text-secondary)' }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🛡️</div>
+              <h3 style={{ color: '#ffffff', fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                No Recovery Requests Found
+              </h3>
+              <p style={{ fontSize: '0.85rem', maxWidth: '400px', margin: '0 auto' }}>
+                {recoveryFilter === 'pending'
+                  ? 'All pending password recovery requests have been reviewed.'
+                  : `No requests found in '${recoveryFilter}' status.`}
+              </p>
+            </div>
+          ) : (
+            <div className="glass-card" style={{ overflowX: 'auto', padding: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
+                <thead>
+                  <tr style={{ background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <th style={{ padding: '1rem', color: 'var(--text-muted)', fontWeight: 700 }}>OPERATOR</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-muted)', fontWeight: 700 }}>ROLE</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-muted)', fontWeight: 700 }}>REQUESTED AT</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-muted)', fontWeight: 700 }}>STATUS</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-muted)', fontWeight: 700 }}>REVIEW DETAILS</th>
+                    <th style={{ padding: '1rem', color: 'var(--text-muted)', fontWeight: 700, textAlign: 'right' }}>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recoveryRequests
+                    .filter((r) => recoveryFilter === 'all' || r.status === recoveryFilter)
+                    .map((req) => {
+                      const userObj = req.userId && typeof req.userId === 'object' ? req.userId : null;
+                      const reviewerObj = req.reviewedBy && typeof req.reviewedBy === 'object' ? req.reviewedBy : null;
+                      const isPending = req.status === 'pending';
+                      const isApproved = req.status === 'approved';
+                      const isCompleted = req.status === 'completed';
+                      const isRejected = req.status === 'rejected';
+                      const isExpired = req.status === 'expired';
+
+                      return (
+                        <tr
+                          key={req._id}
+                          style={{
+                            borderBottom: '1px solid var(--border-subtle)',
+                            background: isPending ? 'rgba(245, 158, 11, 0.03)' : 'transparent',
+                          }}
+                        >
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ fontWeight: 700, color: '#ffffff' }}>
+                              {userObj?.name || req.email}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                              {req.email}
+                            </div>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '4px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                background: 'rgba(56, 189, 248, 0.12)',
+                                color: '#38bdf8',
+                                border: '1px solid rgba(56, 189, 248, 0.25)',
+                              }}
+                            >
+                              {userObj?.role || 'User'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+                            {req.requestedAt ? new Date(req.requestedAt).toLocaleString() : '—'}
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            {isPending && (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: '999px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(245, 158, 11, 0.15)',
+                                  color: '#f59e0b',
+                                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                                }}
+                              >
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b' }} />
+                                Pending Review
+                              </span>
+                            )}
+                            {isApproved && (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: '999px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(56, 189, 248, 0.15)',
+                                  color: '#38bdf8',
+                                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                                }}
+                              >
+                                Code Active
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: '999px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(16, 185, 129, 0.15)',
+                                  color: '#10b981',
+                                  border: '1px solid rgba(16, 185, 129, 0.35)',
+                                }}
+                              >
+                                ✓ Reset Completed
+                              </span>
+                            )}
+                            {isRejected && (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: '999px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(244, 63, 94, 0.15)',
+                                  color: '#f43f5e',
+                                  border: '1px solid rgba(244, 63, 94, 0.35)',
+                                }}
+                              >
+                                Rejected
+                              </span>
+                            )}
+                            {isExpired && (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: '999px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(148, 163, 184, 0.15)',
+                                  color: '#94a3b8',
+                                  border: '1px solid rgba(148, 163, 184, 0.35)',
+                                }}
+                              >
+                                Expired
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {reviewerObj && (
+                              <div>
+                                <strong style={{ color: '#ffffff' }}>By:</strong> {reviewerObj.name || reviewerObj.email}
+                              </div>
+                            )}
+                            {req.reviewedAt && <div>{new Date(req.reviewedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>}
+                            {req.rejectionReason && (
+                              <div style={{ color: '#f43f5e', fontStyle: 'italic', marginTop: '0.2rem' }}>
+                                "{req.rejectionReason}"
+                              </div>
+                            )}
+                            {isApproved && req.resetTokenExpiresAt && (
+                              <div style={{ color: '#38bdf8', fontSize: '0.75rem' }}>
+                                Expires: {new Date(req.resetTokenExpiresAt).toLocaleTimeString()}
+                              </div>
+                            )}
+                            {!reviewerObj && !req.rejectionReason && '—'}
+                          </td>
+                          <td style={{ padding: '1rem', textAlign: 'right' }}>
+                            {isPending ? (
+                              <div style={{ display: 'inline-flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                <button
+                                  type="button"
+                                  disabled={approvingRecoveryId === req._id || rejectingRecoveryId === req._id}
+                                  onClick={() => handleApproveRecovery(req._id)}
+                                  className="btn btn-primary"
+                                  style={{
+                                    padding: '0.45rem 0.85rem',
+                                    fontSize: '0.78rem',
+                                    minHeight: '36px',
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    borderColor: '#10b981',
+                                  }}
+                                  title="Approve recovery and generate one-time 15-minute code"
+                                >
+                                  {approvingRecoveryId === req._id ? 'Approving...' : '✓ Approve'}
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={approvingRecoveryId === req._id || rejectingRecoveryId === req._id}
+                                  onClick={() => {
+                                    setRejectionModalTarget(req);
+                                    setRejectionReasonInput('');
+                                  }}
+                                  className="btn btn-ghost"
+                                  style={{
+                                    padding: '0.45rem 0.85rem',
+                                    fontSize: '0.78rem',
+                                    minHeight: '36px',
+                                    color: '#f43f5e',
+                                    borderColor: 'rgba(244, 63, 94, 0.3)',
+                                  }}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                                {isCompleted ? '✓ Resolved' : isApproved ? 'Pending User Entry' : 'Closed'}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Recovery Code One-Time Modal */}
+      {recoveryCodeModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(3, 7, 18, 0.9)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="spatial-panel"
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              padding: '2.25rem',
+              background: '#0c1424',
+              border: '1px solid var(--border-highlight)',
+              boxShadow: 'var(--glow-cyan)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'linear-gradient(135deg, var(--cyan), var(--mint))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Icon name="key" size={22} color="#ffffff" />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.2rem', fontWeight: 800 }}>
+                  Single-Use Recovery Code Generated
+                </h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--cyan)', fontWeight: 700 }}>
+                  OPERATOR VERIFICATION APPROVED
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                borderRadius: 'var(--radius-xs)',
+                padding: '0.85rem 1rem',
+                fontSize: '0.82rem',
+                color: '#fcd34d',
+                lineHeight: 1.45,
+                marginBottom: '1.5rem',
+              }}
+            >
+              ⚠️ <strong>SECURITY MANDATE:</strong> This single-use recovery code is shown <strong>only once</strong>. The plaintext code is never stored in the database (only a SHA-256 hash is retained). Provide this code directly to <strong>{recoveryCodeModal.email}</strong> via an authenticated communication channel.
+            </div>
+
+            {/* Code Display Box */}
+            <div
+              style={{
+                background: 'rgba(5, 8, 14, 0.8)',
+                border: '2px dashed var(--border-highlight)',
+                borderRadius: 'var(--radius-sm)',
+                padding: '1.25rem',
+                textAlign: 'center',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>
+                SINGLE-USE RECOVERY CODE (EXPIRES IN 15 MINUTES)
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '1.85rem',
+                  fontWeight: 900,
+                  letterSpacing: '0.12em',
+                  color: '#38bdf8',
+                  userSelect: 'all',
+                  padding: '0.5rem 0',
+                }}
+              >
+                {recoveryCodeModal.code}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+                Expires at: {recoveryCodeModal.expiresAt ? new Date(recoveryCodeModal.expiresAt).toLocaleTimeString() : '15 minutes'}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => handleCopyCode(recoveryCodeModal.code)}
+                className="btn btn-ghost"
+                style={{ minHeight: '44px', padding: '0 1.25rem' }}
+              >
+                <Icon name="copy" size={16} />
+                <span>{copiedCode ? '✓ Copied!' : 'Copy Code'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRecoveryCodeModal(null)}
+                className="btn btn-primary"
+                style={{ minHeight: '44px', padding: '0 1.5rem' }}
+              >
+                Done & Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recovery Rejection Modal */}
+      {rejectionModalTarget && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(3, 7, 18, 0.85)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="spatial-panel"
+            style={{
+              maxWidth: '460px',
+              width: '100%',
+              padding: '2rem',
+              background: '#0c1424',
+              border: '1px solid rgba(244, 63, 94, 0.4)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+              <div>
+                <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.15rem', fontWeight: 800 }}>
+                  Reject Password Recovery
+                </h3>
+                <span style={{ fontSize: '0.75rem', color: '#f43f5e', fontWeight: 700 }}>
+                  SECURITY VERIFICATION DENIAL
+                </span>
+              </div>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '1rem' }}>
+              Deny password recovery request for <strong style={{ color: '#ffffff' }}>{rejectionModalTarget.email}</strong>?
+            </p>
+
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label className="form-label">Rejection Reason (Audit Logged)</label>
+              <input
+                type="text"
+                className="form-input"
+                value={rejectionReasonInput}
+                onChange={(e) => setRejectionReasonInput(e.target.value)}
+                placeholder="e.g. Identity verification failed, unconfirmed device"
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setRejectionModalTarget(null)}
+                className="btn btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={rejectingRecoveryId === rejectionModalTarget._id}
+                onClick={handleRejectRecovery}
+                className="btn btn-primary"
+                style={{ background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)', borderColor: '#f43f5e' }}
+              >
+                {rejectingRecoveryId === rejectionModalTarget._id ? 'Rejecting...' : 'Confirm Rejection'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
