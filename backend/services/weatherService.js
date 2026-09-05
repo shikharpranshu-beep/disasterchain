@@ -392,7 +392,14 @@ async function fetchActiveCyclones() {
     return payload;
   } catch (err) {
     if (cached) return { ...cached, isCached: true, stale: true };
-    throw err;
+    console.warn(`GDACS active cyclones feed unavailable: ${err.message}. Using safe empty registry.`);
+    return {
+      count: 0,
+      cyclones: [],
+      source: 'GDACS',
+      fetchedAt: new Date().toISOString(),
+      unavailable: true,
+    };
   }
 }
 
@@ -495,7 +502,15 @@ async function fetchDisasterEvents(filterType = 'ALL') {
     return payload;
   } catch (err) {
     if (cached) return { ...cached, isCached: true, stale: true };
-    throw err;
+    console.warn(`GDACS disaster events feed unavailable: ${err.message}. Using safe empty registry.`);
+    return {
+      count: 0,
+      events: [],
+      filter: filterType,
+      source: 'GDACS',
+      fetchedAt: new Date().toISOString(),
+      unavailable: true,
+    };
   }
 }
 
@@ -515,7 +530,7 @@ async function searchGeocoding(query) {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanQuery)}&count=10&language=en&format=json`;
 
   try {
-    const res = await fetchUrl(url, { timeout: 6000 });
+    const res = await fetchUrl(url, { timeout: 10000 });
     const parsed = JSON.parse(res.body);
 
     const results = (parsed.results || []).map((r) => ({

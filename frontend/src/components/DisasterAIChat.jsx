@@ -493,6 +493,32 @@ export const DisasterAIChat = ({ onOpenSos, onOpenShelter, externalQuery = null 
                 <p style={{ fontSize: '0.95rem', color: '#cbd5e1', margin: 0 }}>
                   How can I help?
                 </p>
+                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOpen(false);
+                      navigate('/weather-gpt');
+                    }}
+                    style={{
+                      minHeight: '44px',
+                      padding: '0.4rem 0.85rem',
+                      background: 'rgba(56, 189, 248, 0.1)',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      borderRadius: '8px',
+                      color: '#38bdf8',
+                      fontSize: '0.84rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                  >
+                    <span>🌦️</span>
+                    <span>Ask WeatherGPT</span>
+                  </button>
+                </div>
               </div>
             )}
 

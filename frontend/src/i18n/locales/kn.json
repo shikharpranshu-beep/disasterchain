@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ, ಎಚ್ಚರಿಕೆಗಳು ಮತ್ತು ಹವಾಮಾನ ಮಾಹಿತಿಗಾಗಿ ಸಂಭಾಷಣಾ AI",
+    "subtitle": "ಹವಾಮಾನ, ಮುನ್ಸೂಚನೆಗಳು, ಗಾಳಿಯ ಗುಣಮಟ್ಟ ಮತ್ತು ತೀವ್ರ ಪರಿಸ್ಥಿತಿಗಳ ಬಗ್ಗೆ ಕೇಳಿ.",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "ನಿಮ್ಮ ಸಂಭಾಷಣಾತ್ಮಕ ಹವಾಮಾನ ಮತ್ತು ವಿಪತ್ತು ಗುಪ್ತಚರ ಸಹಾಯಕ.",
+    "askPlaceholder": "ಹವಾಮಾನ, ಮಳೆ, ಚಂಡಮಾರುತ, AQI ಬಗ್ಗೆ ಕೇಳಿ...",
+    "send": "ಕಳುಹಿಸಿ",
+    "currentWeather": "ಪ್ರಸ್ತುತ ಹವಾಮಾನ",
+    "rainForecast": "ಮಳೆಯ ಮುನ್ಸೂಚನೆ",
+    "severeWeather": "ತೀವ್ರ ಹವಾಮಾನ",
+    "airQuality": "ಗಾಳಿಯ ಗುಣಮಟ್ಟ",
+    "myLocation": "ನನ್ನ ಸ್ಥಳ",
+    "weatherMap": "ಹವಾಮಾನ ನಕ್ಷೆ",
+    "liveTelemetry": "ಲೈವ್ ಟೆಲಿಮೆಟ್ರಿ",
+    "partialLive": "ಭಾಗಶಃ ಲೈವ್",
+    "cached": "ಸಂಗ್ರಹಿಸಲಾಗಿದೆ",
+    "unavailable": "ಲಭ್ಯವಿಲ್ಲ",
+    "safeNormal": "ಸುರಕ್ಷಿತ / ಸಾಮಾನ್ಯ",
+    "highRisk": "ಹೆಚ್ಚಿನ ಅಪಾಯ",
+    "lifeSafetyAlert": "ಜೀವ-ಸುರಕ್ಷತಾ ಎಚ್ಚರಿಕೆ",
+    "viewOnMap": "ನಕ್ಷೆಯಲ್ಲಿ ವೀಕ್ಷಿಸಿ",
+    "call112": "ತಕ್ಷಣದ ಅಪಾಯವಿದ್ದರೆ 112 ಗೆ ಕರೆ ಮಾಡಿ",
+    "currentLocation": "ಪ್ರಸ್ತುತ ಸ್ಥಳ",
+    "temp": "ತಾಪಮಾನ",
+    "condition": "ಪರಿಸ್ಥಿತಿ",
+    "wind": "ಗಾಳಿ",
+    "aqi": "AQI",
+    "risk": "ಅಪಾಯ",
+    "status": "ಸ್ಥಿತಿ"
   }
 }

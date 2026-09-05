@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "বতৰৰ পূৰ্বাভাস, সতৰ্কবাণী আৰু জলবায়ু তথ্যৰ বাবে বাৰ্তালাপ AI",
+    "subtitle": "বতৰ, পূৰ্বাভাস, বায়ুৰ গুণমান আৰু জটিল পৰিস্থিতিৰ বিষয়ে সোধক।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "আপোনাৰ বাৰ্তালাপভিত্তিক বতৰ আৰু দুৰ্যোগ চোৰাংচোৱা সহায়ক।",
+    "askPlaceholder": "বতৰ, বৰষুণ, ঘূৰ্ণীবতাহ, AQI বিষয়ে সোধক...",
+    "send": "প্ৰেৰণ কৰক",
+    "currentWeather": "বৰ্তমানৰ বতৰ",
+    "rainForecast": "বৰষুণৰ পূৰ্বাভাস",
+    "severeWeather": "প্ৰতিকূল বতৰ",
+    "airQuality": "বায়ুৰ গুণমান",
+    "myLocation": "মোৰ অৱস্থান",
+    "weatherMap": "বতৰৰ মানচিত্ৰ",
+    "liveTelemetry": "লাইভ টেলিমেট্ৰি",
+    "partialLive": "আংশিক লাইভ",
+    "cached": "কেশ্ব কৰা হৈছে",
+    "unavailable": "অনুপলব্ধ",
+    "safeNormal": "সুৰক্ষিত / স্বাভাৱিক",
+    "highRisk": "উচ্চ বিপদ",
+    "lifeSafetyAlert": "জীৱন-সুৰক্ষা সতৰ্কবাণী",
+    "viewOnMap": "মানচিত্ৰত চাওক",
+    "call112": "জৰুৰী পৰিস্থিতিত ১১২ লৈ ফোন কৰক",
+    "currentLocation": "বৰ্তমানৰ অৱস্থান",
+    "temp": "উত্তাপ",
+    "condition": "অৱস্থা",
+    "wind": "বতাহ",
+    "aqi": "AQI",
+    "risk": "বিপদ",
+    "status": "স্থিতি"
   }
 }

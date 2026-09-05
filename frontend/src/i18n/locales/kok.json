@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "हवामान अदमास, शिटकावण्यो आनी हवामान म्हायती खातीर संभाषणात्मक AI",
+    "subtitle": "हवामान, अदमास, हवेची गुणवत्ता आनी गंभीर परिस्थिती खातीर विचारात.",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "तुमचो संभाषणात्मक हवामान आनी आपत्ती गुप्तवार्ता सहाय्यक.",
+    "askPlaceholder": "हवामान, पावस, चक्रीवादळ, AQI विशीं विचारात...",
+    "send": "धाडात",
+    "currentWeather": "सद्याचें हवामान",
+    "rainForecast": "पावसाचो अदमास",
+    "severeWeather": "गंभीर हवामान",
+    "airQuality": "हवेची गुणवत्ता",
+    "myLocation": "माझें स्थान",
+    "weatherMap": "हवामान नकासो",
+    "liveTelemetry": "थेट टेलिमेट्री",
+    "partialLive": "भागांत थेट",
+    "cached": "कॅश केल्लें",
+    "unavailable": "मेळना",
+    "safeNormal": "सुरक्षित / सामान्य",
+    "highRisk": "व्हड धोको",
+    "lifeSafetyAlert": "जिवीत-सुरक्षा शिटकावणी",
+    "viewOnMap": "नकाशार पळयात",
+    "call112": "तात्काळ धोक्यांत 112 फोन करात",
+    "currentLocation": "सद्याचें स्थान",
+    "temp": "तापमान",
+    "condition": "स्थिती",
+    "wind": "वारो",
+    "aqi": "AQI",
+    "risk": "धोको",
+    "status": "स्थिती"
   }
 }

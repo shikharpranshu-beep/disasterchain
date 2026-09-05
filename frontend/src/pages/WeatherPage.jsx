@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from '../i18n/i18n';
 import Icon from '../components/Icons';
 import WeatherMap from '../components/WeatherMap';
@@ -260,13 +261,35 @@ export default function WeatherPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link
+            to="/weather-gpt"
+            state={{
+              location: {
+                name: `${selectedLocation.city}, ${selectedLocation.country}`,
+                latitude: selectedLocation.latitude,
+                longitude: selectedLocation.longitude,
+              },
+            }}
+            className="btn btn-primary"
+            style={{
+              fontSize: '0.85rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: 'linear-gradient(135deg, #ff6b2c, #f97316)',
+              minHeight: '44px',
+            }}
+          >
+            <span>🌦️</span>
+            <span>Ask WeatherGPT</span>
+          </Link>
           <button
             type="button"
             onClick={() => loadWeatherData(selectedLocation.latitude, selectedLocation.longitude)}
             disabled={isLoading}
             className="btn btn-secondary"
-            style={{ fontSize: '0.85rem' }}
+            style={{ fontSize: '0.85rem', minHeight: '44px' }}
           >
             ↻ {isLoading ? t('common.refreshing', 'SYNCING...') : t('common.refresh', 'REFRESH')}
           </button>

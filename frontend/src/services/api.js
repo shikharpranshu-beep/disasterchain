@@ -275,4 +275,26 @@ export const sendAIChatMessage = async ({ message, conversation, latitude, longi
   return res.data;
 };
 
+// ================= WEATHERGPT INTELLIGENCE API =================
+export const sendWeatherGPTChat = async ({
+  message,
+  conversation,
+  latitude,
+  longitude,
+  location,
+  language,
+  conversationId,
+} = {}) => {
+  const res = await api.post('/weather-gpt/chat', {
+    message,
+    conversation,
+    latitude,
+    longitude,
+    location,
+    language,
+    conversationId,
+  });
+  return res.data;
+};
+
 export default api;

@@ -580,6 +580,37 @@
     "unavailable": "WEATHER DATA UNAVAILABLE",
     "errorNotice": "External atmospheric feeds could not be reached. Local cached weather records remain active."
   },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "Conversational AI for Weather Forecasting, Alerts, and Climate Information",
+    "subtitle": "Ask about weather, forecasts, air quality, and severe conditions.",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "Your conversational weather and disaster intelligence assistant.",
+    "askPlaceholder": "Ask WeatherGPT about weather, rain, cyclones, AQI...",
+    "send": "Send",
+    "currentWeather": "Current Weather",
+    "rainForecast": "Rain Forecast",
+    "severeWeather": "Severe Weather",
+    "airQuality": "Air Quality",
+    "myLocation": "My Location",
+    "weatherMap": "Weather Map",
+    "liveTelemetry": "LIVE TELEMETRY",
+    "partialLive": "PARTIAL LIVE",
+    "cached": "CACHED",
+    "unavailable": "UNAVAILABLE",
+    "safeNormal": "SAFE / NORMAL",
+    "highRisk": "HIGH RISK",
+    "lifeSafetyAlert": "LIFE-SAFETY ALERT",
+    "viewOnMap": "VIEW ON MAP",
+    "call112": "Call 112 if immediate danger",
+    "currentLocation": "CURRENT LOCATION",
+    "temp": "Temperature",
+    "condition": "Condition",
+    "wind": "Wind",
+    "aqi": "AQI",
+    "risk": "Risk",
+    "status": "STATUS"
+  },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
   }

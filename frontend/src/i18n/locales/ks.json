@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "موسمی پیشن گوئی، خبرداری تہٕ ماحولیاتی جانکٲری خٲطرٕ بات چیت AI",
+    "subtitle": "موسم، پیشن گوئی، ہواک معیار تہٕ سنگین حالاتن متعلق پرژھِو۔",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "تہُند باہمی گفتگو واول موسمی تہٕ آفتک انٹیلی جنس مددگار۔",
+    "askPlaceholder": "موسم، رود، طوفان، AQI متعلق پرژھِو...",
+    "send": "سوزِو",
+    "currentWeather": "ازُک موسم",
+    "rainForecast": "رودُک امکان",
+    "severeWeather": "خراب موسم",
+    "airQuality": "ہواک معیار",
+    "myLocation": "میٛون مقام",
+    "weatherMap": "موسمی نقشہٕ",
+    "liveTelemetry": "لائیو ٹیلی میٹری",
+    "partialLive": "جزوی لائیو",
+    "cached": "محفوظ کرنہٕ آمُت",
+    "unavailable": "دستیاب چھُ نہٕ",
+    "safeNormal": "محفوظ / عام",
+    "highRisk": "بوٚڈ خطرہٕ",
+    "lifeSafetyAlert": "زندگی ہِنٛز حفاظتچ وارننگ",
+    "viewOnMap": "نقشس پؠٹھ وچھِو",
+    "call112": "فوری خطرس منٛز ڈایل کٔرِو 112",
+    "currentLocation": "موجودہ مقام",
+    "temp": "درجہ حرارت",
+    "condition": "حالت",
+    "wind": "واو",
+    "aqi": "AQI",
+    "risk": "خطرہٕ",
+    "status": "حالت"
   }
 }

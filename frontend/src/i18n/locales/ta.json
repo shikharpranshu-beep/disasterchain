@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "வானிலை முன்னறிவிப்பு, எச்சரிக்கைகள் மற்றும் காலநிலை தகவல்களுக்கான உரையாடல் AI",
+    "subtitle": "வானிலை, முன்னறிவிப்பு, காற்றின் தரம் மற்றும் தீவிர நிலைமைகள் பற்றி கேளுங்கள்.",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "உங்கள் உரையாடல் வானிலை மற்றும் பேரிடர் நுண்ணறிவு உதவியாளர்.",
+    "askPlaceholder": "வானிலை, மழை, புயல், AQI பற்றி கேளுங்கள்...",
+    "send": "அனுப்புக",
+    "currentWeather": "தற்போதைய வானிலை",
+    "rainForecast": "மழை முன்னறிவிப்பு",
+    "severeWeather": "கடுமையான வானிலை",
+    "airQuality": "காற்றின் தரம்",
+    "myLocation": "எனது இருப்பிடம்",
+    "weatherMap": "வானிலை வரைபடம்",
+    "liveTelemetry": "நேரலை டெலிமெட்ரி",
+    "partialLive": "பகுதி நேரலை",
+    "cached": "சேமிக்கப்பட்டது",
+    "unavailable": "கிடைக்கவில்லை",
+    "safeNormal": "பாதுகாப்பானது / இயல்பானது",
+    "highRisk": "அதிக ஆபத்து",
+    "lifeSafetyAlert": "உயிர்-பாதுகாப்பு எச்சரிக்கை",
+    "viewOnMap": "வரைபடத்தில் பார்க்கவும்",
+    "call112": "உடனடி ஆபத்து ஏற்பட்டால் 112 ஐ அழைக்கவும்",
+    "currentLocation": "தற்போதைய இருப்பிடம்",
+    "temp": "வெப்பநிலை",
+    "condition": "நிலை",
+    "wind": "காற்று",
+    "aqi": "AQI",
+    "risk": "ஆபத்து",
+    "status": "நிலை"
   }
 }

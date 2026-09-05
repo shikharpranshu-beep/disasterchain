@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "കാലാവസ്ഥാ പ്രവചനം, അലേർട്ടുകൾ, കാലാവസ്ഥാ വിവരങ്ങൾ എന്നിവയ്ക്കായുള്ള സംഭാഷണ AI",
+    "subtitle": "കാലാവസ്ഥ, പ്രവചനങ്ങൾ, വായു ഗുണനിലവാരം, കഠിനമായ സാഹചര്യങ്ങൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കുക.",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "നിങ്ങളുടെ സംഭാഷണാത്മക കാലാവസ്ഥാ, ദുരന്ത രഹസ്യാന്വേഷണ സഹായി.",
+    "askPlaceholder": "കാലാവസ്ഥ, മഴ, ചുഴലിക്കാറ്റ്, AQI എന്നിവയെക്കുറിച്ച് ചോദിക്കുക...",
+    "send": "അയക്കുക",
+    "currentWeather": "നിലവിലെ കാലാവസ്ഥ",
+    "rainForecast": "മഴ പ്രവചനം",
+    "severeWeather": "കഠിനമായ കാലാവസ്ഥ",
+    "airQuality": "വായു ഗുണനിലവാരം",
+    "myLocation": "എന്റെ ലൊക്കേഷൻ",
+    "weatherMap": "കാലാവസ്ഥാ മാപ്പ്",
+    "liveTelemetry": "തത്സമയ ടെലിമെട്രി",
+    "partialLive": "ഭാഗിക തത്സമയം",
+    "cached": "കാഷെ ചെയ്തത്",
+    "unavailable": "ലഭ്യമല്ല",
+    "safeNormal": "സുരക്ഷിതം / സാധാരണ",
+    "highRisk": "ഉയർന്ന അപകടസാധ്യത",
+    "lifeSafetyAlert": "ജീവൻ-സുരക്ഷാ മുന്നറിയിപ്പ്",
+    "viewOnMap": "മാപ്പിൽ കാണുക",
+    "call112": "അടിയന്തര സാഹചര്യത്തിൽ 112-ൽ വിളിക്കുക",
+    "currentLocation": "നിലവിലെ ലൊക്കേഷൻ",
+    "temp": "താപനില",
+    "condition": "അവസ്ഥ",
+    "wind": "കാറ്റ്",
+    "aqi": "AQI",
+    "risk": "അപകടസാധ്യത",
+    "status": "നില"
   }
 }

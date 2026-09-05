@@ -580,6 +580,37 @@
     "unavailable": "मौसम डेटा अनुपलब्ध",
     "errorNotice": "बाहरी वायुमंडलीय फीड से संपर्क नहीं हो सका। स्थानीय कैश्ड मौसम रिकॉर्ड सक्रिय हैं।"
   },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "मौसम पूर्वानुमान, अलर्ट और जलवायु सूचना के लिए संवादात्मक एआई",
+    "subtitle": "मौसम, पूर्वानुमान, वायु गुणवत्ता और गंभीर परिस्थितियों के बारे में पूछें।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "आपका संवादात्मक मौसम और आपदा आसूचना सहायक।",
+    "askPlaceholder": "मौसम, बारिश, चक्रवात, AQI के बारे में पूछें...",
+    "send": "भेजें",
+    "currentWeather": "वर्तमान मौसम",
+    "rainForecast": "बारिश का पूर्वानुमान",
+    "severeWeather": "गंभीर मौसम",
+    "airQuality": "वायु गुणवत्ता",
+    "myLocation": "मेरा स्थान",
+    "weatherMap": "मौसम मानचित्र",
+    "liveTelemetry": "लाइव टेलीमेट्री",
+    "partialLive": "आंशिक लाइव",
+    "cached": "कैश्ड",
+    "unavailable": "अनुपलब्ध",
+    "safeNormal": "सुरक्षित / सामान्य",
+    "highRisk": "उच्च जोखिम",
+    "lifeSafetyAlert": "जीवन-सुरक्षा चेतावनी",
+    "viewOnMap": "मानचित्र पर देखें",
+    "call112": "आपात स्थिति में 112 पर कॉल करें",
+    "currentLocation": "वर्तमान स्थान",
+    "temp": "तापमान",
+    "condition": "स्थिति",
+    "wind": "हवा",
+    "aqi": "AQI",
+    "risk": "जोखिम",
+    "status": "स्थिति"
+  },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
   }

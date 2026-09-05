@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "मौसम पूर्वानुमान, चेतावनी आ जलवायु जानकारीक लेल संवादात्मक AI",
+    "subtitle": "मौसम, पूर्वानुमान, हवाक गुणवत्ता आ गंभीर स्थितिक बारेमे पुछू।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "अहाँक संवादात्मक मौसम आ आपदा आसूचना सहायक।",
+    "askPlaceholder": "मौसम, बरखा, चक्रवात, AQI क बारेमे पुछू...",
+    "send": "पठाउ",
+    "currentWeather": "वर्तमान मौसम",
+    "rainForecast": "बरखाक पूर्वानुमान",
+    "severeWeather": "गंभीर मौसम",
+    "airQuality": "हवाक गुणवत्ता",
+    "myLocation": "हमर स्थान",
+    "weatherMap": "मौसम मानचित्र",
+    "liveTelemetry": "लाइव टेलीमेट्री",
+    "partialLive": "आंशिक लाइव",
+    "cached": "कैश्ड",
+    "unavailable": "अनुपलब्ध",
+    "safeNormal": "सुरक्षित / सामान्य",
+    "highRisk": "उच्च जोखिम",
+    "lifeSafetyAlert": "जीवन-सुरक्षा चेतावनी",
+    "viewOnMap": "मानचित्र पर देखू",
+    "call112": "आपात स्थितिक लेल 112 पर फोन करू",
+    "currentLocation": "वर्तमान स्थान",
+    "temp": "तापमान",
+    "condition": "स्थिति",
+    "wind": "हवा",
+    "aqi": "AQI",
+    "risk": "जोखिम",
+    "status": "स्थिति"
   }
 }

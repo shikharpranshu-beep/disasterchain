@@ -370,7 +370,32 @@ const LandingPage = ({ onOpenSos }) => {
             }}
           >
             <span>🌦️</span>
-            <span>Weather</span>
+            <span>{t('weather.weather', 'Weather')}</span>
+          </Link>
+
+          <Link
+            to="/weather-gpt"
+            className="landing-secondary-btn"
+            style={{
+              flex: '1 1 140px',
+              minHeight: '44px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.45rem',
+              background: 'rgba(255, 107, 44, 0.1)',
+              border: '1px solid rgba(255, 107, 44, 0.35)',
+              borderRadius: '10px',
+              color: '#ff6b2c',
+              fontSize: '0.92rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+              padding: '0.6rem 1rem',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <span>🌦️</span>
+            <span>{t('weatherGpt.title', 'WeatherGPT')}</span>
           </Link>
         </div>
 
@@ -558,6 +583,73 @@ const LandingPage = ({ onOpenSos }) => {
             >
               <span>View full forecast</span>
               <span>→</span>
+            </Link>
+          </div>
+
+          {/* 4. WEATHERGPT CAPABILITY CARD */}
+          <div
+            style={{
+              background: '#15100c',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderTop: '3px solid #ff6b2c',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  color: '#ff6b2c',
+                  marginBottom: '0.4rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <span>🌦️</span>
+                <span>{t('weatherGpt.title', 'WEATHERGPT')}</span>
+              </div>
+              <div
+                style={{
+                  fontSize: '1.15rem',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                {t('weatherGpt.tagline', 'Conversational AI for Weather Forecasting, Alerts, and Climate Information')}
+              </div>
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.4 }}>
+                {t('weatherGpt.subtitle', 'Ask about weather, forecasts, air quality, and severe conditions.')}
+              </div>
+            </div>
+            <Link
+              to="/weather-gpt"
+              className="btn btn-primary"
+              style={{
+                fontSize: '0.8rem',
+                color: '#ffffff',
+                fontWeight: 700,
+                textDecoration: 'none',
+                marginTop: '1rem',
+                minHeight: '44px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                background: 'linear-gradient(135deg, #ff6b2c, #f97316)',
+                borderRadius: '8px',
+              }}
+            >
+              <span>🌦️</span>
+              <span>{t('weatherGpt.welcomeTitle', 'ASK WEATHERGPT')}</span>
             </Link>
           </div>
         </div>

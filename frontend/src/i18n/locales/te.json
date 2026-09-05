@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "వాతావరణ సూచనలు, హెచ్చరికలు మరియు శీతోష్ణస్థితి సమాచారం కోసం సంభాషణా AI",
+    "subtitle": "వాతావరణం, సూచనలు, గాలి నాణ్యత మరియు తీవ్రమైన పరిస్థితుల గురించి అడగండి.",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "మీ సంభాషణాత్మక వాతావరణ మరియు విపత్తు నిఘా సహాయకుడు.",
+    "askPlaceholder": "వాతావరణం, వర్షం, తుఫాను, AQI గురించి అడగండి...",
+    "send": "పంపు",
+    "currentWeather": "ప్రస్తుత వాతావరణం",
+    "rainForecast": "వర్ష సూచన",
+    "severeWeather": "తీవ్రమైన వాతావరణం",
+    "airQuality": "గాలి నాణ్యత",
+    "myLocation": "నా స్థానం",
+    "weatherMap": "వాతావరణ పటం",
+    "liveTelemetry": "ప్రత్యక్ష టెలిమెట్రీ",
+    "partialLive": "పాక్షిక లైవ్",
+    "cached": "కాష్ చేయబడింది",
+    "unavailable": "అందుబాటులో లేదు",
+    "safeNormal": "సురక్షితం / సాధారణం",
+    "highRisk": "అధిక ప్రమాదం",
+    "lifeSafetyAlert": "ప్రాణ రక్షణ హెచ్చరిక",
+    "viewOnMap": "మ్యాప్‌లో చూడండి",
+    "call112": "తక్షణ ప్రమాదం ఉంటే 112కి కాల్ చేయండి",
+    "currentLocation": "ప్రస్తుత స్థానం",
+    "temp": "ఉష్ణోగ్రత",
+    "condition": "పరిస్థితి",
+    "wind": "గాలి",
+    "aqi": "AQI",
+    "risk": "ప్రమాదం",
+    "status": "స్థితి"
   }
 }

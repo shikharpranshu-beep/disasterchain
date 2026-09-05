@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "موسم جي اڳڪٿي، چتاءَ ۽ آبهوا جي معلومات لاءِ ڳالهه ٻولهه واري AI",
+    "subtitle": "موسم، اڳڪٿي، هوا جي معيار ۽ سخت حالتن بابت پڇو.",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "توهان جو گفتگو وارو موسم ۽ آفت جي معلوماتي مددگار.",
+    "askPlaceholder": "موسم، مينهن، طوفان، AQI بابت پڇو...",
+    "send": "موڪليو",
+    "currentWeather": "هاڻوڪي موسم",
+    "rainForecast": "مينهن جي اڳڪٿي",
+    "severeWeather": "سخت موسم",
+    "airQuality": "هوا جو معيار",
+    "myLocation": "منهنجو هنڌ",
+    "weatherMap": "موسم جو نقشو",
+    "liveTelemetry": "لائيو ٽيلي ميٽري",
+    "partialLive": "جزوي لائيو",
+    "cached": "محفوظ ٿيل",
+    "unavailable": "موجود ناهي",
+    "safeNormal": "محفوظ / عام",
+    "highRisk": "وڏو خطرو",
+    "lifeSafetyAlert": "زندگي بچائڻ جي خبرداري",
+    "viewOnMap": "نقشي تي ڏسو",
+    "call112": "فوري خطري جي حالت ۾ 112 تي ڪال ڪريو",
+    "currentLocation": "هاڻوڪو هنڌ",
+    "temp": "درجه حرارت",
+    "condition": "حالت",
+    "wind": "هوا",
+    "aqi": "AQI",
+    "risk": "خطرو",
+    "status": "حالت"
   }
 }

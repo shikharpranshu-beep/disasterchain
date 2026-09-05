@@ -247,7 +247,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
                   boxShadow: '0 0 8px #10b981',
                 }}
               />
-              <span>SYSTEM ONLINE</span>
+              <span>{t('dashboard.systemStatus', 'SYSTEM ONLINE')}</span>
             </div>
           </div>
         </header>
@@ -306,7 +306,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)')}
             onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0) scale(1)')}
           >
-            <span>SEND SOS</span>
+            <span>{t('common.sos', 'SEND SOS')}</span>
             <span>🚨</span>
           </button>
         </section>
@@ -352,7 +352,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             }}
           >
             <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              SHELTERS
+              {t('shelters.title', 'SHELTERS')}
             </div>
             <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', margin: '0.2rem 0' }}>
               {shelters.length || 8} nearby
@@ -373,7 +373,7 @@ const EmergencyDashboard = ({ onOpenSos, onOpenIncident, refreshKey }) => {
             }}
           >
             <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              ALERTS
+              {t('dashboard.activeAlerts', 'ALERTS')}
             </div>
             <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#ffffff', margin: '0.2rem 0' }}>
               {activeAlerts.length} active

@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "موسمیاتی پیشن گوئی، انتباہات، اور آب و ہوا کی معلومات کے لیے بات چیت کا AI",
+    "subtitle": "موسم، پیشن گوئی، ہوا کے معیار اور شدید حالات کے بارے میں پوچھیں۔",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "آپ کا باہمی گفتگو پر مبنی موسمیاتی اور آفات کی معلومات کا معاون۔",
+    "askPlaceholder": "موسم، بارش، طوفان، AQI کے بارے میں پوچھیں...",
+    "send": "ارسال کریں",
+    "currentWeather": "موجودہ موسم",
+    "rainForecast": "بارش کی پیشن گوئی",
+    "severeWeather": "شدید موسم",
+    "airQuality": "ہوا کا معیار",
+    "myLocation": "میرا مقام",
+    "weatherMap": "موسمیاتی نقشہ",
+    "liveTelemetry": "براہ راست ٹیلی میٹری",
+    "partialLive": "جزوی لائیو",
+    "cached": "محفوظ شدہ",
+    "unavailable": "دستیاب نہیں",
+    "safeNormal": "محفوظ / معمول",
+    "highRisk": "زیادہ خطرہ",
+    "lifeSafetyAlert": "زندگی کے تحفظ کا انتباہ",
+    "viewOnMap": "نقشے پر دیکھیں",
+    "call112": "فوری خطرے کی صورت میں 112 پر کال کریں",
+    "currentLocation": "موجودہ مقام",
+    "temp": "درجہ حرارت",
+    "condition": "صورتحال",
+    "wind": "ہوا",
+    "aqi": "AQI",
+    "risk": "خطرہ",
+    "status": "حیثیت"
   }
 }

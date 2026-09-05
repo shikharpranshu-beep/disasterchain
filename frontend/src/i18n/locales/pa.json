@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "ਮੌਸਮ ਪੂਰਵ-ਅਨੁਮਾਨ, ਚੇਤਾਵਨੀਆਂ ਅਤੇ ਜਲਵਾਯੂ ਜਾਣਕਾਰੀ ਲਈ ਗੱਲਬਾਤ AI",
+    "subtitle": "ਮੌਸਮ, ਪੂਰਵ-ਅਨੁਮਾਨ, ਹਵਾ ਦੀ ਗੁਣਵੱਤਾ ਅਤੇ ਗੰਭੀਰ ਸਥਿਤੀਆਂ ਬਾਰੇ ਪੁੱਛੋ।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "ਤੁਹਾਡਾ ਗੱਲਬਾਤ ਵਾਲਾ ਮੌਸਮ ਅਤੇ ਆਫ਼ਤ ਖੁਫੀਆ ਸਹਾਇਕ।",
+    "askPlaceholder": "ਮੌਸਮ, ਮੀਂਹ, ਚੱਕਰਵਾਤ, AQI ਬਾਰੇ ਪੁੱਛੋ...",
+    "send": "ਭੇਜੋ",
+    "currentWeather": "ਮੌਜੂਦਾ ਮੌਸਮ",
+    "rainForecast": "ਮੀਂਹ ਦਾ ਅਨੁਮਾਨ",
+    "severeWeather": "ਗੰਭੀਰ ਮੌਸਮ",
+    "airQuality": "ਹਵਾ ਦੀ ਗੁਣਵੱਤਾ",
+    "myLocation": "ਮੇਰਾ ਟਿਕਾਣਾ",
+    "weatherMap": "ਮੌਸਮ ਦਾ ਨਕਸ਼ਾ",
+    "liveTelemetry": "ਲਾਈਵ ਟੈਲੀਮੈਟਰੀ",
+    "partialLive": "ਅੰਸ਼ਕ ਲਾਈਵ",
+    "cached": "ਕੈਸ਼ ਕੀਤਾ",
+    "unavailable": "ਅਣਉਪਲਬਧ",
+    "safeNormal": "ਸੁਰੱਖਿਅਤ / ਆਮ",
+    "highRisk": "ਉੱਚ ਜੋਖਮ",
+    "lifeSafetyAlert": "ਜੀਵਨ-ਸੁਰੱਖਿਆ ਚੇਤਾਵਨੀ",
+    "viewOnMap": "ਨਕਸ਼ੇ 'ਤੇ ਦੇਖੋ",
+    "call112": "ਤੁਰੰਤ ਖ਼ਤਰੇ ਵਿੱਚ 112 'ਤੇ ਕਾਲ ਕਰੋ",
+    "currentLocation": "ਮੌਜੂਦਾ ਟਿਕਾਣਾ",
+    "temp": "ਤਾਪਮਾਨ",
+    "condition": "ਸਥਿਤੀ",
+    "wind": "ਹਵਾ",
+    "aqi": "AQI",
+    "risk": "ਜੋਖਮ",
+    "status": "ਸਥਿਤੀ"
   }
 }

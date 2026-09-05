@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "ପାଣିପାଗ ପୂର୍ବାନୁମାନ, ସତର୍କତା ଏବଂ ଜଳବାୟୁ ସୂଚନା ପାଇଁ ବାର୍ତ୍ତାଳାପ AI",
+    "subtitle": "ପାଣିପାଗ, ପୂର୍ବାନୁମାନ, ବାୟୁ ଗୁଣବତ୍ତା ଏବଂ ଗମ୍ଭୀର ପରିସ୍ଥିତି ବିଷୟରେ ପଚାରନ୍ତୁ।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "ଆପଣଙ୍କର ବାର୍ତ୍ତାଳାପମୂଳକ ପାଣିପାଗ ଏବଂ ବିପର୍ଯ୍ୟୟ ଗୁଇନ୍ଦା ସହାୟକ।",
+    "askPlaceholder": "ପାଣିପାଗ, ବର୍ଷା, ବାତ୍ୟା, AQI ବିଷୟରେ ପଚାରନ୍ତୁ...",
+    "send": "ପଠାନ୍ତୁ",
+    "currentWeather": "ବର୍ତ୍ତମାନର ପାଣିପାଗ",
+    "rainForecast": "ବର୍ଷା ପୂର୍ବାନୁମାନ",
+    "severeWeather": "ଗମ୍ଭୀର ପାଣିପାଗ",
+    "airQuality": "ବାୟୁ ଗୁଣବତ୍ତା",
+    "myLocation": "ମୋର ସ୍ଥାନ",
+    "weatherMap": "ପାଣିପାଗ ମାନଚିତ୍ର",
+    "liveTelemetry": "ଲାଇଭ୍ ଟେଲିମେଟ୍ରି",
+    "partialLive": "ଆଂଶିକ ଲାଇଭ୍",
+    "cached": "କ୍ୟାସ୍ ହୋଇଛି",
+    "unavailable": "ଅନୁପଲବ୍ଧ",
+    "safeNormal": "ସୁରକ୍ଷିତ / ସାଧାରଣ",
+    "highRisk": "ଉଚ୍ଚ ବିପଦ",
+    "lifeSafetyAlert": "ଜୀବନ-ସୁରକ୍ଷା ସତର୍କତା",
+    "viewOnMap": "ମାନଚିତ୍ରରେ ଦେଖନ୍ତୁ",
+    "call112": "ତୁରନ୍ତ ବିପଦ ଥିଲେ ୧୧୨ କଲ୍ କରନ୍ତୁ",
+    "currentLocation": "ବର୍ତ୍ତମାନର ସ୍ଥାନ",
+    "temp": "ତାପମାତ୍ରା",
+    "condition": "ପରିସ୍ଥିତି",
+    "wind": "ପବନ",
+    "aqi": "AQI",
+    "risk": "ବିପଦ",
+    "status": "ସ୍ଥିତି"
   }
 }

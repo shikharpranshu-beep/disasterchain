@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "আবহাওয়া পূর্বাভাস, সতর্কতা এবং জলবায়ু তথ্যের জন্য কথোপকথন এআই",
+    "subtitle": "আবহাওয়া, পূর্বাভাস, বায়ুর মান এবং চরম পরিস্থিতি সম্পর্কে জিজ্ঞাসা করুন।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "আপনার কথোপকথনভিত্তিক আবহাওয়া এবং দুর্যোগ গোয়েন্দা সহায়ক।",
+    "askPlaceholder": "আবহাওয়া, বৃষ্টি, ঘূর্ণিঝড়, একিউআই সম্পর্কে জিজ্ঞাসা করুন...",
+    "send": "পাঠান",
+    "currentWeather": "বর্তমান আবহাওয়া",
+    "rainForecast": "বৃষ্টির পূর্বাভাস",
+    "severeWeather": "প্রতিকূল আবহাওয়া",
+    "airQuality": "বায়ুর মান",
+    "myLocation": "আমার অবস্থান",
+    "weatherMap": "আবহাওয়া মানচিত্র",
+    "liveTelemetry": "লাইভ টেলিমেট্রি",
+    "partialLive": "আংশিক লাইভ",
+    "cached": "ক্যাশ করা",
+    "unavailable": "অনুপলব্ধ",
+    "safeNormal": "নিরাপদ / স্বাভাবিক",
+    "highRisk": "উচ্চ ঝুঁকি",
+    "lifeSafetyAlert": "জীবন-সুরক্ষা সতর্কতা",
+    "viewOnMap": "মানচিত্রে দেখুন",
+    "call112": "জরুরি পরিস্থিতিতে ১১২ নম্বরে কল করুন",
+    "currentLocation": "বর্তমান অবস্থান",
+    "temp": "তাপমাত্রা",
+    "condition": "পরিস্থিতি",
+    "wind": "বাতাস",
+    "aqi": "একিউআই",
+    "risk": "ঝুঁকি",
+    "status": "অবস্থা"
   }
 }

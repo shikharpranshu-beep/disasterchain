@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "নোং-চিংগী ৱাফাও, চেকশিনৱা অমসুং অকোইবগী পৌগীদমক ৱারী-শাবা AI",
+    "subtitle": "নোং-চিং, ৱাফাও, নুংশিৎকী ফিভম অমসুং অকনবা ফিভমগী মতাংদা হংবীয়ু।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "নহাক্কী নোং-চিং অমসুং খুদোংথিবা ইন্টেলিজেন্সকী ৱারী-শাবা মতেংপাংবা।",
+    "askPlaceholder": "নোং-চিং, নোং, নোংলৈ-নুংশিৎ, AQI গী মতাংদা হংবীয়ু...",
+    "send": "থাগৎলু",
+    "currentWeather": "হৌজিক্কী নোং-চিং",
+    "rainForecast": "নোংগী ৱাফাও",
+    "severeWeather": "লানবা নোং-চিং",
+    "airQuality": "নুংশিৎকী ফিভম",
+    "myLocation": "ঐগী মফম",
+    "weatherMap": "নোং-চিংগী মেপ",
+    "liveTelemetry": "লাইভ তেলিমেট্রি",
+    "partialLive": "খরা লাইভ",
+    "cached": "কেস তৌখ্রবা",
+    "unavailable": "ফংদ্রে",
+    "safeNormal": "শেফ / নোরমেল",
+    "highRisk": "ৱাংবা রিস্ক",
+    "lifeSafetyAlert": "পুন্সি কনবগী চেকশিনৱা",
+    "viewOnMap": "মেপতা য়েংবীয়ু",
+    "call112": "অকনবা ফিভমদা ১১২ দা কোল তৌবীয়ু",
+    "currentLocation": "হৌজিক্কী মফম",
+    "temp": "তাপমাত্রা",
+    "condition": "ফিভম",
+    "wind": "নুংশিৎ",
+    "aqi": "AQI",
+    "risk": "রিস্ক",
+    "status": "ফিভম"
   }
 }

@@ -41,6 +41,7 @@ import ResourceTrackingPage from './pages/ResourceTrackingPage';
 import TransparencyLedgerPage from './pages/TransparencyLedgerPage';
 import OfflineEmergencyPage from './pages/OfflineEmergencyPage';
 import WeatherPage from './pages/WeatherPage';
+import WeatherGPTPage from './pages/WeatherGPTPage';
 import AdminDashboard from './pages/AdminDashboard';
 
 const AppLayout = () => {
@@ -158,6 +159,7 @@ const AppLayout = () => {
             <Route path="/transparency" element={<TransparencyLedgerPage />} />
             <Route path="/offline" element={<OfflineEmergencyPage />} />
             <Route path="/weather" element={<WeatherPage />} />
+            <Route path="/weather-gpt" element={<WeatherGPTPage />} />
             <Route
               path="/admin"
               element={

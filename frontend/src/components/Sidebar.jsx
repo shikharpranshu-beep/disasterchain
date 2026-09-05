@@ -47,6 +47,7 @@ const Sidebar = ({ isOpen, onClose, onOpenSos, hideDesktopRail = false }) => {
         { label: 'Map', path: '/affected-areas', icon: 'map' },
         { label: 'Alerts', path: '/alerts', icon: 'bell' },
         { label: 'Weather', path: '/weather', icon: 'cloud' },
+        { label: 'WeatherGPT', path: '/weather-gpt', icon: 'weather-gpt' },
       ],
     },
     {

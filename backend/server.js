@@ -81,6 +81,7 @@ app.use('/api/blockchain', require('./routes/blockchainRoutes'));
 app.use('/api/intelligence', require('./routes/crisisIntelligenceRoutes'));
 app.use('/api/ai', require('./routes/aiAssistantRoutes'));
 app.use('/api/weather', require('./routes/weatherRoutes'));
+app.use('/api/weather-gpt', require('./routes/weatherGPTRoutes'));
 app.use('/api/seed', require('./routes/seedRoutes'));
 
 // 404 Route Handler

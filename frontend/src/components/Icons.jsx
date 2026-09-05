@@ -527,6 +527,26 @@ export const Icon = ({ name = '', size = 20, className = '', color = 'currentCol
         </svg>
       );
 
+    case 'cloud':
+    case 'weather':
+      return (
+        <svg {...propsCombined}>
+          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+        </svg>
+      );
+
+    case 'bot':
+    case 'weather-gpt':
+      return (
+        <svg {...propsCombined}>
+          <rect x="3" y="11" width="18" height="10" rx="2" />
+          <circle cx="12" cy="5" r="2" />
+          <path d="M12 7v4" />
+          <line x1="8" y1="16" x2="8.01" y2="16" />
+          <line x1="16" y1="16" x2="16.01" y2="16" />
+        </svg>
+      );
+
     case 'info':
     default:
       return (

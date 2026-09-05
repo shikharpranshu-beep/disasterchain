@@ -582,5 +582,36 @@
   },
   "footer": {
     "developedBy": "Developed by Pranshu Shikhar"
+  },
+  "weatherGpt": {
+    "title": "WeatherGPT",
+    "tagline": "ऋतुसूचना, चेतावणी तथा जलवायुसूचनाभ्यः सम्भाषण AI",
+    "subtitle": "ऋतु, पूर्वानुमानम्, वायुगुणवत्ता तथा विषमपरिस्थितीनां विषये पृच्छन्तु।",
+    "welcomeTitle": "WeatherGPT",
+    "welcomeSubtitle": "भवतः सम्भाषणात्मकः ऋतु तथा आपदा गुप्तवार्ता सहायकः।",
+    "askPlaceholder": "ऋतु, वृष्टिः, चक्रवातः, AQI विषये पृच्छन्तु...",
+    "send": "प्रेषयतु",
+    "currentWeather": "वर्तमान ऋतुः",
+    "rainForecast": "वृष्टिपूर्वानुमानम्",
+    "severeWeather": "भीषणऋतुः",
+    "airQuality": "वायुगुणवत्ता",
+    "myLocation": "मम स्थानम्",
+    "weatherMap": "ऋतुमानचित्रम्",
+    "liveTelemetry": "प्रत्यक्ष दूरमापनम्",
+    "partialLive": "आंशिकप्रत्यक्षम्",
+    "cached": "सञ्चितम्",
+    "unavailable": "अनुपलब्धम्",
+    "safeNormal": "सुरक्षितम् / सामान्यम्",
+    "highRisk": "उच्चसङ्कटम्",
+    "lifeSafetyAlert": "जीवनसुरक्षासचेतना",
+    "viewOnMap": "मानचित्रे पश्यतु",
+    "call112": "आत्ययिकविपत्तौ ११२ सम्भाषतु",
+    "currentLocation": "वर्तमानस्थानम्",
+    "temp": "तापमानम्",
+    "condition": "स्थितिः",
+    "wind": "वायुः",
+    "aqi": "AQI",
+    "risk": "सङ्कटम्",
+    "status": "स्थितिः"
   }
 }
