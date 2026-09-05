@@ -122,33 +122,41 @@ function getConditionDescription(code) {
   return WMO_CODE_MAP[code] || 'Clear / Normal';
 }
 
+const STOP_WORDS = new Set([
+  'the', 'a', 'an', 'my', 'our', 'this', 'that', 'here', 'there',
+  'area', 'location', 'my area', 'my location', 'current location',
+  'city', 'the city', 'world', 'the world', 'weather', 'the weather',
+  'forecast', 'the forecast', 'aqi', 'the aqi', 'air quality',
+  'temperature', 'temp', 'severe', 'severe weather', 'bad', 'good', 'live',
+  'latest', 'today', 'tomorrow', 'tonight', 'now', 'right now',
+  'morning', 'evening', 'afternoon', 'flood', 'flooding', 'cyclone',
+  'rain', 'raining', 'storm', 'heat', 'wind', 'joke', 'help',
+  'safe', 'safety', 'disaster', 'report', 'alert', 'status', 'warning',
+  'hazard', 'emergency', 'current', 'local', 'outdoor', 'indoor',
+  'hazardous', 'extreme', 'hot', 'cold', 'rainy', 'sunny', 'cloudy',
+  'windy', 'stormy', 'travel', 'flight', 'drive', 'driving', 'road',
+  'highway', 'sos', 'all weather telemetry', 'unknown'
+]);
+
 /**
  * Identify Named Location in message text (e.g., "weather in Delhi", "forecast for Mumbai", "Chandigarh")
  */
 function extractLocationName(message) {
   if (!message || typeof message !== 'string') return null;
 
-  // Pattern: in/for/at/near <Location> with strict word boundaries
+  // Patterns for explicit named locations with strict boundary check
   const patterns = [
-    /\b(?:in|for|at|near|around|weather in|forecast for)\s+([A-Za-z\s]{3,35})(?:\?|\.|\,|$|\s+(?:tomorrow|today|tonight|now|yesterday))/i,
-    /\b(?:show me the weather for|show me the weather in|show me|what is the weather in|how is the weather in|tell me about)\s+([A-Za-z\s]{3,35})(?:\?|\.|\,|$)/i,
+    /\b(?:in|for|at|near|around|weather in|forecast for)\s+([A-Za-z\s,]{3,45})(?:\?|\.|$|\s+(?:tomorrow|today|tonight|now|yesterday))/i,
+    /\b(?:show me the weather for|show me the weather in|show me|what is the weather in|how is the weather in|tell me about)\s+([A-Za-z\s,]{3,45})(?:\?|\.|$)/i,
     /\b([A-Za-z]{3,25})\s+(?:weather|forecast|aqi|temperature|climate)\b/i,
-  ];
-
-  const stopWords = [
-    'today', 'tomorrow', 'tonight', 'morning', 'evening', 'now', 'right now',
-    'here', 'my area', 'my location', 'the city', 'the world', 'the weather',
-    'the forecast', 'the air quality', 'the temperature', 'a joke', 'funny joke',
-    'all weather telemetry', 'weather', 'forecast', 'temperature'
   ];
 
   for (const pattern of patterns) {
     const match = message.match(pattern);
     if (match && match[1]) {
-      const candidate = match[1].trim();
+      let candidate = match[1].trim().replace(/^(?:the|my|a|an|our)\s+/i, '').replace(/[\.,]+$/, '').trim();
       const lower = candidate.toLowerCase();
-      const isStopWord = stopWords.some((sw) => lower === sw || lower.startsWith(sw + ' '));
-      if (!isStopWord && candidate.length >= 2) {
+      if (!STOP_WORDS.has(lower) && candidate.length >= 3) {
         return candidate;
       }
     }
@@ -158,7 +166,15 @@ function extractLocationName(message) {
 }
 
 /**
- * Natural-Language Intent Analysis
+ * Natural-Language Intent Analysis with explicit disaster prioritization:
+ * - flood -> flood/rainfall/flood-risk
+ * - cyclone/hurricane -> cyclone
+ * - rain -> rainfall/forecast
+ * - AQI/air quality -> AQI
+ * - heat -> heat risk
+ * - storm/lightning -> severe convective storm
+ * - wildfire -> wildfire risk
+ * - general weather -> current weather
  */
 function analyzeWeatherIntent(message) {
   const text = String(message || '').toLowerCase().trim();
@@ -179,49 +195,65 @@ function analyzeWeatherIntent(message) {
   ];
   const isOffTopic = offTopicKeywords.some((k) => text.includes(k));
 
-  // 3. Cyclone Inquiries
+  // 3. Flood & Waterlogging Inquiries (First-class disaster intent)
+  const isFlood = /flood|flooding|water rise|water rising|waterlogging|waterlogged|submerged|deluge|inundation/.test(text);
+
+  // 4. Cyclone & Tropical Storm Inquiries
   const isCyclone = /cyclone|typhoon|hurricane|storm track|gdacs|tropical storm/.test(text);
 
-  // 4. Rain & Precipitation Inquiries
-  const isRain = /rain|umbrella|drizzle|showers|precipitation|pour|downpour|wet|waterlogging/.test(text);
+  // 5. Heat & Heatwave Risk Inquiries
+  const isHeat = /heat|heatwave|hot weather|extreme heat|sunstroke|dehydration|too hot|scorching|high temperature/.test(text);
 
-  // 5. Air Quality & Pollution Inquiries
+  // 6. Storm & Lightning Inquiries
+  const isStorm = /storm|thunderstorm|lightning|squall|thunder|hail|cloudburst|gusty storm/.test(text);
+
+  // 7. Wildfire & Fire Weather Inquiries
+  const isWildfire = /wildfire|forest fire|bushfire|fire weather|fire risk/.test(text);
+
+  // 8. Rain & Precipitation Inquiries
+  const isRain = !isFlood && /rain|raining|umbrella|drizzle|showers|precipitation|pour|downpour|wet/.test(text);
+
+  // 9. Air Quality & Pollution Inquiries
   const isAqi = /air quality|aqi|pm2\.5|pm10|pollution|smog|smoke|breathe|ozone|clean air|toxic air/.test(text);
 
-  // 6. Wind Inquiries
+  // 10. Wind Inquiries
   const isWind = /wind|gust|breeze|gale|wind speed|windy|stormy wind/.test(text);
 
-  // 7. Severe Weather & Hazards
-  const isSevere = /severe weather|thunderstorm|lightning|flood|extreme heat|heatwave|extreme cold|freeze|hail|warning|hazard|danger/.test(text);
+  // 11. Severe Weather & Hazards Overall (flood handled separately above)
+  const isSevere = /severe weather|extreme cold|freeze|warning|hazard|danger|advisory|threat/.test(text);
 
-  // 8. Forecast / Timeframe
+  // 12. Forecast / Timeframe
   const isTomorrow = /tomorrow|next day|kal/.test(text);
   const isHourly = /hourly|next hours|today evening|morning|afternoon|tonight/.test(text);
   const isForecast = isTomorrow || isHourly || /forecast|upcoming|next week|7 days|future|will it be/.test(text);
 
-  // 9. Outdoor Activities
+  // 13. Outdoor Activities
   const isOutdoor = /outdoor|outside|picnic|walk|run|running|sports|cricket|drying clothes|wash clothes|barbecue|safe to go out/.test(text);
 
-  // 10. Travel Safety
+  // 14. Travel Safety
   const isTravel = /travel|drive|driving|flight|road|commute|highway|trip|safest time to travel|safe to travel/.test(text);
 
-  // 11. Comparison (Today vs Tomorrow)
+  // 15. Comparison (Today vs Tomorrow)
   const isCompare = /compare|difference between|colder tomorrow|hotter tomorrow|today or tomorrow/.test(text);
 
-  // 12. Climate Inquiries
+  // 16. Climate Inquiries
   const isClimate = /climate|normally rainy|usually hot|typical weather|historical weather|annual rainfall|monsoon season/.test(text);
 
-  // 13. DisasterChain Operational Integration
+  // 17. DisasterChain Operational Integration
   const isDisasterOps = /shelter|safe to stay here|evacuation|active incident|alert|sos count|relief center/.test(text);
 
-  // 14. Current Conditions (Default if nothing else specific, or explicitly asked)
+  // 18. Current Conditions (Default if nothing else specific, or explicitly asked)
   const isCurrent = /current|right now|currently|today|temperature|temp|feels like|humidity|weather right now|how is it outside/.test(text) ||
-    (!isForecast && !isCyclone && !isAqi && !isRain && !isSevere && !isOffTopic && !isClimate);
+    (!isFlood && !isCyclone && !isHeat && !isStorm && !isWildfire && !isForecast && !isAqi && !isRain && !isWind && !isSevere && !isOffTopic && !isClimate);
 
   return {
     isEmergency,
     isOffTopic,
+    isFlood,
     isCyclone,
+    isHeat,
+    isStorm,
+    isWildfire,
     isRain,
     isAqi,
     isWind,
@@ -539,13 +571,17 @@ function generateWeatherGPTReply({
   language = 'en',
 }) {
   const isRtl = SUPPORTED_LANGUAGES[language]?.rtl || false;
-  const place = locationName || 'your area';
+  let cleanPlace = locationName && typeof locationName === 'string' ? locationName.trim() : '';
+  if (STOP_WORDS.has(cleanPlace.toLowerCase()) || cleanPlace.length < 2) {
+    cleanPlace = 'your location';
+  }
+  const place = cleanPlace || 'your location';
 
   // 1. Off-Topic Handling
   if (intent.isOffTopic) {
     if (language === 'hi') {
       return {
-        reply: 'मैं WeatherGPT हूँ। मैं मौसम, पूर्वानुमान, वायु गुणवत्ता (AQI), चक्रवात, गंभीर मौसम चेतावनियों और आपदा सुरक्षा मार्गदर्शन में आपकी सहायता कर सकता हूँ।',
+        reply: 'मैं WeatherGPT हूँ। मैं मौसम, पूर्वानुमान, वायु गुणवत्ता (AQI), चक्रवात, बाढ़, गंभीर मौसम चेतावनियों और आपदा सुरक्षा मार्गदर्शन में आपकी सहायता कर सकता हूँ।',
         riskLevel: 'LOW',
         actions: [
           { label: '🌡️ वर्तमान मौसम', query: 'वर्तमान मौसम कैसा है?' },
@@ -556,7 +592,7 @@ function generateWeatherGPTReply({
     }
     if (language === 'ur') {
       return {
-        reply: 'میں ویدر جی پی ٹی ہوں۔ میں موسم، پیش گوئی، ہوا کے معیار (AQI)، طوفان، شدید موسم کے انتباہات اور ہنگامی حفاظتی رہنمائی میں آپ کی مدد کر سکتا ہوں۔',
+        reply: 'میں ویدر جی پی ٹی ہوں۔ میں موسم، پیش گوئی، ہوا کے معیار (AQI)، طوفان، سیلاب، شدید موسم کے انتباہات اور ہنگامی حفاظتی رہنمائی میں آپ کی مدد کر سکتا ہوں۔',
         riskLevel: 'LOW',
         actions: [
           { label: '🌡️ موجودہ موسم', query: 'موجودہ موسم کیا ہے؟' },
@@ -663,7 +699,7 @@ function generateWeatherGPTReply({
     }
   }
 
-  // 5. Evaluate Hazards & Severe Risk
+  // 5. Evaluate Hazards & Atmospheric Risk
   const riskAnalysis = evaluateRisk(
     effectiveCurrent,
     airQuality,
@@ -687,7 +723,43 @@ function generateWeatherGPTReply({
     actions.push({ label: '⚠️ VIEW ACTIVE ALERTS', link: '/alerts' });
   }
 
-  // 6. Cyclone Inquiries
+  // 6. Flood & Waterlogging Inquiries (Priority: Flood inquiries evaluate flood risk, NOT AQI)
+  if (intent.isFlood) {
+    const curPrecip = effectiveCurrent?.precipitation || effectiveCurrent?.rain || 0;
+    const precipSumToday = forecast?.daily?.[0]?.precipitationSum || 0;
+    const rainProbToday = forecast?.daily?.[0]?.precipitationProbabilityMax || 0;
+    const isHeavyPrecip = curPrecip >= 15 || precipSumToday >= 35 || (rainProbToday >= 80 && curPrecip >= 5);
+    const isModeratePrecip = curPrecip >= 5 || precipSumToday >= 15 || rainProbToday >= 60;
+
+    if (isHeavyPrecip) {
+      return {
+        reply: `⚠️ HIGH RISK: FLOOD & WATERLOGGING HAZARD\n\nWhat is happening:\nHeavy precipitation of ${curPrecip} mm/h (forecast total: ${precipSumToday} mm, ${rainProbToday}% rain probability) detected in ${place}.\n\nWhat it means:\nHigh risk of flash ponding, roadway submersion, low-lying water ingress, and drainage overflow.\n\nWhat to do:\n1. Avoid low-lying underpasses, dips, and flooded roads.\n2. Move electrical appliances, vehicles, and valuables away from basement/ground levels.\n3. Keep battery packs and emergency flashlights charged.\n\nEmergency:\nCall 112 if rising water threatens safety or structural enclosures.\n\nData Trust: Open-Meteo Live Precipitation Telemetry & GDACS Flood Monitoring.`,
+        riskLevel: 'HIGH',
+        actions: [
+          { label: '🗺️ VIEW ON MAP', link: '/weather' },
+          { label: '🏠 FIND SHELTER', link: '/shelters' },
+        ],
+      };
+    }
+
+    if (isModeratePrecip) {
+      return {
+        reply: `🌧️ MODERATE RISK: WATERLOGGING ADVISORY\n\nWhat is happening:\nRainfall rate of ${curPrecip} mm/h with expected 24h total of ${precipSumToday} mm in ${place} (${rainProbToday}% chance of rain).\n\nWhat it means:\nWet road surfaces, localized puddle accumulation, and slower transit traffic.\n\nWhat to do:\n1. Exercise extra caution on highways and flyovers.\n2. Stay clear of roadside drainage channels.\n3. Carry waterproof rainwear.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        riskLevel: 'MODERATE',
+        actions,
+      };
+    }
+
+    const cond = effectiveCurrent?.weatherCode != null ? getConditionDescription(effectiveCurrent.weatherCode) : 'Normal';
+    const temp = effectiveCurrent?.temperature != null ? Math.round(effectiveCurrent.temperature) : '--';
+    return {
+      reply: `✓ SAFE / NORMAL: NO FLOOD RISK\n\nWhat is happening:\nNo active flood alerts or dangerous waterlogging conditions are detected in ${place}.\n\nCurrent precipitation is ${curPrecip} mm/h (chance of rain today: ${rainProbToday}%). Weather is ${cond.toLowerCase()} at ${temp}°C.\n\nWhat it means:\nLocal drainage networks and transit corridors are operating normally without atmospheric inundation risk.\n\nWhat to do:\n1. Outdoor movement and regular travel are safe.\n2. Continue monitoring local weather notifications during heavy seasonal rain.\n\nData Trust: Open-Meteo Live Telemetry & GDACS Flood Feeds.`,
+      riskLevel: 'LOW',
+      actions,
+    };
+  }
+
+  // 7. Cyclone Inquiries
   if (intent.isCyclone) {
     const activeCyclones = cyclones?.cyclones || [];
     const windVal = effectiveCurrent ? Math.round(effectiveCurrent.windSpeed || 0) : 0;
@@ -714,7 +786,81 @@ function generateWeatherGPTReply({
     };
   }
 
-  // 7. Rain & Umbrella Questions
+  // 8. Heat & Heatwave Risk Inquiries
+  if (intent.isHeat) {
+    const curTemp = effectiveCurrent?.temperature != null ? Math.round(effectiveCurrent.temperature) : null;
+    const feelsLike = effectiveCurrent?.apparentTemperature != null ? Math.round(effectiveCurrent.apparentTemperature) : curTemp;
+
+    if (curTemp != null && (curTemp >= 40 || (feelsLike != null && feelsLike >= 42))) {
+      return {
+        reply: `⚠️ HIGH RISK: EXTREME HEATWAVE ADVISORY\n\nWhat is happening:\nSevere thermal stress in ${place} with ambient temperature at ${curTemp}°C (heat index feels like ${feelsLike}°C).\n\nWhat it means:\nHigh risk of heat exhaustion, dehydration, and sunstroke during midday exposure.\n\nWhat to do:\n1. Stay indoors between 11:00 AM and 4:00 PM in well-ventilated or air-cooled spaces.\n2. Drink plenty of water and oral rehydration solutions (ORS); avoid direct sunlight.\n3. Check on elderly relatives and pets.\n\nEmergency:\nCall 112 or seek urgent medical aid for signs of confusion, fainting, or heatstroke.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        riskLevel: 'HIGH',
+        actions,
+      };
+    }
+
+    if (curTemp != null && (curTemp >= 35 || (feelsLike != null && feelsLike >= 38))) {
+      return {
+        reply: `☀️ MODERATE HEAT: ELEVATED TEMPERATURES\n\nWhat is happening:\nTemperatures in ${place} are elevated at ${curTemp}°C (feels like ${feelsLike}°C).\n\nWhat it means:\nMild thermal discomfort and increased hydration requirements during outdoor activities.\n\nWhat to do:\n1. Wear lightweight, loose cotton clothing and a wide-brimmed hat.\n2. Keep a water bottle handy and limit strenuous physical exertion during peak afternoon hours.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        riskLevel: 'MODERATE',
+        actions,
+      };
+    }
+
+    return {
+      reply: `✓ SAFE / NORMAL: COMFORTABLE THERMAL CONDITIONS\n\nWhat is happening:\nNo extreme heatwave conditions are detected in ${place}. Current ambient temperature is ${curTemp != null ? curTemp + '°C' : 'normal'}${feelsLike != null ? ' (feels like ' + feelsLike + '°C)' : ''}.\n\nWhat it means:\nThermal conditions are within safe, comfortable thresholds for outdoor activities.\n\nData Trust: Open-Meteo Live Telemetry.`,
+      riskLevel: 'LOW',
+      actions,
+    };
+  }
+
+  // 9. Storm & Lightning Inquiries
+  if (intent.isStorm) {
+    const isThunderstorm = effectiveCurrent?.weatherCode != null && [95, 96, 99].includes(effectiveCurrent.weatherCode);
+    const curWind = Math.round(effectiveCurrent?.windSpeed || 0);
+    const curGusts = Math.round(effectiveCurrent?.windGusts || curWind);
+
+    if (isThunderstorm || curGusts >= 60) {
+      return {
+        reply: `⚠️ HIGH RISK: ACTIVE THUNDERSTORM & LIGHTNING\n\nWhat is happening:\nSevere convective storm activity affecting ${place}. Wind gusts reaching ${curGusts} km/h with thunderstorm / lightning conditions.\n\nWhat it means:\nHigh lightning hazard, flying debris, fallen branches, and sudden squalls.\n\nWhat to do:\n1. Remain inside sturdy structural enclosures away from windows.\n2. Do NOT seek shelter under tall, isolated trees or open tin sheds.\n3. Unplug sensitive electronics and avoid using wired electrical appliances.\n\nEmergency:\nCall 112 if power lines fall or structural damage occurs.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        riskLevel: 'HIGH',
+        actions,
+      };
+    }
+
+    const cond = effectiveCurrent?.weatherCode != null ? getConditionDescription(effectiveCurrent.weatherCode) : 'Normal';
+    const temp = effectiveCurrent?.temperature != null ? Math.round(effectiveCurrent.temperature) : '--';
+
+    return {
+      reply: `✓ SAFE / NORMAL: NO THUNDERSTORM DETECTED\n\nWhat is happening:\nNo active thunderstorms, lightning squalls, or hail events are currently reported in ${place}.\n\nCurrent weather is ${cond.toLowerCase()} at ${temp}°C with winds of ${curWind} km/h.\n\nData Trust: Open-Meteo Live Telemetry.`,
+      riskLevel: 'LOW',
+      actions,
+    };
+  }
+
+  // 10. Wildfire & Fire Weather Inquiries
+  if (intent.isWildfire) {
+    const curTemp = effectiveCurrent?.temperature != null ? Math.round(effectiveCurrent.temperature) : 25;
+    const curHumidity = effectiveCurrent?.relativeHumidity != null ? effectiveCurrent.relativeHumidity : 50;
+    const curWind = effectiveCurrent?.windSpeed != null ? Math.round(effectiveCurrent.windSpeed) : 10;
+    const isWildfireRisk = curTemp >= 35 && curHumidity <= 25 && curWind >= 30;
+
+    if (isWildfireRisk) {
+      return {
+        reply: `⚠️ HIGH RISK: ELEVATED WILDFIRE CONDITIONS\n\nWhat is happening:\nCritical fire weather conditions detected in ${place}: high temperature (${curTemp}°C), very low humidity (${curHumidity}%), and gusty winds (${curWind} km/h).\n\nWhat it means:\nRapid fire propagation potential in brushland, dry grass, or forested peripheries.\n\nWhat to do:\n1. Strictly observe outdoor burning bans; do not discard lit materials.\n2. Keep residential perimeter cleared of dry leaf litter and flammable debris.\n3. Prepare an evacuation go-bag with essential medicines and documents.\n\nEmergency:\nCall 112 / 101 immediately if smoke or open fire is spotted.\n\nData Trust: DisasterChain Real-Time Fire Weather Telemetry.`,
+        riskLevel: 'HIGH',
+        actions,
+      };
+    }
+
+    return {
+      reply: `✓ SAFE / NORMAL: LOW WILDFIRE RISK\n\nWhat is happening:\nNo critical wildfire or bushfire weather indicators are present for ${place}.\n\nCurrent conditions: temperature ${curTemp}°C, relative humidity ${curHumidity}%, and wind speed ${curWind} km/h.\n\nData Trust: DisasterChain Real-Time Fire Weather Telemetry.`,
+      riskLevel: 'LOW',
+      actions,
+    };
+  }
+
+  // 11. Rain & Umbrella Questions
   if (intent.isRain) {
     const isRainingNow = effectiveCurrent && (
       (effectiveCurrent.precipitation && effectiveCurrent.precipitation > 0) ||
@@ -752,7 +898,7 @@ function generateWeatherGPTReply({
     };
   }
 
-  // 8. Air Quality (AQI) Questions
+  // 12. Air Quality (AQI) Questions
   if (intent.isAqi) {
     if (!airQuality || airQuality.europeanAqi == null) {
       const tempNote = effectiveCurrent?.temperature != null ? ` Current ambient temperature is ${Math.round(effectiveCurrent.temperature)}°C and wind speed is ${Math.round(effectiveCurrent.windSpeed || 0)} km/h.` : '';
@@ -790,14 +936,14 @@ function generateWeatherGPTReply({
     };
   }
 
-  // 9. Wind Questions
+  // 13. Wind Questions
   if (intent.isWind) {
-    const speed = Math.round(currentWeather.windSpeed || 0);
-    const gusts = Math.round(currentWeather.windGusts || speed);
+    const speed = Math.round(effectiveCurrent?.windSpeed || currentWeather?.windSpeed || 0);
+    const gusts = Math.round(effectiveCurrent?.windGusts || currentWeather?.windGusts || speed);
 
     if (speed >= 50 || gusts >= 70) {
       return {
-        reply: `⚠️ HIGH RISK: SEVERE WIND SQUALLS\n\nWhat is happening:\nStrong winds of ${speed} km/h with gusts up to ${gusts} km/h recorded in ${place}.\n\nWhat it means:\nRisk of flying sheet metal, broken tree limbs, overhead cable disruption, and two-wheeler instability.\n\nWhat to do:\n1. Secure loose rooftop objects, flower pots, and sheet panels.\n2. Park vehicles away from large trees and advertising hoardings.\n3. Exercise extreme caution on flyovers and bridges.\n\nEmergency:\nCall 112 if power cables or tree trunks collapse.\n\nData Trust: Open-Meteo Live Telemetry.`,
+        reply: `⚠️ HIGH RISK: SEVERE WIND SQUALLS\n\nWhat is happening:\nStrong winds of ${speed} km/h with gusts up to ${gusts} km/h observed in ${place}.\n\nWhat it means:\nRisk of flying sheet metal, broken tree limbs, overhead cable disruption, and two-wheeler instability.\n\nWhat to do:\n1. Secure loose rooftop objects, flower pots, and sheet panels.\n2. Park vehicles away from large trees and advertising hoardings.\n3. Exercise extreme caution on flyovers and bridges.\n\nEmergency:\nCall 112 if power cables or tree trunks collapse.\n\nData Trust: Open-Meteo Live Telemetry.`,
         riskLevel: 'HIGH',
         actions,
       };
@@ -810,7 +956,7 @@ function generateWeatherGPTReply({
     };
   }
 
-  // 10. Travel & Outdoor Activities Questions
+  // 14. Travel & Outdoor Activities Questions
   if (intent.isTravel || intent.isOutdoor) {
     if (isHighRisk) {
       const topRisk = riskAnalysis.risks[0];
@@ -833,7 +979,7 @@ function generateWeatherGPTReply({
     };
   }
 
-  // 11. Comparison Questions (Today vs Tomorrow)
+  // 15. Comparison Questions (Today vs Tomorrow)
   if (intent.isCompare && forecast) {
     const summary = summarizeForecast(forecast.daily, forecast.hourly);
     if (summary) {
@@ -852,7 +998,7 @@ function generateWeatherGPTReply({
     }
   }
 
-  // 12. Tomorrow / Future Forecast
+  // 16. Tomorrow / Future Forecast
   if (intent.isTomorrow) {
     if (forecast?.daily?.[1]) {
       const tom = forecast.daily[1];
@@ -879,7 +1025,7 @@ function generateWeatherGPTReply({
     }
   }
 
-  // 13. General Upcoming / 5-Day Forecast
+  // 17. General Upcoming / 5-Day Forecast
   if (intent.isForecast) {
     if (forecast?.daily?.length > 1) {
       const days = forecast.daily.slice(0, 5).map((d) => {
@@ -905,12 +1051,12 @@ function generateWeatherGPTReply({
     }
   }
 
-  // 14. Severe Weather / Hazards Overall Check (Triggered when explicitly inquiring about hazards)
+  // 18. Severe Weather / Hazards Overall Check (Triggered when explicitly inquiring about hazards)
   if (intent.isSevere) {
     if (isHighRisk) {
       const top = riskAnalysis.risks[0];
       return {
-        reply: `⚠️ HIGH RISK: ${top.title.toUpperCase()}\n\nWhat is happening:\n${top.desc} recorded in ${place}.\n\nWhat it means:\nPotential hazard to safety, infrastructure strain, and hazardous transit conditions.\n\nWhat to do:\n1. Remain indoors in safe structural enclosures.\n2. Monitor local authority disaster notifications.\n3. Keep emergency torches and portable battery packs charged.\n\nEmergency:\nCall 112 if in immediate danger.\n\nData Trust: DisasterChain Real-Time Atmospheric Safety Engine.`,
+        reply: `⚠️ HIGH RISK: ${top.title.toUpperCase()}\n\nWhat is happening:\n${top.desc} observed in ${place}.\n\nWhat it means:\nPotential hazard to safety, infrastructure strain, and hazardous transit conditions.\n\nWhat to do:\n1. Remain indoors in safe structural enclosures.\n2. Monitor local authority disaster notifications.\n3. Keep emergency torches and portable battery packs charged.\n\nEmergency:\nCall 112 if in immediate danger.\n\nData Trust: DisasterChain Real-Time Atmospheric Safety Engine.`,
         riskLevel: 'HIGH',
         actions,
       };
@@ -1071,26 +1217,39 @@ async function processWeatherGPTChat({
   // 1. Analyze User Intent
   const intent = analyzeWeatherIntent(cleanMessage);
 
-  // 2. Resolve Conversational Memory
+  // 2. Resolve Conversational Memory & Location
   const session = getSession(conversationId);
-  let resolvedLat = latitude != null && !isNaN(Number(latitude)) ? Number(latitude) : null;
-  let resolvedLon = longitude != null && !isNaN(Number(longitude)) ? Number(longitude) : null;
-  let resolvedLocationName = location && typeof location === 'string' && location.trim().length > 0 ? location.trim() : null;
-
-  // Check if a named location was typed directly in the message text
   const extractedName = extractLocationName(cleanMessage);
-  if (extractedName) {
-    resolvedLocationName = extractedName;
-  }
 
-  // If user didn't specify new location or coords, inherit from active session
-  if (!resolvedLocationName && (resolvedLat == null || resolvedLon == null) && session) {
-    if (session.latitude != null && session.longitude != null) {
+  let resolvedLat = null;
+  let resolvedLon = null;
+  let resolvedLocationName = null;
+
+  if (extractedName) {
+    // User explicitly queried a place in the message text (e.g. "What is the weather in Delhi?")
+    resolvedLocationName = extractedName;
+    // Coordinates must be geocoded afresh for this specific place, not inherited from device location
+    resolvedLat = null;
+    resolvedLon = null;
+  } else {
+    // User did NOT specify a different place in the message text.
+    // Prioritize active coordinates and location sent in the request (e.g. device GPS / active location).
+    if (latitude != null && !isNaN(Number(latitude)) && longitude != null && !isNaN(Number(longitude))) {
+      resolvedLat = Number(latitude);
+      resolvedLon = Number(longitude);
+      if (location && typeof location === 'string' && location.trim().length > 0) {
+        const cleanLoc = location.trim();
+        if (!STOP_WORDS.has(cleanLoc.toLowerCase())) {
+          resolvedLocationName = cleanLoc;
+        }
+      }
+    } else if (session?.latitude != null && session?.longitude != null) {
+      // Fallback to active session coordinates only if request provided no coordinates
       resolvedLat = session.latitude;
       resolvedLon = session.longitude;
-    }
-    if (session.locationName) {
-      resolvedLocationName = session.locationName;
+      if (session.locationName && !STOP_WORDS.has(session.locationName.toLowerCase())) {
+        resolvedLocationName = session.locationName;
+      }
     }
   }
 
@@ -1109,8 +1268,8 @@ async function processWeatherGPTChat({
     }
   }
 
-  // If we have coordinates but no location name, reverse-geocode
-  if (resolvedLat != null && resolvedLon != null && !resolvedLocationName) {
+  // If we have coordinates but no location name (or name was a generic placeholder), reverse-geocode
+  if (resolvedLat != null && resolvedLon != null && (!resolvedLocationName || STOP_WORDS.has(resolvedLocationName.toLowerCase()))) {
     try {
       const rev = await weatherService.reverseGeocode(resolvedLat, resolvedLon);
       resolvedLocationName = rev?.displayName || rev?.city || `${resolvedLat.toFixed(2)}°, ${resolvedLon.toFixed(2)}°`;

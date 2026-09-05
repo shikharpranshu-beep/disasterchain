@@ -428,8 +428,38 @@ async function runTestSuite() {
     assert(followUp.location && followUp.location.name.toLowerCase().includes('chandigarh'), 'Follow up must inherit Chandigarh from session memory');
   });
 
+  // Test 29: Explicit Flood Intent Priority (Must return flood/rainfall information, NOT AQI)
+  await runTest(29, 'Explicit Flood intent prioritization over AQI', async () => {
+    const res = await processWeatherGPTChat({
+      message: 'flood',
+      latitude: 30.7499,
+      longitude: 76.6411,
+      location: 'Kharar, Punjab',
+      language: 'en',
+    });
+    assert(res.reply.toLowerCase().includes('flood') || res.reply.toLowerCase().includes('waterlogging'), 'Must address flood risk directly');
+    assert(!res.reply.includes('HAZARDOUS AIR QUALITY'), 'Must NOT prioritize or return hazardous air quality for explicit flood queries');
+    assert(res.location && res.location.name.includes('Kharar'), 'Location must be Kharar, Punjab');
+  });
+
+  // Test 30: Location Resolution Correctness (Never extracts "the" or mislabels location)
+  await runTest(30, 'Location resolution correctness and stop-words protection', async () => {
+    const res = await processWeatherGPTChat({
+      message: 'What is the weather right now at my location?',
+      latitude: 30.7499,
+      longitude: 76.6411,
+      location: 'Kharar, Punjab',
+      language: 'en',
+    });
+    assert.strictEqual(res.location.latitude, 30.7499);
+    assert.strictEqual(res.location.longitude, 76.6411);
+    assert(res.location.name.includes('Kharar'), 'Location name must match Kharar');
+    assert(!res.reply.toLowerCase().includes('recorded in manali'), 'Must never show stale Manali location');
+    assert(!res.reply.toLowerCase().includes('in the.'), 'Must never extract "the" as a city');
+  });
+
   console.log('\n========================================================');
-  console.log(`🎉 ALL ${passedTests}/${totalTests} WEATHERGPT TESTS PASSED SUCCESSFULLY!`);
+  console.log(`🎉 ALL ${passedTests}/${totalTests || 30} WEATHERGPT TESTS PASSED SUCCESSFULLY!`);
   console.log('========================================================\n');
 }
 

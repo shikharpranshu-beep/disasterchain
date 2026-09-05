@@ -363,30 +363,40 @@ export default function WeatherGPTPage() {
       if (res.success && res.data) {
         const d = res.data;
 
-        // If backend resolved a different location name or coordinates, sync it
-        if (d.location?.latitude && d.location?.longitude) {
-          setActiveLocation((prev) => ({
-            ...prev,
-            name: d.location.name || prev.name,
-            latitude: d.location.latitude,
-            longitude: d.location.longitude,
-          }));
-        }
-
-        // Update live telemetry if received in reply
-        if (d.telemetry && d.telemetry.temperature != null) {
-          setLiveTelemetry((prev) => ({
-            ...prev,
-            name: d.location?.name || activeLocation.name,
-            temperature: d.telemetry.temperature,
-            condition: d.telemetry.condition || 'Clear',
-            windSpeed: d.telemetry.windSpeed || 0,
-            windGusts: d.telemetry.windGusts || 0,
-            humidity: d.telemetry.humidity,
-            aqi: d.telemetry.aqi,
-            aqiLabel: d.telemetry.aqiSeverity,
-            precipitation: d.telemetry.precipitation,
-          }));
+        // If locationOverride was explicitly passed (e.g. from location search or locate me), update activeLocation
+        if (locationOverride) {
+          setActiveLocation(locationOverride);
+          if (d.telemetry && d.telemetry.temperature != null) {
+            setLiveTelemetry((prev) => ({
+              ...prev,
+              name: locationOverride.name,
+              temperature: d.telemetry.temperature,
+              condition: d.telemetry.condition || 'Clear',
+              windSpeed: d.telemetry.windSpeed || 0,
+              windGusts: d.telemetry.windGusts || 0,
+              humidity: d.telemetry.humidity,
+              aqi: d.telemetry.aqi,
+              aqiLabel: d.telemetry.aqiSeverity,
+              precipitation: d.telemetry.precipitation,
+            }));
+          }
+        } else if (d.location?.latitude && d.location?.longitude) {
+          // If the reply corresponds to the user's active location, keep live telemetry card fresh
+          const isSameLoc = Math.abs(d.location.latitude - loc.latitude) < 0.1 && Math.abs(d.location.longitude - loc.longitude) < 0.1;
+          if (isSameLoc && d.telemetry && d.telemetry.temperature != null) {
+            setLiveTelemetry((prev) => ({
+              ...prev,
+              name: d.location.name || prev.name,
+              temperature: d.telemetry.temperature,
+              condition: d.telemetry.condition || 'Clear',
+              windSpeed: d.telemetry.windSpeed || 0,
+              windGusts: d.telemetry.windGusts || 0,
+              humidity: d.telemetry.humidity,
+              aqi: d.telemetry.aqi,
+              aqiLabel: d.telemetry.aqiSeverity,
+              precipitation: d.telemetry.precipitation,
+            }));
+          }
         }
 
         if (d.feedStatus) {
